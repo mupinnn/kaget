@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/(wallets)/wallets/$walletId")({
-  component: () => <div>Hello /(accounts)/accounts/$accountId! I'm so something!</div>,
+  component: () => <div>Hello /(accounts)/accounts/$accountId!</div>,
 });

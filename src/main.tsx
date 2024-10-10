@@ -1,6 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
 import "@fontsource-variable/inter";
 import "@fontsource-variable/inter/wght-italic.css";
@@ -9,6 +12,15 @@ import "./index.css";
 import { routeTree } from "@/__generated__/routeTree";
 
 const router = createRouter({ routeTree });
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+      staleTime: 60 * 1000,
+    },
+  },
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -25,7 +37,11 @@ boot()
   .then(() => {
     createRoot(document.getElementById("root")!).render(
       <StrictMode>
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <TanStackRouterDevtools router={router} />
+          <ReactQueryDevtools buttonPosition="bottom-right" />
+        </QueryClientProvider>
       </StrictMode>
     );
   })

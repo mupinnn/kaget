@@ -18,7 +18,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types/", "./node_modules/"],
+    "types": ["unplugin-environment/client"]
   },
   "include": ["src"]
 }

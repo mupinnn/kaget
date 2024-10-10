@@ -8,11 +8,12 @@ import {
   InternalServerError,
   UnprocessableEntityError,
 } from "@/utils/error.util";
+import { env } from "@env";
 
-export const api = wretch()
+export const api = wretch(`${env.VITE_API_URL}`)
   .addon(wretchQueryStringAddon)
-  .resolve(r => {
-    return r
+  .resolve(async r => {
+    return await r
       .badRequest(() => {
         throw new BadRequestError();
       })
@@ -31,5 +32,8 @@ export const api = wretch()
       .fetchError(() => {
         throw new FetchError();
       })
-      .json();
+      .json()
+      .catch(() => {
+        throw new InternalServerError();
+      });
   });

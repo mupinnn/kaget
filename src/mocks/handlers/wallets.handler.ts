@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
 
 export const walletsHandler = [
-  http.get("/wallets", () => {
+  http.get("/api/wallets", () => {
     return HttpResponse.json({
       message: "Wallets retrieved",
       data: [

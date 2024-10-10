@@ -1,5 +1,5 @@
 import { setupWorker } from "msw/browser";
 
-import { budgetsHandler } from "./handlers/budgets.handler";
+import { walletsHandler } from "./handlers/wallets.handler";
 
-export const worker = setupWorker(...budgetsHandler);
+export const worker = setupWorker(...walletsHandler);
