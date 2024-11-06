@@ -1,4 +1,7 @@
-import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
+import { Fragment } from "react";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 
 export const Route = createRootRoute({
   component: RootRoute,
@@ -6,14 +9,12 @@ export const Route = createRootRoute({
 
 function RootRoute() {
   return (
-    <main>
-      <div className="flex gap-2 p-2">
-        <Link to="/" className="[&.active]:font-bold">
-          Home
-        </Link>
-      </div>
-      <hr />
-      <Outlet />
-    </main>
+    <Fragment>
+      <Navbar />
+      <main className="container w-full flex-1 p-4">
+        <Outlet />
+      </main>
+      <Footer />
+    </Fragment>
   );
 }
