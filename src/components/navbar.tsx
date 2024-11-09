@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon } from "lucide-react";
 import { Button } from "./ui/button";
 
 export function Navbar() {
