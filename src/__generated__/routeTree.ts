@@ -17,6 +17,7 @@ import { Route as settingsSettingsIndexRouteImport } from "./../routes/~(setting
 import { Route as recordsRecordsIndexRouteImport } from "./../routes/~(records)/~records.index.route";
 import { Route as dashboardDashboardIndexRouteImport } from "./../routes/~(dashboard)/~dashboard.index.route";
 import { Route as budgetsBudgetsIndexRouteImport } from "./../routes/~(budgets)/~budgets.index.route";
+import { Route as walletsWalletsCreateRouteImport } from "./../routes/~(wallets)/~wallets.create.route";
 import { Route as walletsWalletsWalletIdRouteImport } from "./../routes/~(wallets)/~wallets.$walletId.route";
 import { Route as recordsRecordsRecordIdRouteImport } from "./../routes/~(records)/~records.$recordId.route";
 import { Route as budgetsBudgetsBudgetIdRouteImport } from "./../routes/~(budgets)/~budgets.$budgetId.route";
@@ -33,40 +34,51 @@ const walletsWalletsIndexRouteRoute = walletsWalletsIndexRouteImport.update({
   getParentRoute: () => rootRoute,
 } as any);
 
-const settingsSettingsIndexRouteRoute = settingsSettingsIndexRouteImport.update({
-  path: "/settings/",
-  getParentRoute: () => rootRoute,
-} as any);
+const settingsSettingsIndexRouteRoute = settingsSettingsIndexRouteImport.update(
+  {
+    path: "/settings/",
+    getParentRoute: () => rootRoute,
+  } as any,
+);
 
 const recordsRecordsIndexRouteRoute = recordsRecordsIndexRouteImport.update({
   path: "/records/",
   getParentRoute: () => rootRoute,
 } as any);
 
-const dashboardDashboardIndexRouteRoute = dashboardDashboardIndexRouteImport.update({
-  path: "/dashboard/",
-  getParentRoute: () => rootRoute,
-} as any);
+const dashboardDashboardIndexRouteRoute =
+  dashboardDashboardIndexRouteImport.update({
+    path: "/dashboard/",
+    getParentRoute: () => rootRoute,
+  } as any);
 
 const budgetsBudgetsIndexRouteRoute = budgetsBudgetsIndexRouteImport.update({
   path: "/budgets/",
   getParentRoute: () => rootRoute,
 } as any);
 
-const walletsWalletsWalletIdRouteRoute = walletsWalletsWalletIdRouteImport.update({
-  path: "/wallets/$walletId",
+const walletsWalletsCreateRouteRoute = walletsWalletsCreateRouteImport.update({
+  path: "/wallets/create",
   getParentRoute: () => rootRoute,
 } as any);
 
-const recordsRecordsRecordIdRouteRoute = recordsRecordsRecordIdRouteImport.update({
-  path: "/records/$recordId",
-  getParentRoute: () => rootRoute,
-} as any);
+const walletsWalletsWalletIdRouteRoute =
+  walletsWalletsWalletIdRouteImport.update({
+    path: "/wallets/$walletId",
+    getParentRoute: () => rootRoute,
+  } as any);
 
-const budgetsBudgetsBudgetIdRouteRoute = budgetsBudgetsBudgetIdRouteImport.update({
-  path: "/budgets/$budgetId",
-  getParentRoute: () => rootRoute,
-} as any);
+const recordsRecordsRecordIdRouteRoute =
+  recordsRecordsRecordIdRouteImport.update({
+    path: "/records/$recordId",
+    getParentRoute: () => rootRoute,
+  } as any);
+
+const budgetsBudgetsBudgetIdRouteRoute =
+  budgetsBudgetsBudgetIdRouteImport.update({
+    path: "/budgets/$budgetId",
+    getParentRoute: () => rootRoute,
+  } as any);
 
 // Populate the FileRoutesByPath interface
 
@@ -98,6 +110,13 @@ declare module "@tanstack/react-router" {
       path: "/wallets/$walletId";
       fullPath: "/wallets/$walletId";
       preLoaderRoute: typeof walletsWalletsWalletIdRouteImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/(wallets)/wallets/create": {
+      id: "/wallets/create";
+      path: "/wallets/create";
+      fullPath: "/wallets/create";
+      preLoaderRoute: typeof walletsWalletsCreateRouteImport;
       parentRoute: typeof rootRoute;
     };
     "/(budgets)/budgets/": {
@@ -145,6 +164,7 @@ export interface FileRoutesByFullPath {
   "/budgets/$budgetId": typeof budgetsBudgetsBudgetIdRouteRoute;
   "/records/$recordId": typeof recordsRecordsRecordIdRouteRoute;
   "/wallets/$walletId": typeof walletsWalletsWalletIdRouteRoute;
+  "/wallets/create": typeof walletsWalletsCreateRouteRoute;
   "/budgets": typeof budgetsBudgetsIndexRouteRoute;
   "/dashboard": typeof dashboardDashboardIndexRouteRoute;
   "/records": typeof recordsRecordsIndexRouteRoute;
@@ -157,6 +177,7 @@ export interface FileRoutesByTo {
   "/budgets/$budgetId": typeof budgetsBudgetsBudgetIdRouteRoute;
   "/records/$recordId": typeof recordsRecordsRecordIdRouteRoute;
   "/wallets/$walletId": typeof walletsWalletsWalletIdRouteRoute;
+  "/wallets/create": typeof walletsWalletsCreateRouteRoute;
   "/budgets": typeof budgetsBudgetsIndexRouteRoute;
   "/dashboard": typeof dashboardDashboardIndexRouteRoute;
   "/records": typeof recordsRecordsIndexRouteRoute;
@@ -170,6 +191,7 @@ export interface FileRoutesById {
   "/budgets/$budgetId": typeof budgetsBudgetsBudgetIdRouteRoute;
   "/records/$recordId": typeof recordsRecordsRecordIdRouteRoute;
   "/wallets/$walletId": typeof walletsWalletsWalletIdRouteRoute;
+  "/wallets/create": typeof walletsWalletsCreateRouteRoute;
   "/budgets/": typeof budgetsBudgetsIndexRouteRoute;
   "/dashboard/": typeof dashboardDashboardIndexRouteRoute;
   "/records/": typeof recordsRecordsIndexRouteRoute;
@@ -184,6 +206,7 @@ export interface FileRouteTypes {
     | "/budgets/$budgetId"
     | "/records/$recordId"
     | "/wallets/$walletId"
+    | "/wallets/create"
     | "/budgets"
     | "/dashboard"
     | "/records"
@@ -195,6 +218,7 @@ export interface FileRouteTypes {
     | "/budgets/$budgetId"
     | "/records/$recordId"
     | "/wallets/$walletId"
+    | "/wallets/create"
     | "/budgets"
     | "/dashboard"
     | "/records"
@@ -206,6 +230,7 @@ export interface FileRouteTypes {
     | "/budgets/$budgetId"
     | "/records/$recordId"
     | "/wallets/$walletId"
+    | "/wallets/create"
     | "/budgets/"
     | "/dashboard/"
     | "/records/"
@@ -219,6 +244,7 @@ export interface RootRouteChildren {
   budgetsBudgetsBudgetIdRouteRoute: typeof budgetsBudgetsBudgetIdRouteRoute;
   recordsRecordsRecordIdRouteRoute: typeof recordsRecordsRecordIdRouteRoute;
   walletsWalletsWalletIdRouteRoute: typeof walletsWalletsWalletIdRouteRoute;
+  walletsWalletsCreateRouteRoute: typeof walletsWalletsCreateRouteRoute;
   budgetsBudgetsIndexRouteRoute: typeof budgetsBudgetsIndexRouteRoute;
   dashboardDashboardIndexRouteRoute: typeof dashboardDashboardIndexRouteRoute;
   recordsRecordsIndexRouteRoute: typeof recordsRecordsIndexRouteRoute;
@@ -231,6 +257,7 @@ const rootRouteChildren: RootRouteChildren = {
   budgetsBudgetsBudgetIdRouteRoute: budgetsBudgetsBudgetIdRouteRoute,
   recordsRecordsRecordIdRouteRoute: recordsRecordsRecordIdRouteRoute,
   walletsWalletsWalletIdRouteRoute: walletsWalletsWalletIdRouteRoute,
+  walletsWalletsCreateRouteRoute: walletsWalletsCreateRouteRoute,
   budgetsBudgetsIndexRouteRoute: budgetsBudgetsIndexRouteRoute,
   dashboardDashboardIndexRouteRoute: dashboardDashboardIndexRouteRoute,
   recordsRecordsIndexRouteRoute: recordsRecordsIndexRouteRoute,
@@ -254,6 +281,7 @@ export const routeTree = rootRoute
         "/budgets/$budgetId",
         "/records/$recordId",
         "/wallets/$walletId",
+        "/wallets/create",
         "/budgets/",
         "/dashboard/",
         "/records/",
@@ -272,6 +300,9 @@ export const routeTree = rootRoute
     },
     "/wallets/$walletId": {
       "filePath": "~(wallets)/~wallets.$walletId.route.tsx"
+    },
+    "/wallets/create": {
+      "filePath": "~(wallets)/~wallets.create.route.tsx"
     },
     "/budgets/": {
       "filePath": "~(budgets)/~budgets.index.route.tsx"

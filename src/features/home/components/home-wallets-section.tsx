@@ -16,7 +16,7 @@ export const HomeWalletsSection = () => {
           icon={WalletIcon}
           actions={
             <Button asChild className="no-underline">
-              <Link to="/wallets">Create wallet</Link>
+              <Link to="/wallets/create">Create wallet</Link>
             </Button>
           }
         />
