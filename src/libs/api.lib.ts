@@ -7,33 +7,37 @@ import {
   ConflictError,
   InternalServerError,
   UnprocessableEntityError,
+  HttpResponseError,
+  SomethingWentWrongError,
 } from "@/utils/error.util";
 import { env } from "@env";
 
 export const api = wretch(`${env.VITE_API_URL}`)
   .addon(wretchQueryStringAddon)
+  .errorType("json")
   .resolve(async r => {
     return await r
-      .badRequest(() => {
+      .badRequest(error => {
         throw new BadRequestError();
       })
-      .notFound(() => {
+      .notFound(error => {
         throw new NotFoundError();
       })
-      .error(409, () => {
+      .error(409, error => {
         throw new ConflictError();
       })
-      .error(422, () => {
+      .error(422, error => {
         throw new UnprocessableEntityError();
       })
-      .internalError(() => {
+      .internalError(error => {
         throw new InternalServerError();
       })
-      .fetchError(() => {
+      .fetchError(error => {
         throw new FetchError();
       })
       .json()
-      .catch(() => {
-        throw new InternalServerError();
+      .catch(error => {
+        if (error instanceof HttpResponseError) throw error;
+        throw new SomethingWentWrongError();
       });
   });

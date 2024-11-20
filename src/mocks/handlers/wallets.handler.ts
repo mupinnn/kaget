@@ -1,18 +1,14 @@
-import { http, HttpResponse } from "msw";
+import { http } from "msw";
+import { CreateWalletSchema } from "@/features/wallets/data/wallets.schema";
+import { errorResponse, successResponse } from "@/utils/api.util";
 
 export const walletsHandler = [
-  http.get("/api/wallets", () => {
-    return HttpResponse.json({
-      message: "Wallets retrieved",
-      data: [
-        {
-          id: "18xjjx",
-          name: "DompetKu",
-          digital_balance: 1000000,
-          cash_balance: 0,
-          deleted_at: null,
-        },
-      ],
-    });
+  http.post("/api/v1/wallets", async ({ request }) => {
+    try {
+      const data = CreateWalletSchema.parse(await request.json());
+      return successResponse({ data, message: "Successfully create a wallet" });
+    } catch (error) {
+      return errorResponse(error);
+    }
   }),
 ];

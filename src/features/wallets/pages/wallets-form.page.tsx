@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCreateWalletMutation } from "../data/wallets.mutations";
 
 export function WalletsFormPage() {
   const form = useForm<CreateWallet>({
@@ -30,9 +31,10 @@ export function WalletsFormPage() {
       initial_balance: 0,
     },
   });
+  const createWalletMutation = useCreateWalletMutation();
 
   function onSubmit(values: CreateWallet) {
-    console.log("form values: ", values);
+    createWalletMutation.mutate(values);
   }
 
   return (
@@ -107,10 +109,17 @@ export function WalletsFormPage() {
           />
 
           <div className="flex items-center justify-end gap-2">
-            <Button asChild variant="outline" className="no-underline">
+            <Button
+              asChild
+              variant="outline"
+              className="no-underline"
+              disabled={createWalletMutation.isPending}
+            >
               <Link to="/wallets">Back</Link>
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" isLoading={createWalletMutation.isPending}>
+              Save
+            </Button>
           </div>
         </form>
       </Form>
