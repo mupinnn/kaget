@@ -40,6 +40,16 @@ export default tseslint.config(
       ...react.configs["jsx-runtime"].rules,
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+
+      // @see https://github.com/orgs/react-hook-form/discussions/9325#discussioncomment-4060566
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          "checksVoidReturn": {
+            "attributes": false,
+          },
+        },
+      ],
     },
   }
 );
