@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { CreateWalletSchema, Wallet } from "@/features/wallets/data/wallets.schema";
 import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { db } from "@/libs/db.lib";
+import { NotFoundError } from "@/utils/error.util";
 
 export const walletsHandler = [
   http.get("/api/v1/wallets", async () => {
@@ -41,9 +42,33 @@ export const walletsHandler = [
   http.get("/api/v1/wallets/:walletId", async ({ params }) => {
     try {
       const storedWallet = await db.wallet.get({ id: params.walletId });
+
+      if (!storedWallet) {
+        throw new NotFoundError("Wallet not found");
+      }
+
       return mockSuccessResponse({
         data: storedWallet,
         message: "Successfully retrieved a wallet",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
+  http.delete("/api/v1/wallets/:walletId", async ({ params }) => {
+    try {
+      const walletToBeDeleted = await db.wallet.get({ id: params.walletId });
+
+      if (!walletToBeDeleted) {
+        throw new NotFoundError("Wallet not found");
+      }
+
+      await db.wallet.delete(params.walletId as string);
+
+      return mockSuccessResponse({
+        data: walletToBeDeleted,
+        message: "Successfully delete wallet",
       });
     } catch (error) {
       return mockErrorResponse(error);

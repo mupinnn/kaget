@@ -35,3 +35,7 @@ export const CreateWalletResponseSchema = APIResponseSchema({
 export const ShowWalletResponseSchema = APIResponseSchema({
   schema: WalletSchema,
 });
+
+export const DeleteWalletResponseSchema = APIResponseSchema({
+  schema: WalletSchema,
+});
