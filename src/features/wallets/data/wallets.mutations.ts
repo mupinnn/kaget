@@ -1,10 +1,11 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "@/libs/api.lib";
 import { CreateWallet, CreateWalletResponseSchema } from "./wallets.schema";
 
 export const useCreateWalletMutation = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return useMutation({
     async mutationFn(data: CreateWallet) {
@@ -12,6 +13,7 @@ export const useCreateWalletMutation = () => {
       return CreateWalletResponseSchema.parse(res);
     },
     async onSuccess() {
+      await queryClient.invalidateQueries({ queryKey: ["wallets"] });
       await navigate({ to: "/wallets" });
     },
   });

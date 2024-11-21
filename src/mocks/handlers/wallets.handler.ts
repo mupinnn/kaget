@@ -5,6 +5,19 @@ import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { db } from "@/libs/db.lib";
 
 export const walletsHandler = [
+  http.get("/api/v1/wallets", async () => {
+    try {
+      const storedWallets = await db.wallet.toArray();
+
+      return mockSuccessResponse({
+        data: storedWallets,
+        message: "Successfully retrieved wallets",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
   http.post("/api/v1/wallets", async ({ request }) => {
     try {
       const data = CreateWalletSchema.parse(await request.json());

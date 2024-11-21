@@ -16,6 +16,10 @@ export const WalletSchema = z.object({
 
 export type Wallet = z.infer<typeof WalletSchema>;
 
+export const WalletsResponseSchema = APIResponseSchema({
+  schema: WalletSchema.array(),
+});
+
 export const CreateWalletSchema = z
   .object({
     initial_balance: z.coerce.number().min(0, "Initial balance must be greater than or equal to 0"),
