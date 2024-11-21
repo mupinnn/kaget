@@ -1,14 +1,14 @@
 import { http } from "msw";
 import { CreateWalletSchema } from "@/features/wallets/data/wallets.schema";
-import { errorResponse, successResponse } from "@/utils/api.util";
+import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 
 export const walletsHandler = [
   http.post("/api/v1/wallets", async ({ request }) => {
     try {
       const data = CreateWalletSchema.parse(await request.json());
-      return successResponse({ data, message: "Successfully create a wallet" });
+      return mockSuccessResponse({ data, message: "Successfully create a wallet" });
     } catch (error) {
-      return errorResponse(error);
+      return mockErrorResponse(error);
     }
   }),
 ];

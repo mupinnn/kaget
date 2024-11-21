@@ -11,6 +11,7 @@ import {
   SomethingWentWrongError,
 } from "@/utils/error.util";
 import { env } from "@env";
+import { BaseAPIResponseSchema } from "@/schemas/api.schema";
 
 export const api = wretch(`${env.VITE_API_URL}`)
   .addon(wretchQueryStringAddon)
@@ -18,22 +19,28 @@ export const api = wretch(`${env.VITE_API_URL}`)
   .resolve(async r => {
     return await r
       .badRequest(error => {
-        throw new BadRequestError();
+        const parsedError = BaseAPIResponseSchema.parse(error.json);
+        throw new BadRequestError(parsedError.message);
       })
       .notFound(error => {
-        throw new NotFoundError();
+        const parsedError = BaseAPIResponseSchema.parse(error.json);
+        throw new NotFoundError(parsedError.message);
       })
       .error(409, error => {
-        throw new ConflictError();
+        const parsedError = BaseAPIResponseSchema.parse(error.json);
+        throw new ConflictError(parsedError.message);
       })
       .error(422, error => {
-        throw new UnprocessableEntityError();
+        const parsedError = BaseAPIResponseSchema.parse(error.json);
+        throw new UnprocessableEntityError(parsedError.message);
       })
       .internalError(error => {
-        throw new InternalServerError();
+        const parsedError = BaseAPIResponseSchema.parse(error.json);
+        throw new InternalServerError(parsedError.message);
       })
       .fetchError(error => {
-        throw new FetchError();
+        const parsedError = BaseAPIResponseSchema.parse(error.json);
+        throw new FetchError(parsedError.message);
       })
       .json()
       .catch(error => {

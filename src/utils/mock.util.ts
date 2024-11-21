@@ -29,7 +29,7 @@ export function generatePaginationMeta({
   };
 }
 
-export function successResponse({
+export function mockSuccessResponse({
   data,
   message,
   meta,
@@ -45,12 +45,12 @@ export function successResponse({
   );
 }
 
-export function errorResponse(error: unknown) {
+export function mockErrorResponse(error: unknown) {
   if (error instanceof ZodError) {
     return HttpResponse.json(
       {
         message: "Invalid body request",
-        data: error.errors,
+        data: error.flatten(),
       },
       { status: 400 }
     );

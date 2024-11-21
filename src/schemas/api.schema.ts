@@ -17,11 +17,12 @@ export const APIResponseMetaSchema = z.object({
 });
 export type APIResponseMeta = z.infer<typeof APIResponseMetaSchema>;
 
-export const BaseAPIResponseSchema = z.object({
-  message: z.string(),
-  data: z.unknown(),
-  meta: APIResponseMetaSchema.optional(),
-});
+export const BaseAPIResponseSchema = z
+  .object({
+    message: z.string(),
+    data: z.unknown(),
+  })
+  .merge(APIResponseMetaSchema);
 export type BaseAPIResponse = z.infer<typeof BaseAPIResponseSchema>;
 
 type APIResponseSchemaParams<TSchema> = {

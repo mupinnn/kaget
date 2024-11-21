@@ -1,5 +1,5 @@
 import { expect, test, describe } from "vitest";
-import { generatePaginationMeta } from "./api.util";
+import { generatePaginationMeta } from "./mock.util";
 
 describe("`generatePaginationMeta` util", () => {
   test("Should properly generate basic pagination meta", () => {
