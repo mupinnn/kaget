@@ -1,5 +1,6 @@
 import { HttpResponse, HttpResponseInit } from "msw";
 import { ZodError } from "zod";
+import { APIResponseMeta, BaseAPIResponse } from "@/schemas/api.schema";
 import { HttpResponseError } from "./error.util";
 
 type GeneratePaginationMetaParams = {
@@ -12,7 +13,7 @@ export function generatePaginationMeta({
   total,
   currentPage,
   perPage = 10,
-}: GeneratePaginationMetaParams) {
+}: GeneratePaginationMetaParams): APIResponseMeta["meta"] {
   const nextPage = currentPage + 1;
   const prevPage = currentPage - 1;
   const totalPages = Math.abs(Math.ceil((total - 1) / perPage));
@@ -28,51 +29,36 @@ export function generatePaginationMeta({
   };
 }
 
-type BaseResponseParams<TData> = {
-  message: string;
-  data?: TData;
-} & HttpResponseInit;
-
-type ResponseMeta = {
-  pagination?: ReturnType<typeof generatePaginationMeta>;
-};
-
-type SuccessResponseParams<TData> = BaseResponseParams<TData> & {
-  data: TData;
-  meta?: ResponseMeta;
-};
-
-export function successResponse<TData>({
+export function mockSuccessResponse({
   data,
   message,
   meta,
-  ...rest
-}: SuccessResponseParams<TData>) {
+  ...httpResponseInit
+}: BaseAPIResponse & HttpResponseInit) {
   return HttpResponse.json(
     {
       data,
       message,
       meta,
     },
-    { ...rest }
+    httpResponseInit
   );
 }
 
-export function errorResponse(error: unknown) {
+export function mockErrorResponse(error: unknown) {
   if (error instanceof ZodError) {
-    return {
-      status: 400,
-      message: error.message,
-      errors: error.errors,
-    };
+    return HttpResponse.json(
+      {
+        message: "Invalid body request",
+        data: error.flatten(),
+      },
+      { status: 400 }
+    );
   }
 
   if (error instanceof HttpResponseError) {
-    return {
-      status: error.code,
-      message: error.message,
-    };
+    return HttpResponse.json({ message: error.message }, { status: error.status });
   }
 
-  throw error;
+  return new HttpResponse(null, { status: 500 });
 }

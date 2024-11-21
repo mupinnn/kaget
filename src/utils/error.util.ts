@@ -1,5 +1,12 @@
+export class SomethingWentWrongError extends Error {
+  constructor(message = "Something went wrong. Please contact https://github.com/mupinnn") {
+    super(message);
+    this.name = "SomethingWentWrongError";
+  }
+}
+
 export class HttpResponseError extends Error {
-  code?: number;
+  status?: number;
 
   constructor(message?: string) {
     super(message);
@@ -10,14 +17,14 @@ export class BadRequestError extends HttpResponseError {
   constructor(message = "Bad Request") {
     super(message);
     this.name = "BadRequestError";
-    this.code = 400;
+    this.status = 400;
   }
 }
 
 export class NotFoundError extends HttpResponseError {
   constructor(message = "Not Found") {
     super(message);
-    this.code = 404;
+    this.status = 404;
     this.name = "NotFoundError";
   }
 }
@@ -25,7 +32,7 @@ export class NotFoundError extends HttpResponseError {
 export class ConflictError extends HttpResponseError {
   constructor(message = "Conflict") {
     super(message);
-    this.code = 409;
+    this.status = 409;
     this.name = "ConflictError";
   }
 }
@@ -33,15 +40,15 @@ export class ConflictError extends HttpResponseError {
 export class UnprocessableEntityError extends HttpResponseError {
   constructor(message = "Unprocessable Entity") {
     super(message);
-    this.code = 422;
+    this.status = 422;
     this.name = "UnprocessableEntityError";
   }
 }
 
 export class InternalServerError extends HttpResponseError {
-  constructor(message = "Interal Server Error") {
+  constructor(message = "Internal Server Error. Please contact https://github.com/mupinnn") {
     super(message);
-    this.code = 500;
+    this.status = 500;
     this.name = "InternalServerError";
   }
 }

@@ -1,19 +1,21 @@
 import * as React from "react";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/common.util";
 
 export interface WalletCardProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
-  totalBalance: number;
+  balance: number;
 }
 
 export const WalletCard = React.forwardRef<HTMLDivElement, WalletCardProps>(
-  ({ name, totalBalance, ...props }, ref) => (
+  ({ name, balance, ...props }, ref) => (
     <Card ref={ref} {...props}>
-      <CardHeader>
-        <CardTitle>{name}</CardTitle>
-        <CardDescription>{formatCurrency(totalBalance)}</CardDescription>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-normal">{name}</CardTitle>
       </CardHeader>
+      <CardContent>
+        <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
+      </CardContent>
     </Card>
   )
 );
