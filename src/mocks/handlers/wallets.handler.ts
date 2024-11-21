@@ -1,6 +1,10 @@
 import { http } from "msw";
 import { nanoid } from "nanoid";
-import { CreateWalletSchema, Wallet } from "@/features/wallets/data/wallets.schema";
+import {
+  CreateWalletSchema,
+  UpdateWalletSchema,
+  Wallet,
+} from "@/features/wallets/data/wallets.schema";
 import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { db } from "@/libs/db.lib";
 import { NotFoundError } from "@/utils/error.util";
@@ -70,6 +74,27 @@ export const walletsHandler = [
         data: walletToBeDeleted,
         message: "Successfully delete wallet",
       });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
+  http.patch("/api/v1/wallets/:walletId", async ({ params, request }) => {
+    try {
+      const walletId = params.walletId;
+      const data = UpdateWalletSchema.parse(await request.json());
+      const updatedWalletRecordsCount = await db.wallet.update(walletId, {
+        name: data.name,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (updatedWalletRecordsCount === 0) {
+        throw new NotFoundError("Wallet not found");
+      }
+
+      const updatedWallet = await db.wallet.get({ id: walletId });
+
+      return mockSuccessResponse({ data: updatedWallet, message: "Successfully update wallet" });
     } catch (error) {
       return mockErrorResponse(error);
     }

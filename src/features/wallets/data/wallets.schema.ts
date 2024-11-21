@@ -39,3 +39,11 @@ export const ShowWalletResponseSchema = APIResponseSchema({
 export const DeleteWalletResponseSchema = APIResponseSchema({
   schema: WalletSchema,
 });
+
+export const UpdateWalletSchema = WalletSchema.pick({ name: true });
+
+export type UpdateWallet = z.infer<typeof UpdateWalletSchema>;
+
+export const UpdateWalletResponseSchema = APIResponseSchema({
+  schema: WalletSchema,
+});

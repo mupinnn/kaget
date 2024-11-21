@@ -13,8 +13,9 @@ export const walletsQueryOptions = queryOptions({
 
 export const useWalletsQuery = () => useQuery(walletsQueryOptions);
 
-export const walletDetailQueryOptions = (walletId: string) => {
+export const walletDetailQueryOptions = (walletId?: string) => {
   return queryOptions({
+    enabled: !!walletId,
     queryKey: ["wallets", walletId],
     queryFn: async () => {
       const response = await api.get(`/wallets/${walletId}`);
@@ -23,6 +24,6 @@ export const walletDetailQueryOptions = (walletId: string) => {
   });
 };
 
-export const useWalletDetailQuery = (walletId: string) => {
+export const useWalletDetailQuery = (walletId?: string) => {
   return useQuery(walletDetailQueryOptions(walletId));
 };

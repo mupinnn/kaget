@@ -5,8 +5,10 @@ import {
   CreateWallet,
   CreateWalletResponseSchema,
   DeleteWalletResponseSchema,
+  UpdateWallet,
+  UpdateWalletResponseSchema,
 } from "./wallets.schema";
-import { walletsQueryOptions } from "./wallets.queries";
+import { walletDetailQueryOptions, walletsQueryOptions } from "./wallets.queries";
 
 export const useCreateWalletMutation = () => {
   const navigate = useNavigate();
@@ -39,6 +41,22 @@ export const useDeleteWalletMutation = () => {
         refetchType: "none",
       });
       await navigate({ to: "/wallets" });
+    },
+  });
+};
+
+export const useUpdateWalletMutation = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    async mutationFn({ walletId, data }: { walletId: string; data: UpdateWallet }) {
+      const res = await api.patch(data, `/wallets/${walletId}`);
+      return UpdateWalletResponseSchema.parse(res);
+    },
+    async onSuccess(data) {
+      await queryClient.invalidateQueries(walletDetailQueryOptions(data.data.id));
+      await navigate({ to: "/wallets/$walletId", params: { walletId: data.data.id } });
     },
   });
 };

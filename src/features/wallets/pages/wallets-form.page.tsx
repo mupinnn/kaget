@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
+import { match, P } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,7 +14,6 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { CreateWalletSchema, CreateWallet } from "../data/wallets.schema";
 import {
   Select,
   SelectContent,
@@ -21,25 +21,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateWalletMutation } from "../data/wallets.mutations";
+import {
+  CreateWalletSchema,
+  CreateWallet,
+  Wallet,
+  UpdateWalletSchema,
+} from "../data/wallets.schema";
+import { useCreateWalletMutation, useUpdateWalletMutation } from "../data/wallets.mutations";
+import { useWalletDetailQuery } from "../data/wallets.queries";
 
 export function WalletsFormPage() {
-  const form = useForm<CreateWallet>({
-    resolver: zodResolver(CreateWalletSchema),
+  const { walletId } = useParams({ strict: false });
+  const walletDetailQuery = useWalletDetailQuery(walletId);
+  const form = useForm<CreateWallet | Wallet>({
+    resolver: walletId ? zodResolver(UpdateWalletSchema) : zodResolver(CreateWalletSchema),
+    values: walletDetailQuery.data?.data,
     defaultValues: {
       name: "",
       initial_balance: 0,
     },
   });
   const createWalletMutation = useCreateWalletMutation();
+  const updateWalletMutation = useUpdateWalletMutation();
 
-  function onSubmit(values: CreateWallet) {
-    createWalletMutation.mutate(values);
+  function onSubmit(values: CreateWallet | Wallet) {
+    if (walletId) {
+      updateWalletMutation.mutate({ walletId, data: values });
+    } else {
+      createWalletMutation.mutate(values as CreateWallet);
+    }
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">Create new wallet</h1>
+      <h1 className="text-3xl font-bold">
+        {match(walletId)
+          .with(P.string, () => `Update ${walletDetailQuery.data?.data.name} wallet`)
+          .otherwise(() => "Create wallet")}
+      </h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -56,57 +75,61 @@ export function WalletsFormPage() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a wallet type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="CASH">CASH</SelectItem>
-                    <SelectItem value="DIGITAL">DIGITAL</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  You can separate your cash or digital (bank account) wallet. Just like in the real
-                  world.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!walletId ? (
+            <>
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a wallet type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="CASH">CASH</SelectItem>
+                        <SelectItem value="DIGITAL">DIGITAL</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      You can separate your cash or digital (bank account) wallet. Just like in the
+                      real world.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="initial_balance"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Initial balance</FormLabel>
-                <FormControl>
-                  <CurrencyInput
-                    autoComplete="off"
-                    placeholder="e.g, 1.000.000"
-                    allowNegativeValue={false}
-                    inputMode="numeric"
-                    customInput={Input}
-                    value={field.value}
-                    ref={field.ref}
-                    name={field.name}
-                    onBlur={field.onBlur}
-                    disabled={field.disabled}
-                    onValueChange={value => field.onChange(value)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="initial_balance"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Initial balance</FormLabel>
+                    <FormControl>
+                      <CurrencyInput
+                        autoComplete="off"
+                        placeholder="e.g, 1.000.000"
+                        allowNegativeValue={false}
+                        inputMode="numeric"
+                        customInput={Input}
+                        value={field.value}
+                        ref={field.ref}
+                        name={field.name}
+                        onBlur={field.onBlur}
+                        disabled={field.disabled}
+                        onValueChange={value => field.onChange(value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          ) : null}
 
           <div className="flex items-center justify-end gap-2">
             <Button
@@ -115,7 +138,7 @@ export function WalletsFormPage() {
               className="no-underline"
               disabled={createWalletMutation.isPending}
             >
-              <Link to="/wallets">Back</Link>
+              <Link to="..">Back</Link>
             </Button>
             <Button type="submit" isLoading={createWalletMutation.isPending}>
               Save

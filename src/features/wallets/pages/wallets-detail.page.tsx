@@ -38,12 +38,12 @@ export function WalletsDetailPage() {
 
       <div className="flex items-center gap-2">
         <Button asChild className="no-underline" size="sm">
-          <Link to="/wallets/$walletId" params={{ walletId }}>
+          <Link to="/wallets/$walletId/edit" params={{ walletId }}>
             Edit
           </Link>
         </Button>
         <AlertDialog>
-          <AlertDialogTrigger>
+          <AlertDialogTrigger asChild>
             <Button variant="destructive" size="sm">
               Delete
             </Button>
