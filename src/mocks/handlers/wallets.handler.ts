@@ -37,4 +37,16 @@ export const walletsHandler = [
       return mockErrorResponse(error);
     }
   }),
+
+  http.get("/api/v1/wallets/:walletId", async ({ params }) => {
+    try {
+      const storedWallet = await db.wallet.get({ id: params.walletId });
+      return mockSuccessResponse({
+        data: storedWallet,
+        message: "Successfully retrieved a wallet",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
 ];

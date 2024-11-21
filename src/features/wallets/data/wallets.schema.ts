@@ -31,3 +31,7 @@ export type CreateWallet = z.infer<typeof CreateWalletSchema>;
 export const CreateWalletResponseSchema = APIResponseSchema({
   schema: WalletSchema,
 });
+
+export const ShowWalletResponseSchema = APIResponseSchema({
+  schema: WalletSchema,
+});

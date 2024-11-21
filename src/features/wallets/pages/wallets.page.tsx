@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { WalletCard } from "../components/wallet-card";
-import { useWallets } from "../data/wallets.queries";
+import { useWalletsQuery } from "../data/wallets.queries";
 
 const loaders = Array.from({ length: 5 }).map((_, i) => (
   <Skeleton key={i} className="h-24 w-full" />
 ));
 
 export function WalletsIndexPage() {
-  const walletsQuery = useWallets();
+  const walletsQuery = useWalletsQuery();
 
   return (
     <div className="space-y-4">
@@ -41,7 +41,14 @@ export function WalletsIndexPage() {
           ))
           .otherwise(() =>
             walletsQuery.data?.data.map(wallet => (
-              <WalletCard key={wallet.id} name={wallet.name} balance={wallet.balance} />
+              <Link
+                to="/wallets/$walletId"
+                params={{ walletId: wallet.id }}
+                key={wallet.id}
+                className="no-underline"
+              >
+                <WalletCard name={wallet.name} balance={wallet.balance} />
+              </Link>
             ))
           )}
       </div>
