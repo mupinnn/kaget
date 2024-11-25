@@ -15,6 +15,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { PageLayout } from "@/components/page-layout";
 import { useDeleteWalletMutation } from "../data/wallets.mutations";
 
 const route = getRouteApi("/wallets/$walletId");
@@ -28,14 +29,11 @@ export function WalletsDetailPage() {
   if (walletDetailQuery.isError) return <p>An error occured: {walletDetailQuery.error.message}</p>;
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold">{walletDetailQuery.data.data.name}</h1>
-        <p className="text-lg text-muted-foreground">
-          {formatCurrency(walletDetailQuery.data.data.balance)}
-        </p>
-      </div>
-
+    <PageLayout
+      title={walletDetailQuery.data.data.name}
+      subtitle={formatCurrency(walletDetailQuery.data.data.balance)}
+      subtitleClassName="text-lg"
+    >
       <div className="flex items-center gap-2">
         <Button asChild className="no-underline" size="sm">
           <Link to="/wallets/$walletId/edit" params={{ walletId }}>
@@ -76,6 +74,6 @@ export function WalletsDetailPage() {
           icon={ReceiptTextIcon}
         />
       </section>
-    </div>
+    </PageLayout>
   );
 }

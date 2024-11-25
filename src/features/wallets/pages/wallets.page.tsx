@@ -4,6 +4,7 @@ import { P, match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
+import { PageLayout } from "@/components/page-layout";
 import { WalletCard } from "../components/wallet-card";
 import { useWalletsQuery } from "../data/wallets.queries";
 
@@ -15,12 +16,7 @@ export function WalletsIndexPage() {
   const walletsQuery = useWalletsQuery();
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold">Wallets</h1>
-        <p className="text-sm text-muted-foreground">Manage your wallets. Hassle-free.</p>
-      </div>
-
+    <PageLayout title="Wallets" subtitle="Manage your wallets. Hassle-free">
       <Button asChild className="no-underline">
         <Link to="/wallets/create">
           <PlusIcon />
@@ -52,6 +48,6 @@ export function WalletsIndexPage() {
             ))
           )}
       </div>
-    </div>
+    </PageLayout>
   );
 }
