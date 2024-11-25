@@ -2,21 +2,11 @@ import { Link, getRouteApi } from "@tanstack/react-router";
 import { ReceiptTextIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/common.util";
 import { Button } from "@/components/ui/button";
-import { useWalletDetailQuery } from "../data/wallets.queries";
 import { EmptyState } from "@/components/empty-state";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
 import { PageLayout } from "@/components/page-layout";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { useDeleteWalletMutation } from "../data/wallets.mutations";
+import { useWalletDetailQuery } from "../data/wallets.queries";
 
 const route = getRouteApi("/wallets/$walletId");
 
@@ -40,30 +30,17 @@ export function WalletsDetailPage() {
             Edit
           </Link>
         </Button>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
+        <ConfirmationDialog
+          title={<>Are you sure want to delete {walletDetailQuery.data.data.name} wallet?</>}
+          description="This action cannot be undone. This will permanently delete your wallet and remove others associated data (records, budget, etc)"
+          trigger={
             <Button variant="destructive" size="sm">
               Delete
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Are you sure want to delete {walletDetailQuery.data.data.name} wallet?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your wallet and remove
-                others associated data (records, budget, etc)
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => deleteWalletMutation.mutate(walletId)}>
-                Yes, delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          }
+          actionLabel="Yes, delete"
+          onClickAction={() => deleteWalletMutation.mutate(walletId)}
+        />
       </div>
 
       <section className="flex flex-col gap-2">
