@@ -17,7 +17,7 @@ export function BudgetsIndexPage() {
   return (
     <PageLayout title="Budgets" subtitle="Plan and maintain your money allocation with ease.">
       <Button asChild className="no-underline">
-        <Link to="/wallets/create">
+        <Link to="/budgets/create">
           <PlusIcon />
           Allocate new budget
         </Link>

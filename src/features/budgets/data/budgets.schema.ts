@@ -29,3 +29,17 @@ export const WalletBudgetSchema = z.object({
 });
 
 export type WalletBudget = z.infer<typeof WalletBudgetSchema>;
+
+const BaseCreateBudgetSchema = BudgetSchema.pick({
+  name: true,
+  allocated_digital_balance: true,
+  allocated_cash_balance: true,
+});
+
+export const CreateBudgetSchema = BaseCreateBudgetSchema.extend({
+  digital_wallet_id: WalletSchema.shape.id.optional(),
+  cash_wallet_id: WalletSchema.shape.id.optional(),
+  items: BaseCreateBudgetSchema.array().optional().default([]),
+});
+
+export type CreateBudget = z.infer<typeof CreateBudgetSchema>;
