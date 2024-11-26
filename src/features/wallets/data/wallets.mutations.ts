@@ -20,7 +20,7 @@ export const useCreateWalletMutation = () => {
       return CreateWalletResponseSchema.parse(res);
     },
     async onSuccess() {
-      await queryClient.invalidateQueries(walletsQueryOptions);
+      await queryClient.invalidateQueries(walletsQueryOptions());
       await navigate({ to: "/wallets" });
     },
   });
@@ -37,7 +37,7 @@ export const useDeleteWalletMutation = () => {
     },
     async onSuccess() {
       await queryClient.invalidateQueries({
-        queryKey: walletsQueryOptions.queryKey,
+        queryKey: walletsQueryOptions().queryKey,
         refetchType: "none",
       });
       await navigate({ to: "/wallets" });
