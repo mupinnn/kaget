@@ -7,7 +7,7 @@ class KagetDB extends Dexie {
   wallet!: EntityTable<Wallet, "id">;
   budget!: EntityTable<Budget, "id">;
   budget_detail!: EntityTable<BudgetDetail, "id">;
-  wallet_budget!: EntityTable<WalletBudget, "budget_id" | "wallet_id">;
+  wallet_budget!: EntityTable<WalletBudget, "id">;
 
   constructor() {
     super("KagetDB");
@@ -15,7 +15,7 @@ class KagetDB extends Dexie {
       wallet: "id, balance, type",
       budget: "id, allocated_digital_balance, allocated_cash_balance",
       budget_detail: "id, allocated_digital_balance, allocated_cash_balance, budget_id",
-      wallet_budget: "wallet_id, budget_id",
+      wallet_budget: "id, wallet_id, budget_id",
     });
   }
 }
