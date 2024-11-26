@@ -4,18 +4,27 @@ import {
   CreateWalletSchema,
   UpdateWalletSchema,
   Wallet,
+  WalletsRequestQuerySchema,
 } from "@/features/wallets/data/wallets.schema";
 import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { db } from "@/libs/db.lib";
 import { NotFoundError } from "@/utils/error.util";
 
 export const walletsHandler = [
-  http.get("/api/v1/wallets", async () => {
+  http.get("/api/v1/wallets", async ({ request }) => {
     try {
+      const rawFilters = Object.fromEntries(new URL(request.url).searchParams);
+      const parsedFilters = WalletsRequestQuerySchema.parse(rawFilters);
+
       const storedWallets = await db.wallet.toArray();
 
+      const filteredWallets = storedWallets.filter(wallet => {
+        if (parsedFilters.type && wallet.type !== parsedFilters.type) return false;
+        return true;
+      });
+
       return mockSuccessResponse({
-        data: storedWallets,
+        data: filteredWallets,
         message: "Successfully retrieved wallets",
       });
     } catch (error) {

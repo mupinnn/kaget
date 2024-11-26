@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageLayout } from "@/components/page-layout";
 import {
   CreateWalletSchema,
   CreateWallet,
@@ -53,12 +54,11 @@ export function WalletsFormPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-bold">
-        {match(walletId)
-          .with(P.string, () => `Update ${walletDetailQuery.data?.data.name} wallet`)
-          .otherwise(() => "Create wallet")}
-      </h1>
+    <PageLayout
+      title={match(walletId)
+        .with(P.string, () => `Update ${walletDetailQuery.data?.data.name} wallet`)
+        .otherwise(() => "Create wallet")}
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -146,6 +146,6 @@ export function WalletsFormPage() {
           </div>
         </form>
       </Form>
-    </div>
+    </PageLayout>
   );
 }

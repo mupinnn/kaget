@@ -5,45 +5,44 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { PageLayout } from "@/components/page-layout";
-import { WalletCard } from "../components/wallet-card";
-import { useWalletsQuery } from "../data/wallets.queries";
+import { useBudgetsQuery } from "../data/budgets.queries";
 
 const loaders = Array.from({ length: 5 }).map((_, i) => (
   <Skeleton key={i} className="h-24 w-full" />
 ));
 
-export function WalletsIndexPage() {
-  const walletsQuery = useWalletsQuery();
+export function BudgetsIndexPage() {
+  const budgetsQuery = useBudgetsQuery();
 
   return (
-    <PageLayout title="Wallets" subtitle="Manage your wallets. Hassle-free">
+    <PageLayout title="Budgets" subtitle="Plan and maintain your money allocation with ease.">
       <Button asChild className="no-underline">
-        <Link to="/wallets/create">
+        <Link to="/budgets/create">
           <PlusIcon />
-          Create new wallet
+          Allocate new budget
         </Link>
       </Button>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {match(walletsQuery)
+        {match(budgetsQuery)
           .with({ isPending: true }, () => loaders)
           .with({ isError: true }, () => <p>An error occured</p>)
           .with({ data: P.select(P.when(data => data.data.length === 0)) }, () => (
             <EmptyState
-              title="No wallet created"
-              description="You have not added any wallets. Add one above."
+              title="No budget created"
+              description="You have not added any budgets. Allocate one above."
               icon={WalletIcon}
             />
           ))
           .otherwise(() =>
-            walletsQuery.data?.data.map(wallet => (
+            budgetsQuery.data?.data.map(budget => (
               <Link
                 to="/wallets/$walletId"
-                params={{ walletId: wallet.id }}
-                key={wallet.id}
+                params={{ walletId: budget.id }}
+                key={budget.id}
                 className="no-underline"
               >
-                <WalletCard name={wallet.name} balance={wallet.balance} />
+                {budget.name}
               </Link>
             ))
           )}
