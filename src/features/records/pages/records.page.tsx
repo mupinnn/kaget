@@ -46,7 +46,9 @@ export function RecordsIndexPage() {
                 <div className="flex items-center justify-between py-2 text-sm" key={record.id}>
                   <div className="space-y-1">
                     <p>{record.note}</p>
-                    <p className="text-xs">{record.source_type}</p>
+                    <p className="text-xs">
+                      {record.source.name} - {record.source_type}
+                    </p>
                   </div>
                   <div className="space-y-1 text-right">
                     <p className={cn(isIncome ? "text-success" : "text-destructive")}>

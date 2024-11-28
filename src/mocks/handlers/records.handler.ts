@@ -1,16 +1,57 @@
 import { http } from "msw";
 import { nanoid } from "nanoid";
+import { match } from "ts-pattern";
 import { db } from "@/libs/db.lib";
 import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
-import { CreateRecordSchema, Record, RecordDetail } from "@/features/records/data/records.schema";
+import {
+  CreateRecordSchema,
+  Record,
+  RecordDetail,
+  RecordWithRelations,
+} from "@/features/records/data/records.schema";
+import { NotFoundError } from "@/utils/error.util";
 
 export const recordsHandler = [
   http.get("/api/v1/records", async () => {
     try {
       const storedRecords = await db.record.toArray();
+      const storedRecordsWithRelations: RecordWithRelations[] = await Promise.all(
+        storedRecords.map(async record => {
+          const source = await match(record.source_type)
+            .with("WALLET", async () => {
+              const walletBySourceId = await db.wallet.get(record.source_id);
+
+              if (!walletBySourceId) throw new NotFoundError("Wallet not found");
+
+              return walletBySourceId;
+            })
+            .with("BUDGET", async () => {
+              const budgetBySourceId = await db.budget.get(record.source_id);
+
+              if (!budgetBySourceId) throw new NotFoundError("Budget not found");
+
+              return budgetBySourceId;
+            })
+            .with("BUDGET_DETAIL", async () => {
+              const budgetDetailBySourceId = await db.budget_detail.get(record.source_id);
+
+              if (!budgetDetailBySourceId) throw new NotFoundError("Budget detail not found");
+
+              return budgetDetailBySourceId;
+            })
+            .exhaustive();
+
+          const recordWithRelations: RecordWithRelations = {
+            ...record,
+            source,
+          };
+
+          return recordWithRelations;
+        })
+      );
 
       return mockSuccessResponse({
-        data: storedRecords,
+        data: storedRecordsWithRelations,
         message: "Successfully retrieved records",
       });
     } catch (error) {

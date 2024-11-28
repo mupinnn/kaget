@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { APIResponseSchema } from "@/schemas/api.schema";
 import { WalletSchema } from "@/features/wallets/data/wallets.schema";
+import { BudgetDetailSchema, BudgetSchema } from "@/features/budgets/data/budgets.schema";
 
 export const RecordSourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_DETAIL"], {
   message: "Source is required",
@@ -29,8 +30,14 @@ export const RecordSchema = z.object({
 
 export type Record = z.infer<typeof RecordSchema>;
 
+export const RecordWithRelationsSchema = RecordSchema.extend({
+  source: z.union([WalletSchema, BudgetSchema, BudgetDetailSchema]),
+});
+
+export type RecordWithRelations = z.infer<typeof RecordWithRelationsSchema>;
+
 export const RecordsResponseSchema = APIResponseSchema({
-  schema: RecordSchema.array(),
+  schema: RecordWithRelationsSchema.array(),
 });
 
 export const RecordDetailSchema = RecordSchema.pick({
