@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { APIResponseSchema } from "@/schemas/api.schema";
+import { WalletSchema } from "@/features/wallets/data/wallets.schema";
 
 export const RecordSourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_DETAIL"], {
   message: "Source is required",
@@ -17,7 +18,7 @@ export type RecordType = z.infer<typeof RecordTypeSchema>;
 export const RecordSchema = z.object({
   id: z.string().nanoid(),
   note: z.string().min(1, "Note is required").trim(),
-  amount: z.coerce.number().positive(),
+  amount: z.coerce.number({ invalid_type_error: "Amount is required" }).positive(),
   source_id: z.string().nanoid(),
   source_type: RecordSourceTypeSchema,
   record_type: RecordTypeSchema,
@@ -45,14 +46,24 @@ export type RecordDetail = z.infer<typeof RecordDetailSchema>;
 export const CreateRecordSchema = RecordSchema.pick({
   note: true,
   amount: true,
-  source_id: true,
   record_type: true,
-}).extend({
-  dor: z.union([z.date(), z.string().datetime()], {
-    required_error: "A date of record is required",
-  }),
-  items: RecordSchema.pick({ note: true, amount: true }).array().optional().default([]),
-});
+})
+  .extend({
+    wallet: WalletSchema,
+    dor: z.union([z.date(), z.string().datetime()], {
+      required_error: "A date of record is required",
+    }),
+    items: RecordDetailSchema.pick({ note: true, amount: true }).array().optional().default([]),
+  })
+  .superRefine((data, ctx) => {
+    if (data.wallet && data.wallet.balance < data.amount) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["amount"],
+        message: "Amount should not greater than the selected wallet balance",
+      });
+    }
+  });
 
 export type CreateRecord = z.infer<typeof CreateRecordSchema>;
 

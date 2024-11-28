@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { useFieldArray, useForm } from "react-hook-form";
+import {
+  Control,
+  useFieldArray,
+  useForm,
+  UseFormSetValue,
+  useWatch,
+  FieldErrors,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
 import { CalendarIcon, PlusIcon } from "lucide-react";
@@ -31,12 +38,40 @@ import { cn } from "@/libs/utils.lib";
 import { useCreateRecordMutation } from "../data/records.mutations";
 import { CreateRecord, CreateRecordSchema } from "../data/records.schema";
 
+function TotalRecordsAmount({
+  control,
+  errors,
+  setValue,
+}: {
+  control: Control<CreateRecord>;
+  errors: FieldErrors<CreateRecord>;
+  setValue: UseFormSetValue<CreateRecord>;
+}) {
+  const recordItems = useWatch({ control, name: "items" });
+  const totalAmount = recordItems.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+  if (totalAmount) {
+    setValue("amount", totalAmount);
+  }
+
+  if (recordItems.length === 0) return null;
+
+  return (
+    <div className="rounded-lg border border-dashed p-4">
+      <h2 className="text-muted-foreground">Total amount</h2>
+      <p className="text-2xl font-medium">{formatCurrency(totalAmount)}</p>
+      {errors.amount?.message && (
+        <p className="text-[0.8rem] font-medium text-destructive">{errors.amount.message}</p>
+      )}
+    </div>
+  );
+}
+
 export function RecordsFormPage() {
   const form = useForm<CreateRecord>({
     resolver: zodResolver(CreateRecordSchema),
     defaultValues: {
       note: "",
-      amount: 0,
       dor: new Date(),
       items: [],
     },
@@ -46,13 +81,9 @@ export function RecordsFormPage() {
   const createRecordMutation = useCreateRecordMutation();
 
   const hasNoWallets = walletsQuery.data?.data.length === 0;
-  // const totalAmount = form.watch("items").reduce((acc, curr) => acc + curr.amount, 0);
-  // console.log("total: ", totalAmount);
-  console.log(form.watch());
 
   function onSubmit(values: CreateRecord) {
-    console.log(values);
-    // createRecordMutation.mutate(values);
+    createRecordMutation.mutate(values);
   }
 
   return (
@@ -61,13 +92,15 @@ export function RecordsFormPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="source_id"
+            name="wallet"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Wallet</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  onValueChange={value =>
+                    field.onChange(walletsQuery.data?.data.find(w => w.id === value))
+                  }
+                  defaultValue={field.value?.id}
                   disabled={walletsQuery.isPending || hasNoWallets}
                 >
                   <FormControl>
@@ -154,31 +187,33 @@ export function RecordsFormPage() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{recordItems.fields.length > 0 ? "Total amount" : "Amount"}</FormLabel>
-                <FormControl>
-                  <CurrencyInput
-                    autoComplete="off"
-                    placeholder="e.g, 1.000.000"
-                    allowNegativeValue={false}
-                    inputMode="numeric"
-                    customInput={Input}
-                    value={field.value}
-                    ref={field.ref}
-                    name={field.name}
-                    onBlur={field.onBlur}
-                    disabled={recordItems.fields.length > 0}
-                    onValueChange={value => field.onChange(value)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {recordItems.fields.length === 0 ? (
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <CurrencyInput
+                      autoComplete="off"
+                      placeholder="e.g, 1.000.000"
+                      allowNegativeValue={false}
+                      inputMode="numeric"
+                      customInput={Input}
+                      value={field.value}
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
+                      disabled={field.disabled}
+                      onValueChange={value => field.onChange(value)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : null}
 
           <FormField
             control={form.control}
@@ -200,9 +235,17 @@ export function RecordsFormPage() {
 
           {recordItems.fields.length > 0
             ? recordItems.fields.map((recordItem, recordItemIndex) => (
-                <div className="space-y-4" key={recordItem.id}>
-                  <hr />
-                  <h2 className="text-2xl font-medium">Record {recordItemIndex + 1}</h2>
+                <div className="space-y-4 rounded-lg border border-dashed p-4" key={recordItem.id}>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-medium">Record {recordItemIndex + 1}</h2>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => recordItems.remove(recordItemIndex)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
 
                   <FormField
                     control={form.control}
@@ -247,8 +290,6 @@ export function RecordsFormPage() {
                       </FormItem>
                     )}
                   />
-
-                  {recordItemIndex === recordItems.fields.length - 1 ? <hr /> : null}
                 </div>
               ))
             : null}
@@ -261,6 +302,12 @@ export function RecordsFormPage() {
           >
             <PlusIcon /> Split record
           </Button>
+
+          <TotalRecordsAmount
+            control={form.control}
+            setValue={form.setValue}
+            errors={form.formState.errors}
+          />
 
           <div className="flex items-center justify-end gap-2">
             <Button
