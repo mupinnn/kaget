@@ -22,7 +22,7 @@ export const RecordSchema = z.object({
   source_id: z.string().nanoid(),
   source_type: RecordSourceTypeSchema,
   record_type: RecordTypeSchema,
-  recorded_at: z.string().datetime().nullable(),
+  recorded_at: z.string().datetime(),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
 });

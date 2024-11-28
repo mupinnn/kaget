@@ -5,6 +5,19 @@ import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
 import { CreateRecordSchema, Record, RecordDetail } from "@/features/records/data/records.schema";
 
 export const recordsHandler = [
+  http.get("/api/v1/records", async () => {
+    try {
+      const storedRecords = await db.record.toArray();
+
+      return mockSuccessResponse({
+        data: storedRecords,
+        message: "Successfully retrieved records",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
   http.post("/api/v1/records", async ({ request }) => {
     try {
       const data = CreateRecordSchema.parse(await request.json());
