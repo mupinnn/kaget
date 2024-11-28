@@ -8,6 +8,7 @@ import {
   Record,
   RecordDetail,
   RecordWithRelations,
+  ShowRecordResponse,
 } from "@/features/records/data/records.schema";
 import { NotFoundError } from "@/utils/error.util";
 
@@ -53,6 +54,53 @@ export const recordsHandler = [
       return mockSuccessResponse({
         data: storedRecordsWithRelations,
         message: "Successfully retrieved records",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
+  http.get("/api/v1/records/:recordId", async ({ params }) => {
+    try {
+      const recordId = params.recordId as string;
+      const storedRecord = await db.record.get(recordId);
+
+      if (!storedRecord) throw new NotFoundError("Record not found");
+
+      const storedRecordItems = await db.record_detail.where({ record_id: recordId }).toArray();
+      const matchedRecordSourceType = await match(storedRecord.source_type)
+        .with("WALLET", async () => {
+          const walletBySourceId = await db.wallet.get(storedRecord.source_id);
+
+          if (!walletBySourceId) throw new NotFoundError("Wallet not found");
+
+          return walletBySourceId;
+        })
+        .with("BUDGET", async () => {
+          const budgetBySourceId = await db.budget.get(storedRecord.source_id);
+
+          if (!budgetBySourceId) throw new NotFoundError("Budget not found");
+
+          return budgetBySourceId;
+        })
+        .with("BUDGET_DETAIL", async () => {
+          const budgetDetailBySourceId = await db.budget_detail.get(storedRecord.source_id);
+
+          if (!budgetDetailBySourceId) throw new NotFoundError("Budget detail not found");
+
+          return budgetDetailBySourceId;
+        })
+        .exhaustive();
+
+      const storedRecordWithRelations: ShowRecordResponse["data"] = {
+        ...storedRecord,
+        source: matchedRecordSourceType,
+        items: storedRecordItems,
+      };
+
+      return mockSuccessResponse({
+        data: storedRecordWithRelations,
+        message: "Successfully retrieved a record",
       });
     } catch (error) {
       return mockErrorResponse(error);

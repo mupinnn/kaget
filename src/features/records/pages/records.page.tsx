@@ -43,7 +43,12 @@ export function RecordsIndexPage() {
             recordsQuery.data?.data.map(record => {
               const isIncome = record.record_type === "INCOME";
               return (
-                <div className="flex items-center justify-between py-2 text-sm" key={record.id}>
+                <Link
+                  to="/records/$recordId"
+                  params={{ recordId: record.id }}
+                  className="flex items-center justify-between py-2 text-sm no-underline"
+                  key={record.id}
+                >
                   <div className="space-y-1">
                     <p>{record.note}</p>
                     <p className="text-xs">
@@ -57,7 +62,7 @@ export function RecordsIndexPage() {
                     </p>
                     <p className="text-xs">{formatDate(record.recorded_at)}</p>
                   </div>
-                </div>
+                </Link>
               );
             })
           )}

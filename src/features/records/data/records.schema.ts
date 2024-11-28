@@ -77,3 +77,11 @@ export type CreateRecord = z.infer<typeof CreateRecordSchema>;
 export const CreateRecordResponseSchema = APIResponseSchema({
   schema: RecordSchema,
 });
+
+export const ShowRecordResponseSchema = APIResponseSchema({
+  schema: RecordWithRelationsSchema.extend({
+    items: RecordDetailSchema.array().default([]),
+  }),
+});
+
+export type ShowRecordResponse = z.infer<typeof ShowRecordResponseSchema>;
