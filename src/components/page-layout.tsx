@@ -1,4 +1,7 @@
+import { Link } from "@tanstack/react-router";
+import { ChevronLeftIcon } from "lucide-react";
 import { cn } from "@/libs/utils.lib";
+import { Button } from "./ui/button";
 
 interface PageLayoutProps {
   title: React.ReactNode;
@@ -17,6 +20,12 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <div className="space-y-4">
+      <Button asChild className="no-underline" size="icon" variant="outline">
+        <Link to="..">
+          <ChevronLeftIcon />
+        </Link>
+      </Button>
+
       <div className="space-y-1">
         <h1 className={cn("text-3xl font-bold", titleClassName)}>{title}</h1>
         {subtitle ? (
