@@ -6,7 +6,7 @@ import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
 import {
   CreateRecordSchema,
   Record,
-  RecordDetail,
+  RecordItem,
   RecordWithRelations,
   ShowRecordResponse,
 } from "@/features/records/data/records.schema";
@@ -34,7 +34,7 @@ export const recordsHandler = [
               return budgetBySourceId;
             })
             .with("BUDGET_DETAIL", async () => {
-              const budgetDetailBySourceId = await db.budget_detail.get(record.source_id);
+              const budgetDetailBySourceId = await db.budget_item.get(record.source_id);
 
               if (!budgetDetailBySourceId) throw new NotFoundError("Budget detail not found");
 
@@ -67,7 +67,7 @@ export const recordsHandler = [
 
       if (!storedRecord) throw new NotFoundError("Record not found");
 
-      const storedRecordItems = await db.record_detail.where({ record_id: recordId }).toArray();
+      const storedRecordItems = await db.record_item.where({ record_id: recordId }).toArray();
       const matchedRecordSourceType = await match(storedRecord.source_type)
         .with("WALLET", async () => {
           const walletBySourceId = await db.wallet.get(storedRecord.source_id);
@@ -84,7 +84,7 @@ export const recordsHandler = [
           return budgetBySourceId;
         })
         .with("BUDGET_DETAIL", async () => {
-          const budgetDetailBySourceId = await db.budget_detail.get(storedRecord.source_id);
+          const budgetDetailBySourceId = await db.budget_item.get(storedRecord.source_id);
 
           if (!budgetDetailBySourceId) throw new NotFoundError("Budget detail not found");
 
@@ -121,7 +121,7 @@ export const recordsHandler = [
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
-      const newRecordDetail: RecordDetail[] = data.items.map(item => ({
+      const newRecordDetail: RecordItem[] = data.items.map(item => ({
         id: nanoid(),
         note: item.note,
         amount: item.amount,
@@ -130,7 +130,7 @@ export const recordsHandler = [
         updated_at: new Date().toISOString(),
       }));
 
-      await db.transaction("rw", db.record, db.record_detail, db.wallet, async () => {
+      await db.transaction("rw", db.record, db.record_item, db.wallet, async () => {
         await db.wallet.update(newRecord.source_id, {
           balance:
             newRecord.record_type === "INCOME"
@@ -141,7 +141,7 @@ export const recordsHandler = [
         await db.record.add(newRecord);
 
         if (newRecordDetail.length > 0) {
-          await db.record_detail.bulkAdd(newRecordDetail);
+          await db.record_item.bulkAdd(newRecordDetail);
         }
       });
 

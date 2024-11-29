@@ -17,11 +17,11 @@ export const BudgetsResponseSchema = APIResponseSchema({
   schema: BudgetSchema.array(),
 });
 
-export const BudgetDetailSchema = BudgetSchema.extend({
+export const BudgetItemSchema = BudgetSchema.extend({
   budget_id: BudgetSchema.shape.id,
 });
 
-export type BudgetDetail = z.infer<typeof BudgetDetailSchema>;
+export type BudgetItem = z.infer<typeof BudgetItemSchema>;
 
 export const WalletBudgetSchema = z.object({
   id: z.string().nanoid(),

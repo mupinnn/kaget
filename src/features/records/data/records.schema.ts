@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { APIResponseSchema } from "@/schemas/api.schema";
 import { WalletSchema } from "@/features/wallets/data/wallets.schema";
-import { BudgetDetailSchema, BudgetSchema } from "@/features/budgets/data/budgets.schema";
+import { BudgetItemSchema, BudgetSchema } from "@/features/budgets/data/budgets.schema";
 
 export const RecordSourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_DETAIL"], {
   message: "Source is required",
@@ -31,7 +31,7 @@ export const RecordSchema = z.object({
 export type Record = z.infer<typeof RecordSchema>;
 
 export const RecordWithRelationsSchema = RecordSchema.extend({
-  source: z.union([WalletSchema, BudgetSchema, BudgetDetailSchema]),
+  source: z.union([WalletSchema, BudgetSchema, BudgetItemSchema]),
 });
 
 export type RecordWithRelations = z.infer<typeof RecordWithRelationsSchema>;
@@ -40,7 +40,7 @@ export const RecordsResponseSchema = APIResponseSchema({
   schema: RecordWithRelationsSchema.array(),
 });
 
-export const RecordDetailSchema = RecordSchema.pick({
+export const RecordItemSchema = RecordSchema.pick({
   id: true,
   note: true,
   amount: true,
@@ -48,7 +48,7 @@ export const RecordDetailSchema = RecordSchema.pick({
   updated_at: true,
 }).extend({ record_id: RecordSchema.shape.id });
 
-export type RecordDetail = z.infer<typeof RecordDetailSchema>;
+export type RecordItem = z.infer<typeof RecordItemSchema>;
 
 export const CreateRecordSchema = RecordSchema.pick({
   note: true,
@@ -60,7 +60,7 @@ export const CreateRecordSchema = RecordSchema.pick({
     dor: z.union([z.date(), z.string().datetime()], {
       required_error: "A date of record is required",
     }),
-    items: RecordDetailSchema.pick({ note: true, amount: true }).array().optional().default([]),
+    items: RecordItemSchema.pick({ note: true, amount: true }).array().optional().default([]),
   })
   .superRefine((data, ctx) => {
     if (data.wallet && data.wallet.balance < data.amount) {
@@ -80,7 +80,7 @@ export const CreateRecordResponseSchema = APIResponseSchema({
 
 export const ShowRecordResponseSchema = APIResponseSchema({
   schema: RecordWithRelationsSchema.extend({
-    items: RecordDetailSchema.array().default([]),
+    items: RecordItemSchema.array().default([]),
   }),
 });
 
