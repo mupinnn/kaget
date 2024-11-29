@@ -8,9 +8,34 @@ import {
   Record,
   RecordItem,
   RecordWithRelations,
-  ShowRecordResponse,
 } from "@/features/records/data/records.schema";
 import { NotFoundError } from "@/utils/error.util";
+import { getWalletById } from "./wallets.handler";
+import { getBudgetById, getBudgetItemById } from "./budgets.handler";
+
+export async function getRecordById(recordId: string): Promise<Record> {
+  const storedRecordById = await db.record.get(recordId);
+
+  if (!storedRecordById) throw new NotFoundError("Record not found");
+
+  return storedRecordById;
+}
+
+export async function getRecordWithRelations(recordId: string): Promise<RecordWithRelations> {
+  const storedRecordById = await getRecordById(recordId);
+  const matchedSourceType = await match(storedRecordById.source_type)
+    .with("WALLET", async () => await getWalletById(storedRecordById.source_id))
+    .with("BUDGET", async () => await getBudgetById(storedRecordById.source_id))
+    .with("BUDGET_DETAIL", async () => await getBudgetItemById(storedRecordById.source_id))
+    .exhaustive();
+
+  const storedRecordWithRelations: RecordWithRelations = {
+    ...storedRecordById,
+    source: matchedSourceType,
+  };
+
+  return storedRecordWithRelations;
+}
 
 export const recordsHandler = [
   http.get("/api/v1/records", async () => {
@@ -18,35 +43,7 @@ export const recordsHandler = [
       const storedRecords = await db.record.toArray();
       const storedRecordsWithRelations: RecordWithRelations[] = await Promise.all(
         storedRecords.map(async record => {
-          const source = await match(record.source_type)
-            .with("WALLET", async () => {
-              const walletBySourceId = await db.wallet.get(record.source_id);
-
-              if (!walletBySourceId) throw new NotFoundError("Wallet not found");
-
-              return walletBySourceId;
-            })
-            .with("BUDGET", async () => {
-              const budgetBySourceId = await db.budget.get(record.source_id);
-
-              if (!budgetBySourceId) throw new NotFoundError("Budget not found");
-
-              return budgetBySourceId;
-            })
-            .with("BUDGET_DETAIL", async () => {
-              const budgetDetailBySourceId = await db.budget_item.get(record.source_id);
-
-              if (!budgetDetailBySourceId) throw new NotFoundError("Budget detail not found");
-
-              return budgetDetailBySourceId;
-            })
-            .exhaustive();
-
-          const recordWithRelations: RecordWithRelations = {
-            ...record,
-            source,
-          };
-
+          const recordWithRelations = await getRecordWithRelations(record.id);
           return recordWithRelations;
         })
       );
@@ -62,41 +59,7 @@ export const recordsHandler = [
 
   http.get("/api/v1/records/:recordId", async ({ params }) => {
     try {
-      const recordId = params.recordId as string;
-      const storedRecord = await db.record.get(recordId);
-
-      if (!storedRecord) throw new NotFoundError("Record not found");
-
-      const storedRecordItems = await db.record_item.where({ record_id: recordId }).toArray();
-      const matchedRecordSourceType = await match(storedRecord.source_type)
-        .with("WALLET", async () => {
-          const walletBySourceId = await db.wallet.get(storedRecord.source_id);
-
-          if (!walletBySourceId) throw new NotFoundError("Wallet not found");
-
-          return walletBySourceId;
-        })
-        .with("BUDGET", async () => {
-          const budgetBySourceId = await db.budget.get(storedRecord.source_id);
-
-          if (!budgetBySourceId) throw new NotFoundError("Budget not found");
-
-          return budgetBySourceId;
-        })
-        .with("BUDGET_DETAIL", async () => {
-          const budgetDetailBySourceId = await db.budget_item.get(storedRecord.source_id);
-
-          if (!budgetDetailBySourceId) throw new NotFoundError("Budget detail not found");
-
-          return budgetDetailBySourceId;
-        })
-        .exhaustive();
-
-      const storedRecordWithRelations: ShowRecordResponse["data"] = {
-        ...storedRecord,
-        source: matchedRecordSourceType,
-        items: storedRecordItems,
-      };
+      const storedRecordWithRelations = await getRecordWithRelations(params.recordId as string);
 
       return mockSuccessResponse({
         data: storedRecordWithRelations,

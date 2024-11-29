@@ -10,6 +10,14 @@ import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { db } from "@/libs/db.lib";
 import { NotFoundError } from "@/utils/error.util";
 
+export async function getWalletById(walletId: string) {
+  const storedWalletById = await db.wallet.get(walletId);
+
+  if (!storedWalletById) throw new NotFoundError("Wallet not found");
+
+  return storedWalletById;
+}
+
 export const walletsHandler = [
   http.get("/api/v1/wallets", async ({ request }) => {
     try {
@@ -54,11 +62,7 @@ export const walletsHandler = [
 
   http.get("/api/v1/wallets/:walletId", async ({ params }) => {
     try {
-      const storedWallet = await db.wallet.get({ id: params.walletId });
-
-      if (!storedWallet) {
-        throw new NotFoundError("Wallet not found");
-      }
+      const storedWallet = await getWalletById(params.walletId as string);
 
       return mockSuccessResponse({
         data: storedWallet,
@@ -71,13 +75,10 @@ export const walletsHandler = [
 
   http.delete("/api/v1/wallets/:walletId", async ({ params }) => {
     try {
-      const walletToBeDeleted = await db.wallet.get({ id: params.walletId });
+      const walletId = params.walletId as string;
+      const walletToBeDeleted = await getWalletById(walletId);
 
-      if (!walletToBeDeleted) {
-        throw new NotFoundError("Wallet not found");
-      }
-
-      await db.wallet.delete(params.walletId as string);
+      await db.wallet.delete(walletId);
 
       return mockSuccessResponse({
         data: walletToBeDeleted,
@@ -90,7 +91,7 @@ export const walletsHandler = [
 
   http.patch("/api/v1/wallets/:walletId", async ({ params, request }) => {
     try {
-      const walletId = params.walletId;
+      const walletId = params.walletId as string;
       const data = UpdateWalletSchema.parse(await request.json());
       const updatedWalletRecordsCount = await db.wallet.update(walletId, {
         name: data.name,
@@ -101,7 +102,7 @@ export const walletsHandler = [
         throw new NotFoundError("Wallet not found");
       }
 
-      const updatedWallet = await db.wallet.get({ id: walletId });
+      const updatedWallet = await getWalletById(walletId);
 
       return mockSuccessResponse({ data: updatedWallet, message: "Successfully update wallet" });
     } catch (error) {

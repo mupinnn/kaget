@@ -23,9 +23,9 @@ export function App() {
       new QueryClient({
         defaultOptions: {
           queries: {
-            refetchOnWindowFocus: false,
+            refetchOnWindowFocus: true,
             retry: false,
-            staleTime: 60 * 1000,
+            staleTime: 30 * 1000,
           },
         },
         mutationCache: new MutationCache({
