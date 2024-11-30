@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { P, match } from "ts-pattern";
-import { formatCurrency, formatDate } from "@/utils/common.util";
+import { formatCurrency } from "@/utils/common.util";
+import { dateFormatter } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
 import { RecordWithRelations } from "../data/records.schema";
 
@@ -29,7 +30,7 @@ export const RecordListItem = (props: RecordListItemProps) => {
           {isAddition ? "+" : "-"}
           {formatCurrency(props.amount)}
         </p>
-        <p className="text-xs">{formatDate(props.recorded_at)}</p>
+        <p className="text-xs">{dateFormatter.format(new Date(props.recorded_at))}</p>
       </div>
     </Link>
   );

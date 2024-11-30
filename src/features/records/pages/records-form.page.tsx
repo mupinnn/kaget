@@ -33,7 +33,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { PageLayout } from "@/components/page-layout";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
-import { formatCurrency, formatDate } from "@/utils/common.util";
+import { formatCurrency } from "@/utils/common.util";
+import { dateFormatter } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
 import { useCreateRecordMutation } from "../data/records.mutations";
 import { CreateRecord, CreateRecordSchema } from "../data/records.schema";
@@ -165,7 +166,11 @@ export function RecordsFormPage() {
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value ? formatDate(field.value) : <span>Pick a date</span>}
+                        {field.value ? (
+                          dateFormatter.format(new Date(field.value))
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
