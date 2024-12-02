@@ -40,6 +40,13 @@ export const RecordsResponseSchema = APIResponseSchema({
   schema: RecordWithRelationsSchema.array(),
 });
 
+export const RecordsRequestQuerySchema = z.object({
+  start: z.string().date().optional().catch(undefined),
+  end: z.string().date().optional().catch(undefined),
+});
+
+export type RecordsRequestQuery = z.infer<typeof RecordsRequestQuerySchema>;
+
 export const RecordItemSchema = RecordSchema.pick({
   id: true,
   note: true,

@@ -25,3 +25,7 @@ export const isDateBefore = (a: DateInput, b: DateInput) => compareDate(a, b) < 
 export const isDateAfterOrEqual = (a: DateInput, b: DateInput) => compareDate(a, b) >= 0;
 
 export const isDateBeforeOrEqual = (a: DateInput, b: DateInput) => compareDate(a, b) <= 0;
+
+export const getISODate = (date: DateInput) => {
+  return new Date(date).toISOString().split("T")[0];
+};

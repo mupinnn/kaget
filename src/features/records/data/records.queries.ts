@@ -1,20 +1,23 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { api } from "@/libs/api.lib";
 import {
+  RecordsRequestQuery,
   RecordsResponseSchema,
   ShowRecordItemsResponseSchema,
   ShowRecordResponseSchema,
 } from "./records.schema";
 
-export const recordsQueryOptions = queryOptions({
-  queryKey: ["records"],
-  queryFn: async () => {
-    const response = await api.get("/records");
-    return RecordsResponseSchema.parse(response);
-  },
-});
-
-export const useRecordsQuery = () => useQuery(recordsQueryOptions);
+export const recordsQueryOptions = (req: RecordsRequestQuery = {}) => {
+  return queryOptions({
+    queryKey: ["records", req],
+    queryFn: async () => {
+      const response = await api.query(req).get("/records");
+      return RecordsResponseSchema.parse(response);
+    },
+  });
+};
+export const useRecordsQuery = (req: RecordsRequestQuery = {}) =>
+  useQuery(recordsQueryOptions(req));
 
 export const recordDetailQueryOptions = (recordId?: string) => {
   return queryOptions({

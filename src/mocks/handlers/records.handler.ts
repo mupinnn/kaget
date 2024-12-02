@@ -1,15 +1,17 @@
 import { http } from "msw";
 import { nanoid } from "nanoid";
-import { match } from "ts-pattern";
+import { match, P } from "ts-pattern";
 import { db } from "@/libs/db.lib";
 import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
 import {
   CreateRecordSchema,
   Record,
   RecordItem,
+  RecordsRequestQuerySchema,
   RecordWithRelations,
 } from "@/features/records/data/records.schema";
 import { NotFoundError } from "@/utils/error.util";
+import { isDateBeforeOrEqual, isDateAfterOrEqual } from "@/utils/date.util";
 import { getWalletById } from "./wallets.handler";
 import { getBudgetById, getBudgetItemById } from "./budgets.handler";
 
@@ -38,9 +40,23 @@ export async function getRecordWithRelations(recordId: string): Promise<RecordWi
 }
 
 export const recordsHandler = [
-  http.get("/api/v1/records", async () => {
+  http.get("/api/v1/records", async ({ request }) => {
     try {
-      const storedRecords = await db.record.toArray();
+      const rawFilters = Object.fromEntries(new URL(request.url).searchParams);
+      const parsedFilters = RecordsRequestQuerySchema.parse(rawFilters);
+
+      const storedRecords = await db.record
+        .filter(record => {
+          return match(parsedFilters)
+            .with(
+              { start: P.string, end: P.string },
+              filters =>
+                isDateAfterOrEqual(record.recorded_at, filters.start) &&
+                isDateBeforeOrEqual(record.recorded_at, filters.end)
+            )
+            .otherwise(() => true);
+        })
+        .toArray();
       const storedRecordsWithRelations: RecordWithRelations[] = await Promise.all(
         storedRecords.map(async record => {
           const recordWithRelations = await getRecordWithRelations(record.id);
