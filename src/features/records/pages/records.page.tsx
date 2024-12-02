@@ -14,12 +14,14 @@ export function RecordsIndexPage() {
       title="Records"
       subtitle="Adulting is not about spending, but tracking and controlling what you spend"
     >
-      <Button asChild className="no-underline">
-        <Link to="/records/create">
-          <PlusIcon />
-          New record
-        </Link>
-      </Button>
+      {recordsQuery.data?.data && recordsQuery.data.data.length > 0 ? (
+        <Button asChild className="no-underline">
+          <Link to="/records/create">
+            <PlusIcon />
+            New record
+          </Link>
+        </Button>
+      ) : null}
 
       {match(recordsQuery)
         .with({ isPending: true }, () => <RecordListLoader />)

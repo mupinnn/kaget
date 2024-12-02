@@ -1,15 +1,9 @@
-// TODO: benchmark this against number format util why this approach is slower
-
-export const createDateFormatter = (options?: Intl.DateTimeFormatOptions) => {
+export const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOptions) => {
   return new Intl.DateTimeFormat(window.navigator.languages, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+    dateStyle: "medium",
     ...options,
-  });
+  }).format(new Date(date));
 };
-
-export const dateFormatter = createDateFormatter();
 
 export type DateInput = string | Date;
 

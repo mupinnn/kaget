@@ -9,6 +9,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
+import { SelectSingleEventHandler } from "react-day-picker";
 import { CalendarIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageLayout } from "@/components/page-layout";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import { formatCurrency } from "@/utils/common.util";
-import { dateFormatter } from "@/utils/date.util";
+import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
 import { useCreateRecordMutation } from "../data/records.mutations";
 import { CreateRecord, CreateRecordSchema } from "../data/records.schema";
@@ -82,10 +83,40 @@ export function RecordsFormPage() {
   const createRecordMutation = useCreateRecordMutation();
 
   const hasNoWallets = walletsQuery.data?.data.length === 0;
+  const watchDor = form.watch("dor");
+  const dorTimeValue = `${new Date(watchDor).getHours()}:${new Date(watchDor).getMinutes()}`;
 
   function onSubmit(values: CreateRecord) {
     createRecordMutation.mutate(values);
   }
+
+  const handleDorTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+    const time = event.target.value;
+    const [hours, minutes] = time.split(":").map(Number);
+    const newSelectedDor = new Date(form.getValues("dor"));
+    newSelectedDor.setHours(hours);
+    newSelectedDor.setMinutes(minutes);
+
+    form.setValue("dor", newSelectedDor);
+  };
+
+  const handleDorDateChange: SelectSingleEventHandler = selectedDay => {
+    if (!selectedDay) {
+      form.setValue("dor", new Date());
+      return;
+    }
+
+    const [hours, minutes] = dorTimeValue.split(":").map(Number);
+    const newDorDate = new Date(
+      selectedDay.getFullYear(),
+      selectedDay.getMonth(),
+      selectedDay.getDate(),
+      hours,
+      minutes
+    );
+
+    form.setValue("dor", newDorDate);
+  };
 
   return (
     <PageLayout title="Record cash flow">
@@ -167,7 +198,7 @@ export function RecordsFormPage() {
                         )}
                       >
                         {field.value ? (
-                          dateFormatter.format(new Date(field.value))
+                          formatDate(field.value, { timeStyle: "short" })
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -175,17 +206,21 @@ export function RecordsFormPage() {
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto space-y-3 p-3" align="start">
+                    <Input type="time" defaultValue={dorTimeValue} onChange={handleDorTimeChange} />
                     <Calendar
                       mode="single"
+                      disabled={{ after: new Date() }}
                       selected={field.value as Date}
-                      onSelect={field.onChange}
+                      onSelect={handleDorDateChange}
                       initialFocus
+                      className="p-0"
                     />
                   </PopoverContent>
                 </Popover>
                 <FormDescription>
-                  You can choose the desired date of record. The default is today.
+                  You can choose the desired date of record. The default is today, when you open
+                  this page.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

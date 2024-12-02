@@ -1,24 +1,93 @@
-import { getRouteApi } from "@tanstack/react-router";
+import { match, P } from "ts-pattern";
+import { getRouteApi, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
 import { formatCurrency } from "@/utils/common.util";
-import { useRecordDetailQuery } from "../data/records.queries";
+import { formatDate } from "@/utils/date.util";
+import { cn } from "@/libs/utils.lib";
+
+import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
 
 const route = getRouteApi("/records/$recordId");
 
 export function RecordsDetailPage() {
   const { recordId } = route.useParams();
   const recordDetailQuery = useRecordDetailQuery(recordId);
+  const recordItemsQuery = useRecordItemsQuery(recordId);
 
-  if (recordDetailQuery.isPending) return <p>Loading . . .</p>;
-  if (recordDetailQuery.isError) return <p>An error occured: {recordDetailQuery.error.message}</p>;
+  if (recordDetailQuery.isPending || recordItemsQuery.isPending) return <p>Loading . . .</p>;
+  if (recordDetailQuery.isError || recordItemsQuery.isError)
+    return (
+      <p>
+        An error occurred: {recordDetailQuery.error?.message || recordItemsQuery.error?.message}
+      </p>
+    );
+
+  const recordDetail = recordDetailQuery.data.data;
+  const recordItems = recordItemsQuery.data.data;
+  const isAddition = match(recordDetail.record_type)
+    .with(P.union("INCOME", "LOAN", "DEBT_COLLECTION"), () => true)
+    .with(P.union("EXPENSE", "DEBT", "DEBT_REPAYMENT"), () => false)
+    .exhaustive();
+  const amountClassname = cn(isAddition ? "text-success" : "text-destructive");
+  const amountOperator = isAddition ? "+" : "-";
 
   return (
     <PageLayout
-      title={recordDetailQuery.data.data.note}
-      subtitle={formatCurrency(recordDetailQuery.data.data.amount)}
-      subtitleClassName="text-lg"
+      title={recordDetail.note}
+      subtitle={
+        <>
+          <p className="text-xl">
+            <span className={cn("font-medium", amountClassname)}>
+              {amountOperator}
+              {formatCurrency(recordDetail.amount)}
+            </span>{" "}
+            - {recordDetail.source.name}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {formatDate(recordDetail.recorded_at, { dateStyle: "full", timeStyle: "long" })}
+          </p>
+        </>
+      }
+      badge={recordDetail.record_type}
     >
-      <div className="divide-y"></div>
+      <div className="flex items-center gap-2">
+        <Button asChild className="no-underline" size="sm">
+          <Link to="/records/$recordId/edit" params={{ recordId }}>
+            Edit
+          </Link>
+        </Button>
+        <ConfirmationDialog
+          title="Are you sure?"
+          description="This action cannot be undone. This will permanently delete your record and rollback the amount into the source."
+          trigger={
+            <Button variant="destructive" size="sm">
+              Delete
+            </Button>
+          }
+          actionLabel="Yes, delete"
+        />
+      </div>
+
+      {match(recordItems)
+        .with(
+          P.when(d => d.length > 0),
+          () => (
+            <div className="divide-y divide-dashed rounded-lg border border-dashed p-2">
+              {recordItems.map(recordItem => (
+                <div key={recordItem.id} className="flex items-center justify-between py-2 text-sm">
+                  <p>{recordItem.note}</p>
+                  <p className={cn("text-right", amountClassname)}>
+                    {amountOperator}
+                    {formatCurrency(recordItem.amount)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )
+        )
+        .otherwise(() => null)}
     </PageLayout>
   );
 }

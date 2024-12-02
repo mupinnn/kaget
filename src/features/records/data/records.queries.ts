@@ -34,10 +34,14 @@ export const useRecordDetailQuery = (recordId?: string) => {
 export const recordItemsQueryOptions = (recordId?: string) => {
   return queryOptions({
     enabled: !!recordId,
-    queryKey: ["records", "items", recordId],
+    queryKey: ["records", recordId, "items"],
     queryFn: async () => {
       const response = await api.get(`/records/${recordId}/items`);
       return ShowRecordItemsResponseSchema.parse(response);
     },
   });
+};
+
+export const useRecordItemsQuery = (recordId?: string) => {
+  return useQuery(recordItemsQueryOptions(recordId));
 };

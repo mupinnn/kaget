@@ -70,6 +70,21 @@ export const recordsHandler = [
     }
   }),
 
+  http.get("/api/v1/records/:recordId/items", async ({ params }) => {
+    try {
+      const storedRecordItems = await db.record_item
+        .where({ record_id: params.recordId as string })
+        .toArray();
+
+      return mockSuccessResponse({
+        data: storedRecordItems,
+        message: "Successfully retrieved a record items",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
   http.post("/api/v1/records", async ({ request }) => {
     try {
       const data = CreateRecordSchema.parse(await request.json());
