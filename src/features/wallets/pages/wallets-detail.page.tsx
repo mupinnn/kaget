@@ -1,10 +1,11 @@
+import { match } from "ts-pattern";
 import { Link, getRouteApi } from "@tanstack/react-router";
-import { ReceiptTextIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/common.util";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/empty-state";
 import { PageLayout } from "@/components/page-layout";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { useRecordsQuery } from "@/features/records/data/records.queries";
+import { RecordList, RecordListLoader } from "@/features/records/components/record-list";
 import { useDeleteWalletMutation } from "../data/wallets.mutations";
 import { useWalletDetailQuery } from "../data/wallets.queries";
 
@@ -13,6 +14,7 @@ const route = getRouteApi("/wallets/$walletId");
 export function WalletsDetailPage() {
   const { walletId } = route.useParams();
   const walletDetailQuery = useWalletDetailQuery(walletId);
+  const recordsQuery = useRecordsQuery({ source_id: walletId });
   const deleteWalletMutation = useDeleteWalletMutation();
 
   if (walletDetailQuery.isPending) return <p>Loading . . .</p>;
@@ -45,11 +47,15 @@ export function WalletsDetailPage() {
 
       <section className="flex flex-col gap-2">
         <h3 className="font-semibold">{walletDetailQuery.data.data.name}&apos;s records</h3>
-        <EmptyState
-          title="No records found"
-          description="You have not record any transactions for this wallet"
-          icon={ReceiptTextIcon}
-        />
+        {match(recordsQuery)
+          .with({ isPending: true }, () => <RecordListLoader />)
+          .with({ isError: true }, () => <p>An error occured</p>)
+          .otherwise(recordsQuery => (
+            <RecordList
+              data={recordsQuery.data.data}
+              emptyMessageDescription="You have not record any transactions for this wallet"
+            />
+          ))}
       </section>
     </PageLayout>
   );

@@ -22,6 +22,7 @@ export const WalletsResponseSchema = APIResponseSchema({
 
 export const WalletsRequestQuerySchema = z.object({
   type: WalletSchema.shape.type.optional().catch(undefined),
+  limit: z.coerce.number().positive().optional().catch(undefined),
 });
 
 export type WalletsRequestQuery = z.infer<typeof WalletsRequestQuerySchema>;

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "@/libs/api.lib";
+import { recordsQueryOptions } from "@/features/records/data/records.queries";
 import {
   CreateWallet,
   CreateWalletResponseSchema,
@@ -37,7 +38,11 @@ export const useDeleteWalletMutation = () => {
     },
     async onSuccess() {
       await queryClient.invalidateQueries({
-        queryKey: walletsQueryOptions().queryKey,
+        ...walletsQueryOptions(),
+        refetchType: "none",
+      });
+      await queryClient.invalidateQueries({
+        ...recordsQueryOptions(),
         refetchType: "none",
       });
       await navigate({ to: "/wallets" });

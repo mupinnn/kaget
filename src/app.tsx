@@ -1,6 +1,6 @@
 import { StrictMode, useState } from "react";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { routeTree } from "@/__generated__/routeTree";
@@ -23,9 +23,8 @@ export function App() {
       new QueryClient({
         defaultOptions: {
           queries: {
-            refetchOnWindowFocus: false,
             retry: false,
-            staleTime: 60 * 1000,
+            staleTime: 30 * 1000,
           },
         },
         mutationCache: new MutationCache({
@@ -33,6 +32,11 @@ export function App() {
             const parsedResponse = BaseAPIResponseSchema.parse(response);
             toast({ title: parsedResponse.message });
           },
+          onError: error => {
+            toast({ variant: "destructive", title: error.message });
+          },
+        }),
+        queryCache: new QueryCache({
           onError: error => {
             toast({ variant: "destructive", title: error.message });
           },
