@@ -29,6 +29,8 @@ jobs:
         run: pnpm install
 
       - name: Build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL_STAGING }}
         run: pnpm build
 
       - name: Upload artifacts
@@ -38,6 +40,7 @@ jobs:
           path: ./dist
 
   cloudflare:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
