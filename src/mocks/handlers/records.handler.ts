@@ -149,4 +149,31 @@ export const recordsHandler = [
       return mockErrorResponse(error);
     }
   }),
+
+  http.delete("/api/v1/records/:recordId", async ({ params }) => {
+    try {
+      const recordId = params.recordId as string;
+      const storedRecordById = await getRecordById(recordId);
+
+      await db.transaction("rw", db.record, db.record_item, db.wallet, async () => {
+        await db.wallet
+          .where("id")
+          .equals(storedRecordById.source_id)
+          .modify(wallet => {
+            wallet.balance =
+              storedRecordById.record_type === "INCOME"
+                ? wallet.balance - storedRecordById.amount
+                : wallet.balance + storedRecordById.amount;
+            wallet.updated_at = new Date().toISOString();
+          });
+
+        await db.record.delete(recordId);
+        await db.record_item.where("record_id").equals(recordId).delete();
+      });
+
+      return mockSuccessResponse({ data: storedRecordById, message: "Successfully delete record" });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
 ];

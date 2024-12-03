@@ -6,8 +6,8 @@ import { PageLayout } from "@/components/page-layout";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
-
 import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
+import { useDeleteRecordMutation } from "../data/records.mutations";
 
 const route = getRouteApi("/records/$recordId");
 
@@ -15,6 +15,7 @@ export function RecordsDetailPage() {
   const { recordId } = route.useParams();
   const recordDetailQuery = useRecordDetailQuery(recordId);
   const recordItemsQuery = useRecordItemsQuery(recordId);
+  const deleteRecordMutation = useDeleteRecordMutation();
 
   if (recordDetailQuery.isPending || recordItemsQuery.isPending) return <p>Loading . . .</p>;
   if (recordDetailQuery.isError || recordItemsQuery.isError)
@@ -60,13 +61,14 @@ export function RecordsDetailPage() {
         </Button>
         <ConfirmationDialog
           title="Are you sure?"
-          description="This action cannot be undone. This will permanently delete your record and rollback the amount into the source."
+          description="This action cannot be undone. This will permanently delete your record and rollback the amount into the respective source (wallet, budget, or debt)."
           trigger={
             <Button variant="destructive" size="sm">
               Delete
             </Button>
           }
           actionLabel="Yes, delete"
+          onClickAction={() => deleteRecordMutation.mutate(recordId)}
         />
       </div>
 

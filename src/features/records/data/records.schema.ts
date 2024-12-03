@@ -93,3 +93,7 @@ export const ShowRecordResponseSchema = APIResponseSchema({
 export const ShowRecordItemsResponseSchema = APIResponseSchema({
   schema: RecordItemSchema.array().default([]),
 });
+
+export const DeleteRecordResponseSchema = APIResponseSchema({
+  schema: RecordSchema,
+});
