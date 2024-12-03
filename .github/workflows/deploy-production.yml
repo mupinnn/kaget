@@ -25,3 +25,4 @@ jobs:
           projectName: kaget
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          packageManager: pnpm
