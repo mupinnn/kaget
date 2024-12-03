@@ -15,7 +15,7 @@ class KagetDB extends Dexie {
   constructor() {
     super("KagetDB");
     this.version(1).stores({
-      wallet: "id, balance, type",
+      wallet: "id, balance, type, created_at, updated_at",
       budget: "id, allocated_digital_balance, allocated_cash_balance",
       budget_item: "id, allocated_digital_balance, allocated_cash_balance, budget_id",
       wallet_budget: "id, wallet_id, budget_id",

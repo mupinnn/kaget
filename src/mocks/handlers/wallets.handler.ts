@@ -24,7 +24,10 @@ export const walletsHandler = [
       const rawFilters = Object.fromEntries(new URL(request.url).searchParams);
       const parsedFilters = WalletsRequestQuerySchema.parse(rawFilters);
 
-      const storedWallets = await db.wallet.toArray();
+      const walletsCollection = db.wallet.orderBy("updated_at").reverse();
+      const storedWallets = parsedFilters.limit
+        ? await walletsCollection.limit(parsedFilters.limit).toArray()
+        : await walletsCollection.toArray();
 
       const filteredWallets = storedWallets.filter(wallet => {
         if (parsedFilters.type && wallet.type !== parsedFilters.type) return false;
@@ -79,6 +82,13 @@ export const walletsHandler = [
       const walletToBeDeleted = await getWalletById(walletId);
 
       await db.wallet.delete(walletId);
+
+      const walletRecord = await db.record.where("source_id").equals(walletId).first();
+
+      if (walletRecord) {
+        await db.record.where("source_id").equals(walletId).delete();
+        await db.record_item.where("record_id").equals(walletRecord.id).delete();
+      }
 
       return mockSuccessResponse({
         data: walletToBeDeleted,

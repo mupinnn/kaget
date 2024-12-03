@@ -1,28 +1,25 @@
-import { Link } from "@tanstack/react-router";
-import { WalletIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/empty-state";
+import { match } from "ts-pattern";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
+import { WalletList, WalletListLoader } from "@/features/wallets/components/wallet-list";
 import { HomeSection } from "./home-section";
 
-const data = [];
-
 export const HomeWalletsSection = () => {
+  const walletsQuery = useWalletsQuery({ limit: 5 });
+
   return (
     <HomeSection title="Wallets" to="/wallets" linkText="See all wallets">
-      {data.length === 0 ? (
-        <EmptyState
-          title="No wallet created"
-          description="Create your first wallet to start tracking your cashflow!"
-          icon={WalletIcon}
-          actions={
-            <Button asChild className="no-underline">
-              <Link to="/wallets/create">Create wallet</Link>
-            </Button>
-          }
-        />
-      ) : (
-        <p>Hoop la!</p>
-      )}
+      <ScrollArea className="-mb-0.5 -ml-0.5">
+        <div className="flex w-max space-x-4 pb-0.5 pl-0.5">
+          {match(walletsQuery)
+            .with({ isPending: true }, () => <WalletListLoader />)
+            .with({ isError: true }, () => <p>An error occured</p>)
+            .otherwise(walletsQuery => (
+              <WalletList data={walletsQuery.data.data} />
+            ))}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </HomeSection>
   );
 };
