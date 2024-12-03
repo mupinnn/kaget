@@ -15,8 +15,8 @@ export const HomeRecordsRecapSection = () => {
       {match(recordsQuery)
         .with({ isPending: true }, () => <RecordListLoader />)
         .with({ isError: true }, () => <p>An error occured</p>)
-        .otherwise(() => (
-          <RecordList data={recordsQuery.data?.data} />
+        .otherwise(recordsQuery => (
+          <RecordList data={recordsQuery.data.data} />
         ))}
     </HomeSection>
   );

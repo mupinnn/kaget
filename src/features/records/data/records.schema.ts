@@ -43,6 +43,7 @@ export const RecordsResponseSchema = APIResponseSchema({
 export const RecordsRequestQuerySchema = z.object({
   start: z.string().date().optional().catch(undefined),
   end: z.string().date().optional().catch(undefined),
+  source_id: z.string().nanoid().optional().catch(undefined),
 });
 
 export type RecordsRequestQuery = z.infer<typeof RecordsRequestQuerySchema>;

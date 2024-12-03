@@ -1,6 +1,6 @@
 import { http } from "msw";
 import { nanoid } from "nanoid";
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
 import { db } from "@/libs/db.lib";
 import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
 import {
@@ -11,7 +11,7 @@ import {
   RecordWithRelations,
 } from "@/features/records/data/records.schema";
 import { NotFoundError } from "@/utils/error.util";
-import { isDateBeforeOrEqual, isDateAfterOrEqual } from "@/utils/date.util";
+import { isDateBefore, isDateAfter } from "@/utils/date.util";
 import { getWalletById } from "./wallets.handler";
 import { getBudgetById, getBudgetItemById } from "./budgets.handler";
 
@@ -45,20 +45,25 @@ export const recordsHandler = [
       const rawFilters = Object.fromEntries(new URL(request.url).searchParams);
       const parsedFilters = RecordsRequestQuerySchema.parse(rawFilters);
 
-      const storedRecords = await db.record
-        .filter(record => {
-          return match(parsedFilters)
-            .with(
-              { start: P.string, end: P.string },
-              filters =>
-                isDateAfterOrEqual(record.recorded_at, filters.start) &&
-                isDateBeforeOrEqual(record.recorded_at, filters.end)
-            )
-            .otherwise(() => true);
-        })
-        .toArray();
+      const storedRecords = await db.record.orderBy("recorded_at").reverse().toArray();
+      const filteredStoredRecords = storedRecords.filter(record => {
+        if (parsedFilters.source_id && record.source_id !== parsedFilters.source_id) {
+          return false;
+        }
+
+        if (parsedFilters.start && parsedFilters.end) {
+          if (
+            isDateBefore(record.recorded_at, parsedFilters.start) ||
+            isDateAfter(record.recorded_at, parsedFilters.end)
+          ) {
+            return false;
+          }
+        }
+
+        return true;
+      });
       const storedRecordsWithRelations: RecordWithRelations[] = await Promise.all(
-        storedRecords.map(async record => {
+        filteredStoredRecords.map(async record => {
           const recordWithRelations = await getRecordWithRelations(record.id);
           return recordWithRelations;
         })

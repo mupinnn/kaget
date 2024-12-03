@@ -21,9 +21,14 @@ export const RecordListLoader = () => {
 export interface RecordListProps {
   data: RecordWithRelations[] | undefined;
   emptyMessageTitle?: string;
+  emptyMessageDescription?: string;
 }
 
-export const RecordList = ({ data, emptyMessageTitle = "No records created" }: RecordListProps) => {
+export const RecordList = ({
+  data,
+  emptyMessageTitle = "No records created",
+  emptyMessageDescription = "Don't forget to record every money you spend or get. It's precious.",
+}: RecordListProps) => {
   if (data && data?.length > 0) {
     return (
       <div className="divide-y">
@@ -37,7 +42,7 @@ export const RecordList = ({ data, emptyMessageTitle = "No records created" }: R
   return (
     <EmptyState
       title={emptyMessageTitle}
-      description="Don't forget to record every money you spend or get. It's precious."
+      description={emptyMessageDescription}
       icon={ArrowRightLeftIcon}
       actions={
         <Button asChild className="no-underline">
