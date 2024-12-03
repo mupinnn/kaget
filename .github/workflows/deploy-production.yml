@@ -28,4 +28,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
-          command: pages deploy ./dist --project-name=kaget --branch=production
+          command: pages deploy ./dist --branch=production
