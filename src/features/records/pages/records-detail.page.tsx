@@ -1,5 +1,5 @@
 import { match, P } from "ts-pattern";
-import { getRouteApi, Link } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
@@ -54,11 +54,6 @@ export function RecordsDetailPage() {
       badge={recordDetail.record_type}
     >
       <div className="flex items-center gap-2">
-        <Button asChild className="no-underline" size="sm">
-          <Link to="/records/$recordId/edit" params={{ recordId }}>
-            Edit
-          </Link>
-        </Button>
         <ConfirmationDialog
           title="Are you sure?"
           description="This action cannot be undone. This will permanently delete your record and rollback the amount into the respective source (wallet, budget, or debt)."
