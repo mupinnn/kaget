@@ -5,21 +5,48 @@ on:
     tags:
       - v*
 
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
 jobs:
-  cloudflare:
+  build:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref_name, 'production')
-    permissions:
-      contents: read
-      deployments: write
-      pull-requests: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
           version: 8
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: ./dist
+
+  cloudflare:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref_name, 'production')
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: ./dist
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -28,4 +55,3 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
-          command: pages deploy ./dist
