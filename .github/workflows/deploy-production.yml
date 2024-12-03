@@ -1,0 +1,27 @@
+name: Deploy production
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  cloudflare:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref_name, 'production')
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: kaget
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
