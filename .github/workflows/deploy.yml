@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Choose an environment to deploy to: <staging|prod>"
+        description: "Choose an environment to deploy to:"
         required: true
         default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
   push:
     branches:
       - main
@@ -81,4 +85,4 @@ jobs:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
           command: |
-            pages deploy dist --project-name=kaget --branch=${{ env.IS_PRODUCTION == 'true' && 'production' || 'main' }} --env=${{ github.event.inputs.environment }}
+            pages deploy dist --project-name=kaget --branch=${{ env.IS_PRODUCTION == 'true' && 'production' || 'main' }} --env=${{ github.event.inputs.environment || 'staging' }}
