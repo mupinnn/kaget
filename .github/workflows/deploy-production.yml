@@ -2,8 +2,8 @@ name: Deploy production
 
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - production
 
 permissions:
   contents: read
@@ -11,55 +11,10 @@ permissions:
   pull-requests: write
 
 jobs:
-  build:
+  dump:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 8
-          run_install: false
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build
+      - name: Dump GitHub Context
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL_PRODUCTION }}
-        run: pnpm build
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-files
-          path: ./dist
-
-  cloudflare:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref_name, 'production')
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-files
-          path: ./dist
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 8
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          packageManager: pnpm
-          command: pages deploy dist --project-name=kaget --branch=production
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
