@@ -27,7 +27,7 @@ export const WalletList = ({
 
   return (
     <EmptyState
-      className="sm:col-span-2 xl:col-span-4"
+      className="w-full sm:col-span-2 xl:col-span-4"
       title={emptyMessageTitle}
       description={emptyMessageDescription}
       icon={WalletIcon}

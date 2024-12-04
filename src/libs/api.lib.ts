@@ -10,10 +10,9 @@ import {
   HttpResponseError,
   SomethingWentWrongError,
 } from "@/utils/error.util";
-import { env } from "@env";
 import { BaseAPIResponseSchema } from "@/schemas/api.schema";
 
-export const api = wretch(`${env.VITE_API_URL}`)
+export const api = wretch("/api/v1")
   .addon(wretchQueryStringAddon)
   .errorType("json")
   .resolve(async r => {

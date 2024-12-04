@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
-    "build": "vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier -w -c \"**/*.{ts,tsx,md,mdx,js,jsx,json,yaml,yml,html,css}\"",
@@ -46,7 +46,6 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "ts-pattern": "^5.5.0",
-    "unplugin-environment": "^1.1.1",
     "wretch": "^2.10.0",
     "zod": "^3.23.8"
   },
