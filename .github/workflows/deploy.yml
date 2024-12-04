@@ -85,4 +85,4 @@ jobs:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
           command: |
-            pages deploy dist --project-name=kaget --branch=${{ env.IS_PRODUCTION == 'true' && 'production' || 'main' }} --env=${{ github.event.inputs.environment || 'staging' }}
+            pages deploy dist --project-name=kaget --branch=${{ env.IS_PRODUCTION == 'true' && 'production' || 'main' }}
