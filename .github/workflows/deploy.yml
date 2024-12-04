@@ -26,14 +26,6 @@ env:
   IS_PRODUCTION: ${{ github.event.inputs.environment == 'production' || github.event_name == 'release' }}
 
 jobs:
-  dump:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump GitHub Context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -53,8 +45,6 @@ jobs:
         run: pnpm install
 
       - name: Build
-        env:
-          VITE_API_URL: ${{ env.IS_PRODUCTION == 'true' && vars.VITE_API_URL_PRODUCTION || vars.VITE_API_URL_STAGING }}
         run: pnpm build
 
       - name: Upload artifacts
