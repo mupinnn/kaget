@@ -10,7 +10,7 @@ export const HomeWalletsSection = () => {
   return (
     <HomeSection title="Wallets" to="/wallets" linkText="See all wallets">
       <ScrollArea className="-mb-0.5 -ml-0.5">
-        <div className="flex w-max space-x-4 pb-0.5 pl-0.5">
+        <div className="flex w-full space-x-4 pb-0.5 pl-0.5">
           {match(walletsQuery)
             .with({ isPending: true }, () => <WalletListLoader />)
             .with({ isError: true }, () => <p>An error occured</p>)

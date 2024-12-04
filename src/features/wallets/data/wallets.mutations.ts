@@ -61,6 +61,7 @@ export const useUpdateWalletMutation = () => {
     },
     async onSuccess(data) {
       await queryClient.invalidateQueries(walletDetailQueryOptions(data.data.id));
+      await queryClient.invalidateQueries(walletsQueryOptions());
       await navigate({ to: "/wallets/$walletId", params: { walletId: data.data.id } });
     },
   });
