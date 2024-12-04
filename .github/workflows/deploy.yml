@@ -14,8 +14,8 @@ on:
   push:
     branches:
       - main
-    release:
-      types: [released]
+  release:
+    types: [released]
 
 permissions:
   contents: read
