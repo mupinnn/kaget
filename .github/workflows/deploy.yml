@@ -1,17 +1,35 @@
-name: Deploy staging
+name: Deploy to Cloudflare Pages
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose an environment to deploy to: <staging|prod>"
+        required: true
+        default: "staging"
   push:
     branches:
       - main
+    release:
+      types: [released]
 
 permissions:
   contents: read
   deployments: write
   pull-requests: write
 
+env:
+  IS_PRODUCTION: ${{ github.event.inputs.environment == 'production' || github.event_name == 'release' }}
+
 jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub Context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +50,7 @@ jobs:
 
       - name: Build
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL_STAGING }}
+          VITE_API_URL: ${{ env.IS_PRODUCTION == 'true' && vars.VITE_API_URL_PRODUCTION || vars.VITE_API_URL_STAGING }}
         run: pnpm build
 
       - name: Upload artifacts
@@ -41,7 +59,7 @@ jobs:
           name: build-files
           path: ./dist
 
-  cloudflare:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -62,4 +80,5 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
-          command: pages deploy dist --project-name=kaget --branch=main
+          command: |
+            pages deploy dist --project-name=kaget --branch=${{ env.IS_PRODUCTION == 'true' && 'production' || 'main' }} --env=${{ github.event.inputs.environment }}
