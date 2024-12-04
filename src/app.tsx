@@ -1,8 +1,7 @@
-import { StrictMode, useState } from "react";
+import { StrictMode, useState, lazy, Suspense } from "react";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { routeTree } from "@/__generated__/routeTree";
 import { Toaster } from "./components/ui/toaster";
 import { useToast } from "./hooks/use-toast";
@@ -15,6 +14,13 @@ declare module "@tanstack/react-router" {
     router: typeof router;
   }
 }
+
+const TanStackRouterDevtools =
+  process.env.NODE_ENV === "production"
+    ? () => null
+    : lazy(() =>
+        import("@tanstack/router-devtools").then(res => ({ default: res.TanStackRouterDevtools }))
+      );
 
 export function App() {
   const { toast } = useToast();
@@ -48,7 +54,9 @@ export function App() {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
-        <TanStackRouterDevtools router={router} />
+        <Suspense>
+          <TanStackRouterDevtools router={router} />
+        </Suspense>
         <ReactQueryDevtools buttonPosition="bottom-right" />
         <Toaster />
       </QueryClientProvider>
