@@ -1,7 +1,5 @@
 import { ArrowDownIcon } from "lucide-react";
 import { getRouteApi } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
@@ -42,19 +40,6 @@ export function TransfersDetailPage() {
           </p>
         </>
       }
-    >
-      <div className="flex items-center gap-2">
-        <ConfirmationDialog
-          title="Are you sure?"
-          description="This action cannot be undone. This will permanently delete your transfer and rollback the amount into the respective source (wallet or budget)."
-          trigger={
-            <Button variant="destructive" size="sm">
-              Delete
-            </Button>
-          }
-          actionLabel="Yes, delete"
-        />
-      </div>
-    </PageLayout>
+    />
   );
 }
