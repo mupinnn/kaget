@@ -19,8 +19,8 @@ export const TransferSchema = z.object({
   source_type: TransferSourceDestinationTypeSchema.refine(val => val, {
     message: "Source is required",
   }),
-  created_at: z.string().datetime().nullable(),
-  updated_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
 });
 
 export type Transfer = z.infer<typeof TransferSchema>;

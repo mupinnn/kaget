@@ -15,6 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "./ui/sidebar";
 
 type MenuItem = {
@@ -52,6 +53,8 @@ const menuItems: MenuItem[] = [
 ];
 
 export function AppSidebar() {
+  const { setOpenMobile } = useSidebar();
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -63,7 +66,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map(menuItem => (
                 <SidebarMenuItem key={menuItem.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild onClick={() => setOpenMobile(false)}>
                     <Link to={menuItem.url} className="no-underline">
                       <menuItem.icon />
                       <span>{menuItem.title}</span>
