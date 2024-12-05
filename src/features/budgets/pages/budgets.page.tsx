@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { PlusIcon, WalletIcon } from "lucide-react";
+import { PlusIcon, BanknoteIcon } from "lucide-react";
 import { P, match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +31,7 @@ export function BudgetsIndexPage() {
             <EmptyState
               title="No budget created"
               description="You have not added any budgets. Allocate one above."
-              icon={WalletIcon}
+              icon={BanknoteIcon}
             />
           ))
           .otherwise(() =>

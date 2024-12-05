@@ -19,7 +19,7 @@ export const TransferListLoader = () => {
 };
 
 export interface TransferListProps {
-  data: TransferWithRelations[] | undefined;
+  data: TransferWithRelations[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
 }
@@ -29,7 +29,7 @@ export const TransferList = ({
   emptyMessageTitle = "No transfer yet",
   emptyMessageDescription = "You have not transferring anything. Transfer one above.",
 }: TransferListProps) => {
-  if (data && data?.length > 0) {
+  if (data.length > 0) {
     return (
       <div className="divide-y">
         {data.map(transfer => (

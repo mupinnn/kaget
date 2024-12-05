@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeftIcon } from "lucide-react";
+import { ReceiptTextIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecordWithRelations } from "../data/records.schema";
@@ -19,7 +19,7 @@ export const RecordListLoader = () => {
 };
 
 export interface RecordListProps {
-  data: RecordWithRelations[] | undefined;
+  data: RecordWithRelations[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
 }
@@ -29,7 +29,7 @@ export const RecordList = ({
   emptyMessageTitle = "No records created",
   emptyMessageDescription = "Don't forget to record every money you spend or get. It's precious.",
 }: RecordListProps) => {
-  if (data && data?.length > 0) {
+  if (data?.length > 0) {
     return (
       <div className="divide-y">
         {data.map(record => (
@@ -43,7 +43,7 @@ export const RecordList = ({
     <EmptyState
       title={emptyMessageTitle}
       description={emptyMessageDescription}
-      icon={ArrowRightLeftIcon}
+      icon={ReceiptTextIcon}
       actions={
         <Button asChild className="no-underline">
           <Link to="/records/create">Record cashflow</Link>

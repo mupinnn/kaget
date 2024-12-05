@@ -11,18 +11,22 @@ export function TransfersIndexPage() {
 
   return (
     <PageLayout title="Transfers" subtitle="Move fund between your wallet.">
-      <Button asChild className="no-underline">
-        <Link to="/transfers/create">
-          <PlusIcon />
-          Transfer balance
-        </Link>
-      </Button>
-
       {match(transfersQuery)
         .with({ isPending: true }, () => <TransferListLoader />)
         .with({ isError: true }, () => <p>An error occured</p>)
         .otherwise(transfersQuery => (
-          <TransferList data={transfersQuery.data.data} />
+          <>
+            {transfersQuery.data.data.length > 0 ? (
+              <Button asChild className="no-underline">
+                <Link to="/transfers/create">
+                  <PlusIcon />
+                  Transfer balance
+                </Link>
+              </Button>
+            ) : null}
+
+            <TransferList data={transfersQuery.data.data} />
+          </>
         ))}
     </PageLayout>
   );
