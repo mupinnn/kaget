@@ -21,7 +21,7 @@ export const useCreateWalletMutation = () => {
       return CreateWalletResponseSchema.parse(res);
     },
     async onSuccess() {
-      await queryClient.invalidateQueries(walletsQueryOptions());
+      await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
       await navigate({ to: "/wallets" });
     },
   });
@@ -39,10 +39,12 @@ export const useDeleteWalletMutation = () => {
     async onSuccess() {
       await queryClient.invalidateQueries({
         ...walletsQueryOptions(),
+        exact: false,
         refetchType: "none",
       });
       await queryClient.invalidateQueries({
         ...recordsQueryOptions(),
+        exact: false,
         refetchType: "none",
       });
       await navigate({ to: "/wallets" });
@@ -61,7 +63,7 @@ export const useUpdateWalletMutation = () => {
     },
     async onSuccess(data) {
       await queryClient.invalidateQueries(walletDetailQueryOptions(data.data.id));
-      await queryClient.invalidateQueries(walletsQueryOptions());
+      await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
       await navigate({ to: "/wallets/$walletId", params: { walletId: data.data.id } });
     },
   });

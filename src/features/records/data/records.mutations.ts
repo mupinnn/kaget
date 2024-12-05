@@ -20,8 +20,8 @@ export const useCreateRecordMutation = () => {
       return CreateRecordResponseSchema.parse(res);
     },
     async onSuccess() {
-      await queryClient.invalidateQueries(recordsQueryOptions());
-      await queryClient.invalidateQueries(walletsQueryOptions());
+      await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
       await queryClient.invalidateQueries(budgetsQueryOptions);
       await navigate({ to: "/records" });
     },
@@ -38,8 +38,8 @@ export const useDeleteRecordMutation = () => {
       return DeleteRecordResponseSchema.parse(res);
     },
     async onSuccess() {
-      await queryClient.invalidateQueries(recordsQueryOptions());
-      await queryClient.invalidateQueries(walletsQueryOptions());
+      await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
       await queryClient.invalidateQueries(budgetsQueryOptions);
       await navigate({ to: "/records" });
     },

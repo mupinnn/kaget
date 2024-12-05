@@ -9,7 +9,7 @@ export type TransferSourceDestinationType = z.infer<typeof TransferSourceDestina
 
 export const TransferSchema = z.object({
   id: z.string().nanoid(),
-  note: z.string().trim(),
+  note: z.string().optional(),
   amount: z.coerce.number({ invalid_type_error: "Amount is required" }).positive(),
   source_id: z.string().nanoid(),
   destination_id: z.string().nanoid(),
