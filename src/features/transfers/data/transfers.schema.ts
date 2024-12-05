@@ -66,3 +66,7 @@ export type CreateTransfer = z.infer<typeof CreateTransferSchema>;
 export const CreateTransferResponseSchema = APIResponseSchema({
   schema: TransferSchema,
 });
+
+export const ShowTransferResponseSchema = APIResponseSchema({
+  schema: TransferWithRelationsSchema,
+});

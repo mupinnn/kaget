@@ -66,6 +66,21 @@ export const transfersHandler = [
     }
   }),
 
+  http.get("/api/v1/transfers/:transferId", async ({ params }) => {
+    try {
+      const storedTransferWithRelations = await getTransferWithRelations(
+        params.transferId as string
+      );
+
+      return mockSuccessResponse({
+        data: storedTransferWithRelations,
+        message: "Successfully retrieved a transfer",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
   http.post("/api/v1/transfers", async ({ request }) => {
     try {
       const data = CreateTransferSchema.parse(await request.json());
