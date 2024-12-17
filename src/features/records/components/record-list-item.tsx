@@ -1,17 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { P, match } from "ts-pattern";
-import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
 import { RecordWithRelations } from "../data/records.schema";
+import { getRecordAmountValueAndClasses } from "@/utils/records.util";
 
 export type RecordListItemProps = RecordWithRelations;
 
 export const RecordListItem = (props: RecordListItemProps) => {
-  const isAddition = match(props.record_type)
-    .with(P.union("INCOME", "LOAN", "DEBT_COLLECTION"), () => true)
-    .with(P.union("EXPENSE", "DEBT", "DEBT_REPAYMENT"), () => false)
-    .exhaustive();
+  const { className, value } = getRecordAmountValueAndClasses(props);
 
   return (
     <Link
@@ -26,10 +22,7 @@ export const RecordListItem = (props: RecordListItemProps) => {
         </p>
       </div>
       <div className="space-y-1 text-right">
-        <p className={cn(isAddition ? "text-success" : "text-destructive")}>
-          {isAddition ? "+" : "-"}
-          {formatCurrency(props.amount)}
-        </p>
+        <p className={cn(className)}>{value}</p>
         <p className="text-xs">{formatDate(props.recorded_at, { timeStyle: "short" })}</p>
       </div>
     </Link>

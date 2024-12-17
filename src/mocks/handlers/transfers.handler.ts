@@ -1,16 +1,11 @@
 import { http } from "msw";
 import { nanoid } from "nanoid";
-import { match } from "ts-pattern";
 import { db } from "@/libs/db.lib";
 import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
-import {
-  CreateTransferSchema,
-  Transfer,
-  TransferWithRelations,
-} from "@/features/transfers/data/transfers.schema";
+import { CreateTransferSchema, Transfer } from "@/features/transfers/data/transfers.schema";
 import { NotFoundError } from "@/utils/error.util";
-import { getWalletById } from "./wallets.handler";
-import { getBudgetById, getBudgetItemById } from "./budgets.handler";
+import { getSourceOrDestinationType } from "./records.handler";
+import { updateWalletById } from "./wallets.handler";
 
 export async function getTransferById(transferId: string) {
   const storedTransferById = await db.transfer.get(transferId);
@@ -20,45 +15,13 @@ export async function getTransferById(transferId: string) {
   return storedTransferById;
 }
 
-export async function getTransferWithRelations(transferId: string) {
-  const storedTransferById = await getTransferById(transferId);
-
-  async function getSourceOrDestinationById(id: string, type: Transfer["source_type"]) {
-    return match(type)
-      .with("WALLET", async () => await getWalletById(id))
-      .with("BUDGET", async () => await getBudgetById(id))
-      .with("BUDGET_DETAIL", async () => await getBudgetItemById(id))
-      .exhaustive();
-  }
-
-  const matchedSource = await getSourceOrDestinationById(storedTransferById.source_id, "WALLET");
-  const matchedDestination = await getSourceOrDestinationById(
-    storedTransferById.destination_id,
-    "WALLET"
-  );
-
-  const storedTransferWithRelations: TransferWithRelations = {
-    ...storedTransferById,
-    source: matchedSource,
-    destination: matchedDestination,
-  };
-
-  return storedTransferWithRelations;
-}
-
 export const transfersHandler = [
   http.get("/api/v1/transfers", async () => {
     try {
       const storedTransfers = await db.transfer.orderBy("created_at").reverse().toArray();
-      const storedTransfersWithRelations: TransferWithRelations[] = await Promise.all(
-        storedTransfers.map(async transfer => {
-          const transferWithRelations = await getTransferWithRelations(transfer.id);
-          return transferWithRelations;
-        })
-      );
 
       return mockSuccessResponse({
-        data: storedTransfersWithRelations,
+        data: storedTransfers,
         message: "Successfully retrieved transfers",
       });
     } catch (error) {
@@ -68,12 +31,10 @@ export const transfersHandler = [
 
   http.get("/api/v1/transfers/:transferId", async ({ params }) => {
     try {
-      const storedTransferWithRelations = await getTransferWithRelations(
-        params.transferId as string
-      );
+      const storedTransferById = await getTransferById(params.transferId as string);
 
       return mockSuccessResponse({
-        data: storedTransferWithRelations,
+        data: storedTransferById,
         message: "Successfully retrieved a transfer",
       });
     } catch (error) {
@@ -84,37 +45,59 @@ export const transfersHandler = [
   http.post("/api/v1/transfers", async ({ request }) => {
     try {
       const data = CreateTransferSchema.parse(await request.json());
-      const newTransfer: Transfer = {
-        id: nanoid(),
+      const sourceType = getSourceOrDestinationType(data.source);
+      const destinationType = getSourceOrDestinationType(data.destination);
+      const generalTransferData: Pick<Transfer, "note" | "amount" | "created_at" | "updated_at"> = {
         note: data.note,
         amount: data.amount,
-        source_id: data.source.id,
-        source_type: "WALLET",
-        destination_id: data.destination.id,
-        destination_type: "WALLET",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
+      const outgoingTransfer: Transfer = {
+        ...generalTransferData,
+        id: nanoid(),
+        fee: data.fee,
+        source_id: data.source.id,
+        source_type: sourceType,
+        source: data.source,
+        destination_id: data.destination.id,
+        destination: data.destination,
+        destination_type: destinationType,
+        type: "OUTGOING",
+      };
+      const incomingTransfer: Transfer = {
+        ...generalTransferData,
+        id: nanoid(),
+        fee: 0,
+        type: "INCOMING",
+        source_id: data.destination.id,
+        source_type: destinationType,
+        source: data.destination,
+        destination_id: data.source.id,
+        destination_type: sourceType,
+        destination: data.source,
+      };
 
       await db.transaction("rw", db.transfer, db.wallet, async () => {
-        await db.transfer.add(newTransfer);
-        await db.wallet
-          .where("id")
-          .equals(newTransfer.source_id)
-          .modify(sourceWallet => {
-            sourceWallet.balance -= newTransfer.amount;
-            sourceWallet.updated_at = new Date().toISOString();
+        await db.transfer.bulkAdd([outgoingTransfer, incomingTransfer]);
+
+        if (outgoingTransfer.source_type === "WALLET") {
+          await updateWalletById(outgoingTransfer.source_id, wallet => {
+            wallet.balance -= outgoingTransfer.amount + outgoingTransfer.fee;
           });
-        await db.wallet
-          .where("id")
-          .equals(newTransfer.destination_id)
-          .modify(destinationWallet => {
-            destinationWallet.balance += newTransfer.amount;
-            destinationWallet.updated_at = new Date().toISOString();
+        }
+
+        if (incomingTransfer.source_type === "WALLET") {
+          await updateWalletById(incomingTransfer.source_id, wallet => {
+            wallet.balance += incomingTransfer.amount;
           });
+        }
       });
 
-      return mockSuccessResponse({ data: newTransfer, message: "Success transferring a fund" });
+      return mockSuccessResponse({
+        data: outgoingTransfer,
+        message: "Success transferring a fund",
+      });
     } catch (error) {
       return mockErrorResponse(error);
     }

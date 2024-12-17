@@ -9,11 +9,34 @@ import {
   RecordItem,
   RecordsRequestQuerySchema,
   RecordWithRelations,
+  SourceType,
 } from "@/features/records/data/records.schema";
 import { NotFoundError } from "@/utils/error.util";
 import { isDateBefore, isDateAfter } from "@/utils/date.util";
-import { getWalletById } from "./wallets.handler";
+import { matchZodSchema } from "@/libs/utils.lib";
+import { WalletSchema } from "@/features/wallets/data/wallets.schema";
+import { BudgetSchema, BudgetItemSchema } from "@/features/budgets/data/budgets.schema";
+import { getWalletById, updateWalletById } from "./wallets.handler";
 import { getBudgetById, getBudgetItemById } from "./budgets.handler";
+
+export function getSourceOrDestinationType(maybeSourceOrDestination: unknown) {
+  return match(maybeSourceOrDestination)
+    .returnType<SourceType>()
+    .with(matchZodSchema(WalletSchema), () => "WALLET")
+    .with(matchZodSchema(BudgetSchema), () => "BUDGET")
+    .with(matchZodSchema(BudgetItemSchema), () => "BUDGET_ITEM")
+    .otherwise(() => {
+      throw new Error("Unable to parse source or destination data");
+    });
+}
+
+export async function getSourceOrDestinationById(id: string, type: SourceType) {
+  return match(type)
+    .with("WALLET", async () => await getWalletById(id))
+    .with("BUDGET", async () => await getBudgetById(id))
+    .with("BUDGET_ITEM", async () => await getBudgetItemById(id))
+    .exhaustive();
+}
 
 export async function getRecordById(recordId: string): Promise<Record> {
   const storedRecordById = await db.record.get(recordId);
@@ -23,14 +46,31 @@ export async function getRecordById(recordId: string): Promise<Record> {
   return storedRecordById;
 }
 
+export async function createRecord(record: Omit<Record, "id" | "created_at" | "updated_at">) {
+  const newRecord: Record = {
+    id: nanoid(),
+    ...record,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  await db.transaction("rw", db.record, db.wallet, async () => {
+    await db.record.add(newRecord);
+
+    if (newRecord.source_type === "WALLET") {
+      await updateWalletById(newRecord.source_id, wallet => {
+        wallet.balance = 0;
+      });
+    }
+  });
+}
+
 export async function getRecordWithRelations(recordId: string): Promise<RecordWithRelations> {
   const storedRecordById = await getRecordById(recordId);
-  const matchedSourceType = await match(storedRecordById.source_type)
-    .with("WALLET", async () => await getWalletById(storedRecordById.source_id))
-    .with("BUDGET", async () => await getBudgetById(storedRecordById.source_id))
-    .with("BUDGET_DETAIL", async () => await getBudgetItemById(storedRecordById.source_id))
-    .exhaustive();
-
+  const matchedSourceType = await getSourceOrDestinationById(
+    storedRecordById.source_id,
+    storedRecordById.source_type
+  );
   const storedRecordWithRelations: RecordWithRelations = {
     ...storedRecordById,
     source: matchedSourceType,

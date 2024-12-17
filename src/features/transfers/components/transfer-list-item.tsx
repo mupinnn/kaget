@@ -1,24 +1,22 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, ArrowLeftIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
-import { TransferWithRelations } from "../data/transfers.schema";
+import { cn } from "@/libs/utils.lib";
+import { Transfer } from "../data/transfers.schema";
 
-export type TransferListItemProps = TransferWithRelations;
+export type TransferListItemProps = Transfer;
 
 export const TransferListItem = (props: TransferListItemProps) => {
+  const transferTypeClassname = cn(props.type === "INCOMING" ? "text-success" : "text-destructive");
+
   return (
-    <Link
-      to="/transfers/$transferId"
-      params={{ transferId: props.id }}
-      className="flex flex-col gap-1 py-2 text-sm no-underline"
-    >
+    <div className="flex flex-col gap-1 py-2 text-sm no-underline">
       <p className="inline-flex items-center gap-2 font-medium">
         <span>
           {props.source.name} ({props.source_type})
         </span>
-        <ArrowRightIcon size={16} />
-        <span className="text-success">
+        {props.type === "INCOMING" ? <ArrowLeftIcon size={16} /> : <ArrowRightIcon size={16} />}
+        <span className={transferTypeClassname}>
           {props.destination.name} ({props.destination_type})
         </span>
       </p>
@@ -27,8 +25,10 @@ export const TransferListItem = (props: TransferListItemProps) => {
           {props.note ? <p>{props.note}</p> : null}
           <p className="text-xs">{formatDate(props.created_at, { timeStyle: "short" })}</p>
         </div>
-        <p className="break-all text-right font-bold">{formatCurrency(props.amount)}</p>
+        <p className={cn("break-all text-right font-bold", transferTypeClassname)}>
+          {formatCurrency(props.amount)}
+        </p>
       </div>
-    </Link>
+    </div>
   );
 };

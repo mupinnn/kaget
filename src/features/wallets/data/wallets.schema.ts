@@ -7,11 +7,11 @@ export type WalletType = z.infer<typeof WalletTypeSchema>;
 
 export const WalletSchema = z.object({
   id: z.string().nanoid(),
-  name: z.string().min(1, "Wallet name must contain at least 1 character(s)").trim(),
-  balance: z.number(),
+  name: z.string().min(1, "Wallet name is required").trim(),
+  balance: z.coerce.number().nonnegative(),
   type: WalletTypeSchema,
-  created_at: z.string().datetime().nullable(),
-  updated_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
 });
 
 export type Wallet = z.infer<typeof WalletSchema>;

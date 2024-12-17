@@ -42,7 +42,7 @@ const menuItems: MenuItem[] = [
   },
   {
     title: "Budgets",
-    url: "/budgets",
+    url: "/",
     icon: BanknoteIcon,
   },
   {

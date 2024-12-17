@@ -150,6 +150,32 @@ export function TransfersFormPage() {
 
           <FormField
             control={form.control}
+            name="fee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fee</FormLabel>
+                <FormControl>
+                  <CurrencyInput
+                    autoComplete="off"
+                    placeholder="e.g, 2.500"
+                    allowNegativeValue={false}
+                    inputMode="numeric"
+                    customInput={Input}
+                    value={field.value}
+                    ref={field.ref}
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    disabled={field.disabled}
+                    onValueChange={value => field.onChange(value)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="note"
             render={({ field }) => (
               <FormItem>

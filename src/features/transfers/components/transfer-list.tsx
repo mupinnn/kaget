@@ -4,7 +4,7 @@ import { ArrowRightLeftIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransferListItem } from "./transfer-list-item";
-import { TransferWithRelations } from "../data/transfers.schema";
+import { Transfer } from "../data/transfers.schema";
 
 export const TransferListLoader = () => {
   return (
@@ -19,7 +19,7 @@ export const TransferListLoader = () => {
 };
 
 export interface TransferListProps {
-  data: TransferWithRelations[];
+  data: Transfer[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
 }

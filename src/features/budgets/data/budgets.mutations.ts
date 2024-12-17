@@ -15,7 +15,7 @@ export const useCreateBudgetMutation = () => {
     },
     async onSuccess() {
       await queryClient.invalidateQueries(budgetsQueryOptions);
-      await navigate({ to: "/budgets" });
+      await navigate({ to: "/" });
     },
   });
 };
