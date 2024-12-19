@@ -50,7 +50,7 @@ export function WalletsDetailPage() {
       </div>
 
       <Tabs defaultValue="records">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 sm:w-96">
           <TabsTrigger value="records">Records</TabsTrigger>
           <TabsTrigger value="transfers">Transfers</TabsTrigger>
         </TabsList>
