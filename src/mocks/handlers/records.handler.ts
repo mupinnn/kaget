@@ -9,11 +9,40 @@ import {
   RecordItem,
   RecordsRequestQuerySchema,
   RecordWithRelations,
+  SourceType,
 } from "@/features/records/data/records.schema";
 import { NotFoundError } from "@/utils/error.util";
 import { isDateBefore, isDateAfter } from "@/utils/date.util";
-import { getWalletById } from "./wallets.handler";
+import { matchZodSchema } from "@/libs/utils.lib";
+import { WalletSchema } from "@/features/wallets/data/wallets.schema";
+import { BudgetSchema, BudgetItemSchema } from "@/features/budgets/data/budgets.schema";
+import { getRecordAmountValueAndClasses } from "@/utils/records.util";
+import {
+  addWalletBalance,
+  deductWalletBalance,
+  getWalletById,
+  updateWalletById,
+} from "./wallets.handler";
 import { getBudgetById, getBudgetItemById } from "./budgets.handler";
+
+export function getSourceOrDestinationType(maybeSourceOrDestination: unknown) {
+  return match(maybeSourceOrDestination)
+    .returnType<SourceType>()
+    .with(matchZodSchema(WalletSchema), () => "WALLET")
+    .with(matchZodSchema(BudgetSchema), () => "BUDGET")
+    .with(matchZodSchema(BudgetItemSchema), () => "BUDGET_ITEM")
+    .otherwise(() => {
+      throw new Error("Unable to parse source or destination data");
+    });
+}
+
+export async function getSourceOrDestinationById(id: string, type: SourceType) {
+  return match(type)
+    .with("WALLET", async () => await getWalletById(id))
+    .with("BUDGET", async () => await getBudgetById(id))
+    .with("BUDGET_ITEM", async () => await getBudgetItemById(id))
+    .exhaustive();
+}
 
 export async function getRecordById(recordId: string): Promise<Record> {
   const storedRecordById = await db.record.get(recordId);
@@ -23,14 +52,33 @@ export async function getRecordById(recordId: string): Promise<Record> {
   return storedRecordById;
 }
 
+export async function createRecord(record: Omit<Record, "id" | "created_at" | "updated_at">) {
+  const newRecord: Record = {
+    id: nanoid(),
+    ...record,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { isAddition } = getRecordAmountValueAndClasses(newRecord);
+
+  await db.record.add(newRecord);
+
+  if (newRecord.source_type === "WALLET") {
+    await updateWalletById(newRecord.source_id, wallet => {
+      wallet.balance = isAddition
+        ? wallet.balance + newRecord.amount
+        : wallet.balance - newRecord.amount;
+    });
+  }
+}
+
 export async function getRecordWithRelations(recordId: string): Promise<RecordWithRelations> {
   const storedRecordById = await getRecordById(recordId);
-  const matchedSourceType = await match(storedRecordById.source_type)
-    .with("WALLET", async () => await getWalletById(storedRecordById.source_id))
-    .with("BUDGET", async () => await getBudgetById(storedRecordById.source_id))
-    .with("BUDGET_DETAIL", async () => await getBudgetItemById(storedRecordById.source_id))
-    .exhaustive();
-
+  const matchedSourceType = await getSourceOrDestinationById(
+    storedRecordById.source_id,
+    storedRecordById.source_type
+  );
   const storedRecordWithRelations: RecordWithRelations = {
     ...storedRecordById,
     source: matchedSourceType,
@@ -130,14 +178,7 @@ export const recordsHandler = [
       }));
 
       await db.transaction("rw", db.record, db.record_item, db.wallet, async () => {
-        await db.wallet.update(newRecord.source_id, {
-          balance:
-            newRecord.record_type === "INCOME"
-              ? data.wallet.balance + newRecord.amount
-              : data.wallet.balance - newRecord.amount,
-          updated_at: new Date().toISOString(),
-        });
-        await db.record.add(newRecord);
+        await createRecord(newRecord);
 
         if (newRecordDetail.length > 0) {
           await db.record_item.bulkAdd(newRecordDetail);
@@ -154,18 +195,14 @@ export const recordsHandler = [
     try {
       const recordId = params.recordId as string;
       const storedRecordById = await getRecordById(recordId);
+      const { isAddition } = getRecordAmountValueAndClasses(storedRecordById);
 
       await db.transaction("rw", db.record, db.record_item, db.wallet, async () => {
-        await db.wallet
-          .where("id")
-          .equals(storedRecordById.source_id)
-          .modify(wallet => {
-            wallet.balance =
-              storedRecordById.record_type === "INCOME"
-                ? wallet.balance - storedRecordById.amount
-                : wallet.balance + storedRecordById.amount;
-            wallet.updated_at = new Date().toISOString();
-          });
+        if (isAddition) {
+          await deductWalletBalance(storedRecordById.source_id, storedRecordById.amount);
+        } else {
+          await addWalletBalance(storedRecordById.source_id, storedRecordById.amount);
+        }
 
         await db.record.delete(recordId);
         await db.record_item.where("record_id").equals(recordId).delete();

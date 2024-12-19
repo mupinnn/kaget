@@ -1,6 +1,6 @@
-export function Footer() {
+export function AppFooter() {
   return (
-    <footer className="container border-t p-4 text-center text-xs">
+    <footer className="border-t p-4 text-center text-xs">
       <p>&copy; KaGet, Ahmad Muwaffaq {new Date().getFullYear()}</p>
     </footer>
   );

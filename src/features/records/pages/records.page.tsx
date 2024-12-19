@@ -14,20 +14,22 @@ export function RecordsIndexPage() {
       title="Records"
       subtitle="Adulting is not about spending, but tracking and controlling what you spend"
     >
-      {recordsQuery.data?.data && recordsQuery.data.data.length > 0 ? (
-        <Button asChild className="no-underline">
-          <Link to="/records/create">
-            <PlusIcon />
-            New record
-          </Link>
-        </Button>
-      ) : null}
-
       {match(recordsQuery)
         .with({ isPending: true }, () => <RecordListLoader />)
         .with({ isError: true }, () => <p>An error occured</p>)
-        .otherwise(() => (
-          <RecordList data={recordsQuery.data?.data} />
+        .otherwise(recordsQuery => (
+          <>
+            {recordsQuery.data.data.length > 0 ? (
+              <Button asChild className="no-underline">
+                <Link to="/records/create">
+                  <PlusIcon />
+                  New record
+                </Link>
+              </Button>
+            ) : null}
+
+            <RecordList data={recordsQuery.data.data} />
+          </>
         ))}
     </PageLayout>
   );

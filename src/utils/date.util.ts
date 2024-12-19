@@ -29,3 +29,9 @@ export const isDateBeforeOrEqual = (a: DateInput, b: DateInput) => compareDate(a
 export const getISODate = (date: DateInput) => {
   return new Date(date).toISOString().split("T")[0];
 };
+
+export const addSeconds = (date: DateInput, seconds: number) => {
+  const dateObj = new Date(date);
+  dateObj.setSeconds(dateObj.getSeconds() + seconds);
+  return dateObj;
+};

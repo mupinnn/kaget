@@ -11,12 +11,14 @@ export function WalletsIndexPage() {
 
   return (
     <PageLayout title="Wallets" subtitle="Manage your wallets. Hassle-free">
-      <Button asChild className="no-underline">
-        <Link to="/wallets/create">
-          <PlusIcon />
-          Create new wallet
-        </Link>
-      </Button>
+      {walletsQuery.data?.data && walletsQuery.data.data.length > 0 ? (
+        <Button asChild className="no-underline">
+          <Link to="/wallets/create">
+            <PlusIcon />
+            Create new wallet
+          </Link>
+        </Button>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {match(walletsQuery)

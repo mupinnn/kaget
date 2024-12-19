@@ -4,11 +4,11 @@ import { WalletSchema } from "@/features/wallets/data/wallets.schema";
 
 export const BudgetSchema = z.object({
   id: z.string().nanoid(),
-  name: z.string().min(1, "Budget name must contain at least 1 character(s)").trim(),
-  allocated_digital_balance: z.coerce.number().nonnegative(),
-  allocated_cash_balance: z.coerce.number().nonnegative(),
-  created_at: z.string().datetime().nullable(),
-  updated_at: z.string().datetime().nullable(),
+  name: z.string().trim().min(1, "Budget name is required"),
+  balance: z.coerce.number({ invalid_type_error: "Amount is required" }).nonnegative(),
+  wallet_id: WalletSchema.shape.id,
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
 });
 
 export type Budget = z.infer<typeof BudgetSchema>;
@@ -23,43 +23,7 @@ export const BudgetItemSchema = BudgetSchema.extend({
 
 export type BudgetItem = z.infer<typeof BudgetItemSchema>;
 
-export const WalletBudgetSchema = z.object({
-  id: z.string().nanoid(),
-  wallet_id: WalletSchema.shape.id,
-  budget_id: BudgetSchema.shape.id,
-});
-
-export type WalletBudget = z.infer<typeof WalletBudgetSchema>;
-
-const BaseCreateBudgetSchema = BudgetSchema.pick({
-  name: true,
-  allocated_digital_balance: true,
-  allocated_cash_balance: true,
-});
-
-export const CreateBudgetSchema = BaseCreateBudgetSchema.extend({
-  digital_wallet: WalletSchema.optional(),
-  cash_wallet: WalletSchema.optional(),
-  items: BaseCreateBudgetSchema.array().optional().default([]),
-}).superRefine((data, ctx) => {
-  if (data.cash_wallet && data.allocated_cash_balance > data.cash_wallet.balance) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["allocated_cash_balance"],
-      message: "Allocated cash balance should not greater than current cash wallet balance",
-    });
-  }
-
-  if (data.digital_wallet && data.allocated_digital_balance > data.digital_wallet.balance) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["allocated_digital_balance"],
-      message: "Allocated digital balance should not greater than current digital wallet balance",
-    });
-  }
-});
-
-export type CreateBudget = z.infer<typeof CreateBudgetSchema>;
+export type CreateBudget = unknown;
 
 export const CreateBudgetResponseSchema = APIResponseSchema({
   schema: BudgetSchema,

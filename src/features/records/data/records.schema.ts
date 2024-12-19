@@ -1,13 +1,15 @@
 import { z } from "zod";
 import { APIResponseSchema } from "@/schemas/api.schema";
 import { WalletSchema } from "@/features/wallets/data/wallets.schema";
-import { BudgetItemSchema, BudgetSchema } from "@/features/budgets/data/budgets.schema";
+import { BudgetSchema, BudgetItemSchema } from "@/features/budgets/data/budgets.schema";
 
-export const RecordSourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_DETAIL"], {
-  message: "Source is required",
-});
+export const SourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_ITEM"]);
 
-export type RecordSourceType = z.infer<typeof RecordSourceTypeSchema>;
+export type SourceType = z.infer<typeof SourceTypeSchema>;
+
+export const SourceOrDestinationSchema = z.union([WalletSchema, BudgetSchema, BudgetItemSchema]);
+
+export type SourceOrDestination = z.infer<typeof SourceOrDestinationSchema>;
 
 export const RecordTypeSchema = z.enum(
   ["INCOME", "EXPENSE", "LOAN", "DEBT", "DEBT_REPAYMENT", "DEBT_COLLECTION"],
@@ -21,17 +23,17 @@ export const RecordSchema = z.object({
   note: z.string().min(1, "Note is required").trim(),
   amount: z.coerce.number({ invalid_type_error: "Amount is required" }).positive(),
   source_id: z.string().nanoid(),
-  source_type: RecordSourceTypeSchema,
+  source_type: SourceTypeSchema.refine(v => v, { message: "Source is required" }),
   record_type: RecordTypeSchema,
   recorded_at: z.string().datetime(),
-  created_at: z.string().datetime().nullable(),
-  updated_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
 });
 
 export type Record = z.infer<typeof RecordSchema>;
 
 export const RecordWithRelationsSchema = RecordSchema.extend({
-  source: z.union([WalletSchema, BudgetSchema, BudgetItemSchema]),
+  source: SourceOrDestinationSchema,
 });
 
 export type RecordWithRelations = z.infer<typeof RecordWithRelationsSchema>;

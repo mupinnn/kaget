@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { ReceiptTextIcon } from "lucide-react";
+import { ArrowRightLeftIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RecordWithRelations } from "../data/records.schema";
-import { RecordListItem } from "./record-list-item";
+import { TransferListItem } from "./transfer-list-item";
+import { Transfer } from "../data/transfers.schema";
 
-export const RecordListLoader = () => {
+export const TransferListLoader = () => {
   return (
     <div className="divide-y">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -18,22 +18,22 @@ export const RecordListLoader = () => {
   );
 };
 
-export interface RecordListProps {
-  data: RecordWithRelations[];
+export interface TransferListProps {
+  data: Transfer[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
 }
 
-export const RecordList = ({
+export const TransferList = ({
   data,
-  emptyMessageTitle = "No records created",
-  emptyMessageDescription = "Don't forget to record every money you spend or get. It's precious.",
-}: RecordListProps) => {
-  if (data?.length > 0) {
+  emptyMessageTitle = "No transfer yet",
+  emptyMessageDescription = "You have not transferring anything. Transfer one above.",
+}: TransferListProps) => {
+  if (data.length > 0) {
     return (
       <div className="divide-y">
-        {data.map(record => (
-          <RecordListItem key={record.id} {...record} />
+        {data.map(transfer => (
+          <TransferListItem key={transfer.id} {...transfer} />
         ))}
       </div>
     );
@@ -43,10 +43,10 @@ export const RecordList = ({
     <EmptyState
       title={emptyMessageTitle}
       description={emptyMessageDescription}
-      icon={ReceiptTextIcon}
+      icon={ArrowRightLeftIcon}
       actions={
         <Button asChild className="no-underline">
-          <Link to="/records/create">Record cashflow</Link>
+          <Link to="/transfers/create">Transfer balance</Link>
         </Button>
       }
     />

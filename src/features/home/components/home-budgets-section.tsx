@@ -16,7 +16,7 @@ export const HomeBudgetsSection = () => {
           icon={BanknoteIcon}
           actions={
             <Button asChild className="no-underline">
-              <Link to="/budgets/create">Allocate money</Link>
+              <Link to="/">Allocate money</Link>
             </Button>
           }
         />

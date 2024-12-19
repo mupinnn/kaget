@@ -18,6 +18,28 @@ export async function getWalletById(walletId: string) {
   return storedWalletById;
 }
 
+export async function updateWalletById(walletId: string, modifyCallback: (wallet: Wallet) => void) {
+  await db.wallet
+    .where("id")
+    .equals(walletId)
+    .modify(wallet => {
+      wallet.updated_at = new Date().toISOString();
+      modifyCallback(wallet);
+    });
+}
+
+export async function addWalletBalance(walletId: string, amountToAdd: number) {
+  await updateWalletById(walletId, wallet => {
+    wallet.balance += amountToAdd;
+  });
+}
+
+export async function deductWalletBalance(walletId: string, amountToDeduct: number) {
+  await updateWalletById(walletId, wallet => {
+    wallet.balance -= amountToDeduct;
+  });
+}
+
 export const walletsHandler = [
   http.get("/api/v1/wallets", async ({ request }) => {
     try {

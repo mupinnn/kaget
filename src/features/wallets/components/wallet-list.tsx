@@ -33,7 +33,7 @@ export const WalletList = ({
       icon={WalletIcon}
       actions={
         <Button asChild className="no-underline">
-          <Link to="/wallets/create">Record cashflow</Link>
+          <Link to="/wallets/create">Create a wallet</Link>
         </Button>
       }
     />
