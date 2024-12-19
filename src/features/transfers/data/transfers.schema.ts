@@ -38,7 +38,6 @@ export const TransfersResponseSchema = APIResponseSchema({
 
 export const TransfersRequestQuerySchema = z.object({
   source_id: z.string().nanoid().optional().catch(undefined),
-  destination_id: z.string().nanoid().optional().catch(undefined),
 });
 
 export type TransfersRequestQuery = z.infer<typeof TransfersRequestQuerySchema>;

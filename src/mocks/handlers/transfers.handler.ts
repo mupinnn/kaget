@@ -2,18 +2,32 @@ import { http } from "msw";
 import { nanoid } from "nanoid";
 import { db } from "@/libs/db.lib";
 import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
-import { CreateTransferSchema, Transfer } from "@/features/transfers/data/transfers.schema";
+import {
+  CreateTransferSchema,
+  Transfer,
+  TransfersRequestQuerySchema,
+} from "@/features/transfers/data/transfers.schema";
 import { createRecord, getSourceOrDestinationType } from "./records.handler";
 import { addWalletBalance, deductWalletBalance } from "./wallets.handler";
 import { addSeconds } from "@/utils/date.util";
 
 export const transfersHandler = [
-  http.get("/api/v1/transfers", async () => {
+  http.get("/api/v1/transfers", async ({ request }) => {
     try {
+      const rawFilters = Object.fromEntries(new URL(request.url).searchParams);
+      const parsedFilters = TransfersRequestQuerySchema.parse(rawFilters);
+
       const storedTransfers = await db.transfer.orderBy("created_at").reverse().toArray();
+      const filteredStoredTransfers = storedTransfers.filter(transfer => {
+        if (parsedFilters.source_id && transfer.source_id !== parsedFilters.source_id) {
+          return false;
+        }
+
+        return true;
+      });
 
       return mockSuccessResponse({
-        data: storedTransfers,
+        data: filteredStoredTransfers,
         message: "Successfully retrieved transfers",
       });
     } catch (error) {
