@@ -12,5 +12,5 @@ export function getRecordAmountValueAndClasses(record: Record) {
   const operator = isAddition ? "+" : "-";
   const value = `${operator} ${formatCurrency(record.amount)}`;
 
-  return { className, value, operator };
+  return { className, value, operator, isAddition };
 }

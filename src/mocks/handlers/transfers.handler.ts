@@ -3,17 +3,9 @@ import { nanoid } from "nanoid";
 import { db } from "@/libs/db.lib";
 import { mockSuccessResponse, mockErrorResponse } from "@/utils/mock.util";
 import { CreateTransferSchema, Transfer } from "@/features/transfers/data/transfers.schema";
-import { NotFoundError } from "@/utils/error.util";
-import { getSourceOrDestinationType } from "./records.handler";
-import { updateWalletById } from "./wallets.handler";
-
-export async function getTransferById(transferId: string) {
-  const storedTransferById = await db.transfer.get(transferId);
-
-  if (!storedTransferById) throw new NotFoundError("Transfer not found");
-
-  return storedTransferById;
-}
+import { createRecord, getSourceOrDestinationType } from "./records.handler";
+import { addWalletBalance, deductWalletBalance } from "./wallets.handler";
+import { addSeconds } from "@/utils/date.util";
 
 export const transfersHandler = [
   http.get("/api/v1/transfers", async () => {
@@ -29,29 +21,15 @@ export const transfersHandler = [
     }
   }),
 
-  http.get("/api/v1/transfers/:transferId", async ({ params }) => {
-    try {
-      const storedTransferById = await getTransferById(params.transferId as string);
-
-      return mockSuccessResponse({
-        data: storedTransferById,
-        message: "Successfully retrieved a transfer",
-      });
-    } catch (error) {
-      return mockErrorResponse(error);
-    }
-  }),
-
   http.post("/api/v1/transfers", async ({ request }) => {
     try {
       const data = CreateTransferSchema.parse(await request.json());
       const sourceType = getSourceOrDestinationType(data.source);
       const destinationType = getSourceOrDestinationType(data.destination);
-      const generalTransferData: Pick<Transfer, "note" | "amount" | "created_at" | "updated_at"> = {
+      const generalTransferData: Pick<Transfer, "note" | "amount" | "ref_id"> = {
         note: data.note,
         amount: data.amount,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        ref_id: nanoid(),
       };
       const outgoingTransfer: Transfer = {
         ...generalTransferData,
@@ -64,6 +42,8 @@ export const transfersHandler = [
         destination: data.destination,
         destination_type: destinationType,
         type: "OUTGOING",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
       const incomingTransfer: Transfer = {
         ...generalTransferData,
@@ -76,21 +56,30 @@ export const transfersHandler = [
         destination_id: data.source.id,
         destination_type: sourceType,
         destination: data.source,
+        created_at: addSeconds(new Date(), 1).toISOString(),
+        updated_at: addSeconds(new Date(), 1).toISOString(),
       };
 
-      await db.transaction("rw", db.transfer, db.wallet, async () => {
+      await db.transaction("rw", db.transfer, db.wallet, db.record, async () => {
         await db.transfer.bulkAdd([outgoingTransfer, incomingTransfer]);
 
         if (outgoingTransfer.source_type === "WALLET") {
-          await updateWalletById(outgoingTransfer.source_id, wallet => {
-            wallet.balance -= outgoingTransfer.amount + outgoingTransfer.fee;
-          });
+          await deductWalletBalance(outgoingTransfer.source_id, outgoingTransfer.amount);
+
+          if (outgoingTransfer.fee > 0) {
+            await createRecord({
+              source_id: outgoingTransfer.source_id,
+              source_type: outgoingTransfer.source_type,
+              record_type: "EXPENSE",
+              recorded_at: new Date().toISOString(),
+              amount: outgoingTransfer.fee,
+              note: `Transfer fee to ${outgoingTransfer.destination.name}`,
+            });
+          }
         }
 
         if (incomingTransfer.source_type === "WALLET") {
-          await updateWalletById(incomingTransfer.source_id, wallet => {
-            wallet.balance += incomingTransfer.amount;
-          });
+          await addWalletBalance(incomingTransfer.source_id, incomingTransfer.amount);
         }
       });
 

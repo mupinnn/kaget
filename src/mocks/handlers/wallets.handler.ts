@@ -28,6 +28,18 @@ export async function updateWalletById(walletId: string, modifyCallback: (wallet
     });
 }
 
+export async function addWalletBalance(walletId: string, amountToAdd: number) {
+  await updateWalletById(walletId, wallet => {
+    wallet.balance += amountToAdd;
+  });
+}
+
+export async function deductWalletBalance(walletId: string, amountToDeduct: number) {
+  await updateWalletById(walletId, wallet => {
+    wallet.balance -= amountToDeduct;
+  });
+}
+
 export const walletsHandler = [
   http.get("/api/v1/wallets", async ({ request }) => {
     try {

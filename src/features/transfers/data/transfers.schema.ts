@@ -15,6 +15,7 @@ export type TransferType = z.infer<typeof TransferTypeSchema>;
  */
 export const TransferSchema = z.object({
   id: z.string().nanoid(),
+  ref_id: z.string().nanoid(),
   note: z.string().optional(),
   amount: z.coerce.number({ invalid_type_error: "Amount is required" }).positive(),
   fee: z.coerce.number().nonnegative().optional().default(0),

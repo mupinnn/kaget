@@ -3,6 +3,7 @@ import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
 import { Transfer } from "../data/transfers.schema";
+import { Badge } from "@/components/ui/badge";
 
 export type TransferListItemProps = Transfer;
 
@@ -11,6 +12,9 @@ export const TransferListItem = (props: TransferListItemProps) => {
 
   return (
     <div className="flex flex-col gap-1 py-2 text-sm no-underline">
+      <Badge variant="secondary" className="self-start">
+        Ref: {props.ref_id}
+      </Badge>
       <p className="inline-flex items-center gap-2 font-medium">
         <span>
           {props.source.name} ({props.source_type})
