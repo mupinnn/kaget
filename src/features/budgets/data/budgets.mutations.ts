@@ -14,8 +14,8 @@ export const useCreateBudgetMutation = () => {
       return CreateBudgetResponseSchema.parse(res);
     },
     async onSuccess() {
-      await queryClient.invalidateQueries(budgetsQueryOptions);
-      await navigate({ to: "/" });
+      await queryClient.invalidateQueries({ ...budgetsQueryOptions, exact: false });
+      await navigate({ to: "/budgets" });
     },
   });
 };

@@ -10,7 +10,7 @@ export function TransfersIndexPage() {
   const transfersQuery = useTransfersQuery();
 
   return (
-    <PageLayout title="Transfers" subtitle="Move fund between your wallet.">
+    <PageLayout title="Transfers" subtitle="Move fund between your wallet">
       {match(transfersQuery)
         .with({ isPending: true }, () => <TransferListLoader />)
         .with({ isError: true }, () => <p>An error occured</p>)

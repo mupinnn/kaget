@@ -47,9 +47,9 @@ export async function deductBudgetBalance(budgetId: string, amountToDeduct: numb
 }
 
 export const budgetsHandler = [
-  http.get("/api/v1/budgets", () => {
+  http.get("/api/v1/budgets", async () => {
     try {
-      const storedBudgets: string[] = [];
+      const storedBudgets = await db.budget.orderBy("updated_at").reverse().toArray();
 
       return mockSuccessResponse({
         data: storedBudgets,
@@ -71,9 +71,13 @@ export const budgetsHandler = [
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }));
+      const newEmptyBudgets = newBudgets.map<Budget>(budget => ({
+        ...budget,
+        balance: 0,
+      }));
 
       await db.transaction("rw", db.wallet, db.budget, db.transfer, db.record, async () => {
-        const createdBudgetsId = await db.budget.bulkAdd(newBudgets, { allKeys: true });
+        const createdBudgetsId = await db.budget.bulkAdd(newEmptyBudgets, { allKeys: true });
 
         for (const budgetId of createdBudgetsId) {
           const createdBudget = (await getSourceOrDestinationById(budgetId, "BUDGET")) as Budget;
@@ -83,7 +87,7 @@ export const budgetsHandler = [
           )) as Wallet;
 
           await createTransfer({
-            amount: createdBudget.balance,
+            amount: newBudgets.find(budget => budget.id === budgetId)?.balance ?? 0,
             fee: 0,
             note: `Budgeting for ${createdBudget.name}`,
             source: relatedWallet,
@@ -92,7 +96,10 @@ export const budgetsHandler = [
         }
       });
 
-      return mockSuccessResponse({ data: { id: 1 }, message: "Successfully create a budget" });
+      return mockSuccessResponse({
+        data: newBudgets[newBudgets.length - 1],
+        message: "Successfully create a budget",
+      });
     } catch (error) {
       return mockErrorResponse(error);
     }
