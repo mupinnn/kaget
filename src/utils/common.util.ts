@@ -5,3 +5,7 @@ export const formatCurrency = (number: number, options?: Intl.NumberFormatOption
     ...options,
   }).format(number);
 };
+
+export const noop = () => {};
+
+export const noopAsync = () => Promise.resolve(undefined);
