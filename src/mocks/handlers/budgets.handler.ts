@@ -1,7 +1,12 @@
 import { http } from "msw";
+import { nanoid } from "nanoid";
 import { db } from "@/libs/db.lib";
 import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { NotFoundError } from "@/utils/error.util";
+import { Budget, CreateBudgetSchema } from "@/features/budgets/data/budgets.schema";
+import { Wallet } from "@/features/wallets/data/wallets.schema";
+import { createTransfer } from "./transfers.handler";
+import { getSourceOrDestinationById } from "./records.handler";
 
 export async function getBudgetById(budgetId: string) {
   const storedBudgetById = await db.budget.get(budgetId);
@@ -19,6 +24,28 @@ export async function getBudgetItemById(budgetItemId: string) {
   return storedBudgetItemById;
 }
 
+export async function updateBudgetById(budgetId: string, modifyCallback: (budget: Budget) => void) {
+  await db.budget
+    .where("id")
+    .equals(budgetId)
+    .modify(budget => {
+      budget.updated_at = new Date().toISOString();
+      modifyCallback(budget);
+    });
+}
+
+export async function addBudgetBalance(budgetId: string, amountToAdd: number) {
+  await updateBudgetById(budgetId, budget => {
+    budget.balance += amountToAdd;
+  });
+}
+
+export async function deductBudgetBalance(budgetId: string, amountToDeduct: number) {
+  await updateBudgetById(budgetId, budget => {
+    budget.balance -= amountToDeduct;
+  });
+}
+
 export const budgetsHandler = [
   http.get("/api/v1/budgets", () => {
     try {
@@ -33,8 +60,38 @@ export const budgetsHandler = [
     }
   }),
 
-  http.post("/api/v1/budgets", () => {
+  http.post("/api/v1/budgets", async ({ request }) => {
     try {
+      const data = CreateBudgetSchema.parse(await request.json());
+      const newBudgets = data.budgets.map<Budget>(budget => ({
+        id: nanoid(),
+        name: budget.name,
+        balance: budget.balance,
+        wallet_id: budget.wallet.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }));
+
+      await db.transaction("rw", db.wallet, db.budget, db.transfer, db.record, async () => {
+        const createdBudgetsId = await db.budget.bulkAdd(newBudgets, { allKeys: true });
+
+        for (const budgetId of createdBudgetsId) {
+          const createdBudget = (await getSourceOrDestinationById(budgetId, "BUDGET")) as Budget;
+          const relatedWallet = (await getSourceOrDestinationById(
+            createdBudget.wallet_id,
+            "WALLET"
+          )) as Wallet;
+
+          await createTransfer({
+            amount: createdBudget.balance,
+            fee: 0,
+            note: `Budgeting for ${createdBudget.name}`,
+            source: relatedWallet,
+            destination: createdBudget,
+          });
+        }
+      });
+
       return mockSuccessResponse({ data: { id: 1 }, message: "Successfully create a budget" });
     } catch (error) {
       return mockErrorResponse(error);

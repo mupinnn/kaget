@@ -6,7 +6,7 @@ export const BudgetSchema = z.object({
   id: z.string().nanoid(),
   name: z.string().trim().min(1, "Budget name is required"),
   balance: z.coerce.number({ invalid_type_error: "Balance is required" }).nonnegative(),
-  wallet_id: WalletSchema.shape.id.optional(),
+  wallet_id: WalletSchema.shape.id,
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
 });
@@ -29,31 +29,23 @@ export const CreateBudgetSchema = z.object({
       BudgetSchema.pick({ name: true }).extend({
         balance: BudgetSchema.shape.balance.positive(),
         wallet: WalletSchema,
-        items: z
-          .array(
-            BudgetItemSchema.pick({
-              name: true,
-              balance: true,
-            }).extend({ wallet: WalletSchema })
-          )
-          .optional(),
       })
     )
-    .superRefine((data, ctx) => {
+    .superRefine((budgets, ctx) => {
       const uniqueName = new Set<string>();
       const walletBalances: Record<string, number> = {};
 
-      for (const [index, budget] of data.entries()) {
-        const lowerCaseBudgetName = budget.name.toLowerCase();
+      for (const [i, budget] of budgets.entries()) {
+        const lowerCasedBudgetName = budget.name.toLowerCase();
 
-        if (uniqueName.has(lowerCaseBudgetName)) {
+        if (uniqueName.has(lowerCasedBudgetName)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Duplicate budget name are not allowed",
-            path: [index, "name"],
+            path: [i, "name"],
           });
         } else {
-          uniqueName.add(lowerCaseBudgetName);
+          uniqueName.add(lowerCasedBudgetName);
         }
 
         walletBalances[budget.wallet.id] = (walletBalances[budget.wallet.id] || 0) + budget.balance;
@@ -61,8 +53,8 @@ export const CreateBudgetSchema = z.object({
         if (walletBalances[budget.wallet.id] > budget.wallet.balance) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `The total budgeted balance using wallet "${budget.wallet.name}" exceeds the remaining balance of "${budget.wallet.name} itself`,
-            path: [index, "balance"],
+            message: `The total budgeted balance using wallet "${budget.wallet.name}" exceeds the remaining balance of "${budget.wallet.name}" itself`,
+            path: [i, "balance"],
           });
         }
       }
