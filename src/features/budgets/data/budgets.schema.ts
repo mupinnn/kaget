@@ -6,15 +6,29 @@ export const BudgetSchema = z.object({
   id: z.string().nanoid(),
   name: z.string().trim().min(1, "Budget name is required"),
   balance: z.coerce.number({ invalid_type_error: "Balance is required" }).nonnegative(),
+  total_balance: z.coerce.number().nonnegative(),
   wallet_id: WalletSchema.shape.id,
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
+  archived_at: z.string().datetime().nullable(),
 });
 
 export type Budget = z.infer<typeof BudgetSchema>;
 
+export const TransformedBudgetSchema = BudgetSchema.omit({
+  balance: true,
+  total_balance: true,
+}).extend({
+  used_balance: BudgetSchema.shape.total_balance,
+  used_balance_percentage: z.coerce.number(),
+  remaining_balance: BudgetSchema.shape.total_balance,
+  remaining_balance_percentage: z.coerce.number(),
+});
+
+export type TransformedBudget = z.infer<typeof TransformedBudgetSchema>;
+
 export const BudgetsResponseSchema = APIResponseSchema({
-  schema: BudgetSchema.array(),
+  schema: TransformedBudgetSchema.array(),
 });
 
 export const BudgetsRequestQuerySchema = z.object({
@@ -71,3 +85,7 @@ export type CreateBudget = z.infer<typeof CreateBudgetSchema>;
 export const CreateBudgetResponseSchema = APIResponseSchema({
   schema: BudgetSchema,
 });
+
+export const ShowBudgetResponseSchema = APIResponseSchema({
+  schema: TransformedBudgetSchema
+})

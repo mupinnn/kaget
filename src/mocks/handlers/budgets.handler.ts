@@ -7,6 +7,7 @@ import {
   Budget,
   BudgetsRequestQuerySchema,
   CreateBudgetSchema,
+  TransformedBudget,
 } from "@/features/budgets/data/budgets.schema";
 import { Wallet } from "@/features/wallets/data/wallets.schema";
 import { createTransfer } from "./transfers.handler";
@@ -50,6 +51,28 @@ export async function deductBudgetBalance(budgetId: string, amountToDeduct: numb
   });
 }
 
+const MAX_PERCENTAGE = 100;
+
+function transformBudgetResponse(budget: Budget): TransformedBudget {
+  const usedBalance = Math.abs(budget.total_balance - budget.balance);
+  const remainingBalance = budget.balance;
+  const remainingBalancePercentage = (budget.balance / budget.total_balance) * MAX_PERCENTAGE;
+  const usedBalancePercentage = Math.abs(MAX_PERCENTAGE - remainingBalancePercentage);
+
+  return {
+    id: budget.id,
+    name: budget.name,
+    wallet_id: budget.wallet_id,
+    created_at: budget.created_at,
+    updated_at: budget.updated_at,
+    archived_at: budget.archived_at,
+    used_balance: usedBalance,
+    used_balance_percentage: usedBalancePercentage,
+    remaining_balance: remainingBalance,
+    remaining_balance_percentage: remainingBalancePercentage,
+  };
+}
+
 export const budgetsHandler = [
   http.get("/api/v1/budgets", async ({ request }) => {
     try {
@@ -62,8 +85,22 @@ export const budgetsHandler = [
         : await budgetsCollection.toArray();
 
       return mockSuccessResponse({
-        data: storedBudgets,
+        data: storedBudgets.map(transformBudgetResponse),
         message: "Successfully retrieved budgets",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
+  http.get("/api/v1/budgets/:budgetId", async ({ params }) => {
+    try {
+      const storedBudget = await getBudgetById(params.budgetId as string);
+      const transformedBudget = transformBudgetResponse(storedBudget);
+
+      return mockSuccessResponse({
+        data: transformedBudget,
+        message: "Successfully retrieved a budget",
       });
     } catch (error) {
       return mockErrorResponse(error);
@@ -77,9 +114,11 @@ export const budgetsHandler = [
         id: nanoid(),
         name: budget.name,
         balance: budget.balance,
+        total_balance: budget.balance,
         wallet_id: budget.wallet.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        archived_at: null,
       }));
       const newEmptyBudgets = newBudgets.map<Budget>(budget => ({
         ...budget,
