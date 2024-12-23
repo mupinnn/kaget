@@ -51,7 +51,7 @@ function BudgetForm({
   const hasNoWallets = walletOptions.length === 0;
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
+    <div className="space-y-4 rounded-lg border border-dashed p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-medium">{name ? name : `Budget ${index + 1}`}</h2>
         <Button variant="destructive" size="icon" onClick={() => remove(index)}>

@@ -17,6 +17,12 @@ export const BudgetsResponseSchema = APIResponseSchema({
   schema: BudgetSchema.array(),
 });
 
+export const BudgetsRequestQuerySchema = z.object({
+  limit: z.coerce.number().positive().optional().catch(undefined),
+});
+
+export type BudgetsRequestQuery = z.infer<typeof BudgetsRequestQuerySchema>;
+
 export const BudgetItemSchema = BudgetSchema.extend({
   budget_id: BudgetSchema.shape.id,
 });

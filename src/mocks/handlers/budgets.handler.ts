@@ -3,7 +3,11 @@ import { nanoid } from "nanoid";
 import { db } from "@/libs/db.lib";
 import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { NotFoundError } from "@/utils/error.util";
-import { Budget, CreateBudgetSchema } from "@/features/budgets/data/budgets.schema";
+import {
+  Budget,
+  BudgetsRequestQuerySchema,
+  CreateBudgetSchema,
+} from "@/features/budgets/data/budgets.schema";
 import { Wallet } from "@/features/wallets/data/wallets.schema";
 import { createTransfer } from "./transfers.handler";
 import { getSourceOrDestinationById } from "./records.handler";
@@ -47,9 +51,15 @@ export async function deductBudgetBalance(budgetId: string, amountToDeduct: numb
 }
 
 export const budgetsHandler = [
-  http.get("/api/v1/budgets", async () => {
+  http.get("/api/v1/budgets", async ({ request }) => {
     try {
-      const storedBudgets = await db.budget.orderBy("updated_at").reverse().toArray();
+      const rawFilters = Object.fromEntries(new URL(request.url).searchParams);
+      const parsedFilters = BudgetsRequestQuerySchema.parse(rawFilters);
+
+      const budgetsCollection = db.budget.orderBy("updated_at").reverse();
+      const storedBudgets = parsedFilters.limit
+        ? await budgetsCollection.limit(parsedFilters.limit).toArray()
+        : await budgetsCollection.toArray();
 
       return mockSuccessResponse({
         data: storedBudgets,

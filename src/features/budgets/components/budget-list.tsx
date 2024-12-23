@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { WalletIcon } from "lucide-react";
+import { BanknoteIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BudgetListItem } from "./budget-list-item";
@@ -30,7 +30,7 @@ export const BudgetList = ({
       className="w-full sm:col-span-2 xl:col-span-4"
       title={emptyMessageTitle}
       description={emptyMessageDescription}
-      icon={WalletIcon}
+      icon={BanknoteIcon}
       actions={
         <Button asChild className="no-underline">
           <Link to="/budgets/create">Allocate money</Link>
