@@ -2,7 +2,7 @@ import { http } from "msw";
 import { nanoid } from "nanoid";
 import { db } from "@/libs/db.lib";
 import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
-import { NotFoundError } from "@/utils/error.util";
+import { NotFoundError, UnprocessableEntityError } from "@/utils/error.util";
 import {
   Budget,
   BudgetsRequestQuerySchema,
@@ -12,6 +12,7 @@ import {
 import { Wallet } from "@/features/wallets/data/wallets.schema";
 import { createTransfer } from "./transfers.handler";
 import { getSourceOrDestinationById } from "./records.handler";
+import { getWalletById } from "./wallets.handler";
 
 export async function getBudgetById(budgetId: string) {
   const storedBudgetById = await db.budget.get(budgetId);
@@ -53,11 +54,12 @@ export async function deductBudgetBalance(budgetId: string, amountToDeduct: numb
 
 const MAX_PERCENTAGE = 100;
 
-function transformBudgetResponse(budget: Budget): TransformedBudget {
+async function transformBudgetResponse(budget: Budget): Promise<TransformedBudget> {
   const usedBalance = Math.abs(budget.total_balance - budget.balance);
   const remainingBalance = budget.balance;
   const remainingBalancePercentage = (budget.balance / budget.total_balance) * MAX_PERCENTAGE;
   const usedBalancePercentage = Math.abs(MAX_PERCENTAGE - remainingBalancePercentage);
+  const budgetRecords = await db.record.where("source_id").equals(budget.id).toArray();
 
   return {
     id: budget.id,
@@ -70,6 +72,7 @@ function transformBudgetResponse(budget: Budget): TransformedBudget {
     used_balance_percentage: usedBalancePercentage,
     remaining_balance: remainingBalance,
     remaining_balance_percentage: remainingBalancePercentage,
+    is_deletable: budgetRecords.length === 0,
   };
 }
 
@@ -85,7 +88,7 @@ export const budgetsHandler = [
         : await budgetsCollection.toArray();
 
       return mockSuccessResponse({
-        data: storedBudgets.map(transformBudgetResponse),
+        data: await Promise.all(storedBudgets.map(transformBudgetResponse)),
         message: "Successfully retrieved budgets",
       });
     } catch (error) {
@@ -96,7 +99,7 @@ export const budgetsHandler = [
   http.get("/api/v1/budgets/:budgetId", async ({ params }) => {
     try {
       const storedBudget = await getBudgetById(params.budgetId as string);
-      const transformedBudget = transformBudgetResponse(storedBudget);
+      const transformedBudget = await transformBudgetResponse(storedBudget);
 
       return mockSuccessResponse({
         data: transformedBudget,
@@ -149,6 +152,38 @@ export const budgetsHandler = [
         data: newBudgets[newBudgets.length - 1],
         message: "Successfully create a budget",
       });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
+  http.delete("/api/v1/budgets/:budgetId", async ({ params }) => {
+    try {
+      const budgetId = params.budgetId as string;
+      const budgetRecords = await db.record.where("source_id").equals(budgetId).toArray();
+      const storedBudgetById = await getBudgetById(budgetId);
+
+      if (budgetRecords.length > 0) {
+        throw new UnprocessableEntityError(
+          "Unable to delete budget. The budget is already in use."
+        );
+      }
+
+      await db.transaction("rw", db.budget, db.wallet, db.transfer, db.record, async () => {
+        const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
+
+        await createTransfer({
+          amount: storedBudgetById.total_balance,
+          fee: 0,
+          note: `Budget deletion and refund from ${storedBudgetById.name} budget`,
+          source: storedBudgetById,
+          destination: storedWalletById,
+        });
+
+        await db.budget.delete(budgetId);
+      });
+
+      return mockSuccessResponse({ data: storedBudgetById, message: "Successfully delete budget" });
     } catch (error) {
       return mockErrorResponse(error);
     }

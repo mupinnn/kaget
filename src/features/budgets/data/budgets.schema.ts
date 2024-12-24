@@ -23,6 +23,7 @@ export const TransformedBudgetSchema = BudgetSchema.omit({
   used_balance_percentage: z.coerce.number(),
   remaining_balance: BudgetSchema.shape.total_balance,
   remaining_balance_percentage: z.coerce.number(),
+  is_deletable: z.boolean(),
 });
 
 export type TransformedBudget = z.infer<typeof TransformedBudgetSchema>;
@@ -87,5 +88,9 @@ export const CreateBudgetResponseSchema = APIResponseSchema({
 });
 
 export const ShowBudgetResponseSchema = APIResponseSchema({
-  schema: TransformedBudgetSchema
-})
+  schema: TransformedBudgetSchema,
+});
+
+export const DeleteBudgetResponseSchema = APIResponseSchema({
+  schema: BudgetSchema,
+});

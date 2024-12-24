@@ -12,6 +12,7 @@ import { formatCurrency } from "@/utils/common.util";
 import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
+import { useDeletBudgetMutation } from "../data/budgets.mutations";
 
 const route = getRouteApi("/budgets/$budgetId");
 
@@ -20,6 +21,7 @@ export function BudgetsDetailPage() {
   const budgetDetailQuery = useBudgetDetailQuery(budgetId);
   const recordsQuery = useRecordsQuery({ source_id: budgetId });
   const transfersQuery = useTransfersQuery({ source_id: budgetId });
+  const deleteBudgetMutation = useDeletBudgetMutation();
 
   if (budgetDetailQuery.isPending) return <p>Loading . . .</p>;
   if (budgetDetailQuery.isError) return <p>An error occured: {budgetDetailQuery.error.message}</p>;
@@ -56,17 +58,20 @@ export function BudgetsDetailPage() {
           <Undo2Icon />
           Refund
         </Button>
-        <ConfirmationDialog
-          title={<>Are you sure want to delete &quot;{budgetDetail.name}&quot; budget?</>}
-          description="This action cannot be undone. This will permanently delete your budget and will rollback the balance into the respective source (wallet)."
-          trigger={
-            <Button variant="destructive" size="sm">
-              <Trash2Icon />
-              Delete
-            </Button>
-          }
-          actionLabel="Yes, delete"
-        />
+        {budgetDetail.is_deletable && (
+          <ConfirmationDialog
+            title={<>Are you sure want to delete &quot;{budgetDetail.name}&quot; budget?</>}
+            description="This action cannot be undone. This will permanently delete your budget and will rollback the balance into the respective source (wallet)."
+            trigger={
+              <Button variant="destructive" size="sm">
+                <Trash2Icon />
+                Delete
+              </Button>
+            }
+            actionLabel="Yes, delete"
+            onClickAction={() => deleteBudgetMutation.mutate(budgetId)}
+          />
+        )}
       </div>
 
       <Tabs defaultValue="records">
