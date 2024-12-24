@@ -22,12 +22,14 @@ export interface TransferListProps {
   data: Transfer[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
+  withActions?: boolean;
 }
 
 export const TransferList = ({
   data,
   emptyMessageTitle = "No transfer yet",
   emptyMessageDescription = "You have not transferring anything. Transfer one above.",
+  withActions = true,
 }: TransferListProps) => {
   if (data.length > 0) {
     return (
@@ -45,9 +47,11 @@ export const TransferList = ({
       description={emptyMessageDescription}
       icon={ArrowRightLeftIcon}
       actions={
-        <Button asChild className="no-underline">
-          <Link to="/transfers/create">Transfer balance</Link>
-        </Button>
+        withActions ? (
+          <Button asChild className="no-underline">
+            <Link to="/transfers/create">Transfer balance</Link>
+          </Button>
+        ) : null
       }
     />
   );

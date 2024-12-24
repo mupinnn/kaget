@@ -1,5 +1,6 @@
 import { match } from "ts-pattern";
 import { Link, getRouteApi } from "@tanstack/react-router";
+import { Trash2Icon, PencilIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/common.util";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,6 +34,7 @@ export function WalletsDetailPage() {
       <div className="flex items-center gap-2">
         <Button asChild className="no-underline" size="sm">
           <Link to="/wallets/$walletId/edit" params={{ walletId }}>
+            <PencilIcon />
             Edit
           </Link>
         </Button>
@@ -41,6 +43,7 @@ export function WalletsDetailPage() {
           description="This action cannot be undone. This will permanently delete your wallet and remove others associated data (records, budget, etc)"
           trigger={
             <Button variant="destructive" size="sm">
+              <Trash2Icon />
               Delete
             </Button>
           }

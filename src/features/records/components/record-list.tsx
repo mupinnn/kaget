@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, LinkOptions } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ReceiptTextIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
@@ -22,12 +22,16 @@ export interface RecordListProps {
   data: RecordWithRelations[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
+  actionLinkProps?: LinkOptions;
+  withActions?: boolean;
 }
 
 export const RecordList = ({
   data,
   emptyMessageTitle = "No records created",
   emptyMessageDescription = "Don't forget to record every money you spend or get. It's precious.",
+  actionLinkProps,
+  withActions = true,
 }: RecordListProps) => {
   if (data?.length > 0) {
     return (
@@ -45,9 +49,13 @@ export const RecordList = ({
       description={emptyMessageDescription}
       icon={ReceiptTextIcon}
       actions={
-        <Button asChild className="no-underline">
-          <Link to="/records/create">Record cashflow</Link>
-        </Button>
+        withActions ? (
+          <Button asChild className="no-underline">
+            <Link to="/records/create" {...actionLinkProps}>
+              Record cashflow
+            </Link>
+          </Button>
+        ) : null
       }
     />
   );

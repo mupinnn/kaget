@@ -10,7 +10,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
 import { SelectSingleEventHandler } from "react-day-picker";
-import { CalendarIcon, PlusIcon } from "lucide-react";
+import { CalendarIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -280,10 +280,10 @@ export function RecordsFormPage() {
                     <h2 className="text-2xl font-medium">Record {recordItemIndex + 1}</h2>
                     <Button
                       variant="destructive"
-                      size="sm"
+                      size="icon"
                       onClick={() => recordItems.remove(recordItemIndex)}
                     >
-                      Delete
+                      <Trash2Icon />
                     </Button>
                   </div>
 
