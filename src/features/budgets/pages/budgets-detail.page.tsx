@@ -13,7 +13,7 @@ import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
 import { useDeletBudgetMutation } from "../data/budgets.mutations";
-import { BudgetRefundDialog } from "../components/budget-refund-dialog";
+import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
 
 const route = getRouteApi("/budgets/$budgetId");
 
@@ -59,11 +59,18 @@ export function BudgetsDetailPage() {
             Use budget
           </Link>
         </Button>
-        <Button variant="secondary" size="sm">
-          <PlusIcon />
-          Add balance
-        </Button>
-        <BudgetRefundDialog
+        <BudgetBalanceUpdateDialog
+          type="ADD"
+          budgetDetail={budgetDetail}
+          trigger={
+            <Button variant="secondary" size="sm">
+              <PlusIcon />
+              Add balance
+            </Button>
+          }
+        />
+        <BudgetBalanceUpdateDialog
+          type="REFUND"
           budgetDetail={budgetDetail}
           trigger={
             <Button variant="outline" size="sm">

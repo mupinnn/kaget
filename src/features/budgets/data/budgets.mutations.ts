@@ -2,13 +2,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "@/libs/api.lib";
 import { walletsQueryOptions } from "@/features/wallets/data/wallets.queries";
-import { budgetsQueryOptions } from "./budgets.queries";
+import { budgetsDetailQueryOptions, budgetsQueryOptions } from "./budgets.queries";
 import {
   CreateBudget,
   CreateBudgetResponseSchema,
   DeleteBudgetResponseSchema,
-  RefundBudget,
-  RefundBudgetResponseSchema,
+  UpdateBudgetBalance,
+  UpdateBudgetBalanceResponseSchema,
 } from "./budgets.schema";
 import { transfersQueryOptions } from "@/features/transfers/data/transfers.queries";
 import { recordsQueryOptions } from "@/features/records/data/records.queries";
@@ -51,21 +51,20 @@ export const useDeletBudgetMutation = () => {
   });
 };
 
-export const useRefundBudgetMutation = () => {
+export const useUpdateBudgetBalanceMutation = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   return useMutation({
-    async mutationFn({ budgetId, data }: { budgetId: string; data: RefundBudget }) {
-      const res = await api.patch(data, `/budgets/${budgetId}/refund`);
-      return RefundBudgetResponseSchema.parse(res);
+    async mutationFn({ budgetId, data }: { budgetId: string; data: UpdateBudgetBalance }) {
+      const res = await api.patch(data, `/budgets/${budgetId}/balance`);
+      return UpdateBudgetBalanceResponseSchema.parse(res);
     },
-    async onSuccess() {
+    async onSuccess(data) {
       await queryClient.invalidateQueries({ ...budgetsQueryOptions(), exact: false });
       await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
       await queryClient.invalidateQueries({ ...transfersQueryOptions(), exact: false });
       await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
-      await navigate({ to: "/budgets" });
+      await queryClient.refetchQueries(budgetsDetailQueryOptions(data.data.id));
     },
   });
 };

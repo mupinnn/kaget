@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { match } from "ts-pattern";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
@@ -23,25 +24,33 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   TransformedBudgetWithRelations,
-  RefundBudgetSchema,
-  RefundBudget,
+  UpdateBudgetBalance,
+  UpdateBudgetBalanceSchema,
 } from "../data/budgets.schema";
-import { useRefundBudgetMutation } from "../data/budgets.mutations";
+import { useUpdateBudgetBalanceMutation } from "../data/budgets.mutations";
 
-interface BudgetRefundDialogProps {
+interface BudgetBalanceUpdateDialogProps {
   trigger: React.ReactNode;
   budgetDetail: TransformedBudgetWithRelations;
+  type: UpdateBudgetBalance["type"];
 }
 
-export function BudgetRefundDialog({ trigger, budgetDetail }: BudgetRefundDialogProps) {
+export function BudgetBalanceUpdateDialog({
+  trigger,
+  budgetDetail,
+  type,
+}: BudgetBalanceUpdateDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const form = useForm<RefundBudget>({
-    resolver: zodResolver(RefundBudgetSchema),
+  const form = useForm<UpdateBudgetBalance>({
+    resolver: zodResolver(UpdateBudgetBalanceSchema),
+    defaultValues: {
+      type,
+    },
   });
-  const refundBudgetMutation = useRefundBudgetMutation();
+  const updateBudgetBalanceMutation = useUpdateBudgetBalanceMutation();
 
-  function onSubmit(values: RefundBudget) {
-    refundBudgetMutation.mutate(
+  function onSubmit(values: UpdateBudgetBalance) {
+    updateBudgetBalanceMutation.mutate(
       { budgetId: budgetDetail.id, data: values },
       {
         onSuccess() {
@@ -61,9 +70,21 @@ export function BudgetRefundDialog({ trigger, budgetDetail }: BudgetRefundDialog
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <DialogHeader>
-              <DialogTitle>Refund to {budgetDetail.wallet.name}</DialogTitle>
+              <DialogTitle>
+                {match(type)
+                  .with("REFUND", () => "Refund to")
+                  .otherwise(() => "Add balance from")}{" "}
+                {budgetDetail.wallet.name}
+              </DialogTitle>
               <DialogDescription>
-                You able to refund some balance from this budget to its source wallet
+                {match(type)
+                  .with(
+                    "REFUND",
+                    () => "You able to refund some balance from this budget to its source wallet"
+                  )
+                  .otherwise(
+                    () => "You able to add balance to this budget from the selected source wallet"
+                  )}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -72,7 +93,7 @@ export function BudgetRefundDialog({ trigger, budgetDetail }: BudgetRefundDialog
                 name="balance"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Balance to be refunded</FormLabel>
+                    <FormLabel>Balance</FormLabel>
                     <FormControl>
                       <CurrencyInput
                         autoComplete="off"
@@ -94,8 +115,10 @@ export function BudgetRefundDialog({ trigger, budgetDetail }: BudgetRefundDialog
               />
             </div>
             <DialogFooter>
-              <Button type="submit" isLoading={refundBudgetMutation.isPending}>
-                Refund
+              <Button type="submit" isLoading={updateBudgetBalanceMutation.isPending}>
+                {match(type)
+                  .with("REFUND", () => "Refund")
+                  .otherwise(() => "Add balance")}
               </Button>
             </DialogFooter>
           </form>

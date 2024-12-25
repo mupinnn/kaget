@@ -95,10 +95,12 @@ export const DeleteBudgetResponseSchema = APIResponseSchema({
   schema: BudgetSchema,
 });
 
-export const RefundBudgetSchema = BudgetSchema.pick({ balance: true });
+export const UpdateBudgetBalanceSchema = BudgetSchema.pick({ balance: true }).extend({
+  type: z.enum(["REFUND", "ADD"]),
+});
 
-export type RefundBudget = z.infer<typeof RefundBudgetSchema>;
+export type UpdateBudgetBalance = z.infer<typeof UpdateBudgetBalanceSchema>;
 
-export const RefundBudgetResponseSchema = APIResponseSchema({
+export const UpdateBudgetBalanceResponseSchema = APIResponseSchema({
   schema: BudgetSchema,
 });

@@ -1,5 +1,6 @@
 import { http } from "msw";
 import { nanoid } from "nanoid";
+import { match } from "ts-pattern";
 import { db } from "@/libs/db.lib";
 import { mockErrorResponse, mockSuccessResponse } from "@/utils/mock.util";
 import { NotFoundError, UnprocessableEntityError } from "@/utils/error.util";
@@ -7,8 +8,8 @@ import {
   Budget,
   BudgetsRequestQuerySchema,
   CreateBudgetSchema,
-  RefundBudgetSchema,
   TransformedBudgetWithRelations,
+  UpdateBudgetBalanceSchema,
 } from "@/features/budgets/data/budgets.schema";
 import { Wallet } from "@/features/wallets/data/wallets.schema";
 import { createTransfer } from "./transfers.handler";
@@ -192,37 +193,60 @@ export const budgetsHandler = [
     }
   }),
 
-  http.patch("/api/v1/budgets/:budgetId/refund", async ({ params, request }) => {
+  http.patch("/api/v1/budgets/:budgetId/balance", async ({ params, request }) => {
     try {
       const budgetId = params.budgetId as string;
-      const data = RefundBudgetSchema.parse(await request.json());
+      const data = UpdateBudgetBalanceSchema.parse(await request.json());
       const storedBudgetById = await getBudgetById(budgetId);
 
       await db.transaction("rw", db.budget, db.wallet, db.transfer, db.record, async () => {
         const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
 
-        if (data.balance > storedBudgetById.balance) {
-          throw new UnprocessableEntityError(
-            "Unable to refund. The refunded balance exceeds the remaining budget balance."
-          );
-        }
+        await match(data.type)
+          .with("REFUND", async () => {
+            if (data.balance > storedBudgetById.balance) {
+              throw new UnprocessableEntityError(
+                "Unable to refund. The refunded balance exceeds the remaining budget balance."
+              );
+            }
 
-        await createTransfer({
-          amount: data.balance,
-          fee: 0,
-          note: `Refund from ${storedBudgetById.name} budget`,
-          source: storedBudgetById,
-          destination: storedWalletById,
-        });
+            await createTransfer({
+              amount: data.balance,
+              fee: 0,
+              note: `Refund from ${storedBudgetById.name} budget`,
+              source: storedBudgetById,
+              destination: storedWalletById,
+            });
 
-        await updateBudgetById(budgetId, budget => {
-          budget.total_balance -= data.balance;
-        });
+            await updateBudgetById(budgetId, budget => {
+              budget.total_balance -= data.balance;
+            });
+          })
+          .with("ADD", async () => {
+            if (data.balance > storedWalletById.balance) {
+              throw new UnprocessableEntityError(
+                "Unable to add balance. The added balance exceeds the wallet balance."
+              );
+            }
+
+            await createTransfer({
+              amount: data.balance,
+              fee: 0,
+              note: `Add ${storedBudgetById.name} budget balance`,
+              source: storedWalletById,
+              destination: storedBudgetById,
+            });
+
+            await updateBudgetById(budgetId, budget => {
+              budget.total_balance += data.balance;
+            });
+          })
+          .exhaustive();
       });
 
       return mockSuccessResponse({
         data: storedBudgetById,
-        message: "Successfully refund the budget",
+        message: "Successfully update the budget balance",
       });
     } catch (error) {
       return mockErrorResponse(error);
