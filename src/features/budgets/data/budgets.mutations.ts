@@ -7,6 +7,8 @@ import {
   CreateBudget,
   CreateBudgetResponseSchema,
   DeleteBudgetResponseSchema,
+  RefundBudget,
+  RefundBudgetResponseSchema,
 } from "./budgets.schema";
 import { transfersQueryOptions } from "@/features/transfers/data/transfers.queries";
 import { recordsQueryOptions } from "@/features/records/data/records.queries";
@@ -22,6 +24,9 @@ export const useCreateBudgetMutation = () => {
     },
     async onSuccess() {
       await queryClient.invalidateQueries({ ...budgetsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...transfersQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
       await navigate({ to: "/budgets" });
     },
   });
@@ -35,6 +40,25 @@ export const useDeletBudgetMutation = () => {
     async mutationFn(budgetId: string) {
       const res = await api.delete(`/budgets/${budgetId}`);
       return DeleteBudgetResponseSchema.parse(res);
+    },
+    async onSuccess() {
+      await queryClient.invalidateQueries({ ...budgetsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...transfersQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
+      await navigate({ to: "/budgets" });
+    },
+  });
+};
+
+export const useRefundBudgetMutation = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    async mutationFn({ budgetId, data }: { budgetId: string; data: RefundBudget }) {
+      const res = await api.patch(data, `/budgets/${budgetId}/refund`);
+      return RefundBudgetResponseSchema.parse(res);
     },
     async onSuccess() {
       await queryClient.invalidateQueries({ ...budgetsQueryOptions(), exact: false });

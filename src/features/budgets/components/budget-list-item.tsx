@@ -2,9 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/utils/common.util";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { TransformedBudget } from "../data/budgets.schema";
+import { TransformedBudgetWithRelations } from "../data/budgets.schema";
 
-export type BudgetListItemProps = TransformedBudget;
+export type BudgetListItemProps = TransformedBudgetWithRelations;
 
 export const BudgetListItem = (props: BudgetListItemProps) => {
   return (

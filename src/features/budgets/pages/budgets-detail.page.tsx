@@ -4,16 +4,6 @@ import { Undo2Icon, PlusIcon, Trash2Icon, ReceiptTextIcon } from "lucide-react";
 import { PageLayout } from "@/components/page-layout";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
@@ -23,6 +13,7 @@ import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
 import { useDeletBudgetMutation } from "../data/budgets.mutations";
+import { BudgetRefundDialog } from "../components/budget-refund-dialog";
 
 const route = getRouteApi("/budgets/$budgetId");
 
@@ -37,6 +28,7 @@ export function BudgetsDetailPage() {
   if (budgetDetailQuery.isError) return <p>An error occured: {budgetDetailQuery.error.message}</p>;
 
   const budgetDetail = budgetDetailQuery.data.data;
+  const budgetHasRecords = (recordsQuery.data?.data?.length ?? 0) > 0;
 
   return (
     <PageLayout title={budgetDetail.name} badge="BUDGET">
@@ -71,25 +63,16 @@ export function BudgetsDetailPage() {
           <PlusIcon />
           Add balance
         </Button>
-        <Dialog>
-          <DialogTrigger asChild>
+        <BudgetRefundDialog
+          budgetDetail={budgetDetail}
+          trigger={
             <Button variant="outline" size="sm">
               <Undo2Icon />
               Refund
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Refund to {budgetDetail.wallet_id}</DialogTitle>
-              <DialogDescription>The quick brown fox jumps over the lazy dog.</DialogDescription>
-            </DialogHeader>
-            <Input placeholder="uwu" />
-            <DialogFooter>
-              <Button type="submit">Refund</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        {budgetDetail.is_deletable && (
+          }
+        />
+        {!budgetHasRecords && (
           <ConfirmationDialog
             title={<>Are you sure want to delete &quot;{budgetDetail.name}&quot; budget?</>}
             description="This action cannot be undone. This will permanently delete your budget and will rollback the balance into the respective source (wallet)."

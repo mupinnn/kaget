@@ -6,9 +6,9 @@ import { NotFoundError, UnprocessableEntityError } from "@/utils/error.util";
 import {
   Budget,
   BudgetsRequestQuerySchema,
-  BudgetWithRelations,
   CreateBudgetSchema,
-  TransformedBudget,
+  RefundBudgetSchema,
+  TransformedBudgetWithRelations,
 } from "@/features/budgets/data/budgets.schema";
 import { Wallet } from "@/features/wallets/data/wallets.schema";
 import { createTransfer } from "./transfers.handler";
@@ -55,12 +55,14 @@ export async function deductBudgetBalance(budgetId: string, amountToDeduct: numb
 
 const MAX_PERCENTAGE = 100;
 
-async function transformBudgetResponse(budget: Budget): Promise<TransformedBudget> {
+async function transformBudgetWithRelationsResponse(
+  budget: Budget
+): Promise<TransformedBudgetWithRelations> {
   const usedBalance = Math.abs(budget.total_balance - budget.balance);
   const remainingBalance = budget.balance;
   const remainingBalancePercentage = (budget.balance / budget.total_balance) * MAX_PERCENTAGE;
   const usedBalancePercentage = Math.abs(MAX_PERCENTAGE - remainingBalancePercentage);
-  const budgetRecords = await db.record.where("source_id").equals(budget.id).toArray();
+  const storedWalletById = await getWalletById(budget.wallet_id);
 
   return {
     id: budget.id,
@@ -73,20 +75,8 @@ async function transformBudgetResponse(budget: Budget): Promise<TransformedBudge
     used_balance_percentage: usedBalancePercentage,
     remaining_balance: remainingBalance,
     remaining_balance_percentage: remainingBalancePercentage,
-    is_deletable: budgetRecords.length === 0,
+    wallet: storedWalletById,
   };
-}
-
-async function getBudgetWithRelations(budgetId: string): Promise<BudgetWithRelations> {
-  const storedBudgetById = await getBudgetById(budgetId);
-  const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
-
-  const storedBudgetWithRelations: BudgetWithRelations = {
-    ...storedBudgetById,
-    wallet: storedWalletById
-  }
-
-  return storedBudgetWithRelations
 }
 
 export const budgetsHandler = [
@@ -101,7 +91,7 @@ export const budgetsHandler = [
         : await budgetsCollection.toArray();
 
       return mockSuccessResponse({
-        data: await Promise.all(storedBudgets.map(transformBudgetResponse)),
+        data: await Promise.all(storedBudgets.map(transformBudgetWithRelationsResponse)),
         message: "Successfully retrieved budgets",
       });
     } catch (error) {
@@ -112,7 +102,7 @@ export const budgetsHandler = [
   http.get("/api/v1/budgets/:budgetId", async ({ params }) => {
     try {
       const storedBudget = await getBudgetById(params.budgetId as string);
-      const transformedBudget = await transformBudgetResponse(storedBudget);
+      const transformedBudget = await transformBudgetWithRelationsResponse(storedBudget);
 
       return mockSuccessResponse({
         data: transformedBudget,
@@ -197,6 +187,43 @@ export const budgetsHandler = [
       });
 
       return mockSuccessResponse({ data: storedBudgetById, message: "Successfully delete budget" });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
+
+  http.patch("/api/v1/budgets/:budgetId/refund", async ({ params, request }) => {
+    try {
+      const budgetId = params.budgetId as string;
+      const data = RefundBudgetSchema.parse(await request.json());
+      const storedBudgetById = await getBudgetById(budgetId);
+
+      await db.transaction("rw", db.budget, db.wallet, db.transfer, db.record, async () => {
+        const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
+
+        if (data.balance > storedBudgetById.balance) {
+          throw new UnprocessableEntityError(
+            "Unable to refund. The refunded balance exceeds the remaining budget balance."
+          );
+        }
+
+        await createTransfer({
+          amount: data.balance,
+          fee: 0,
+          note: `Refund from ${storedBudgetById.name} budget`,
+          source: storedBudgetById,
+          destination: storedWalletById,
+        });
+
+        await updateBudgetById(budgetId, budget => {
+          budget.total_balance -= data.balance;
+        });
+      });
+
+      return mockSuccessResponse({
+        data: storedBudgetById,
+        message: "Successfully refund the budget",
+      });
     } catch (error) {
       return mockErrorResponse(error);
     }

@@ -15,7 +15,7 @@ export const BudgetSchema = z.object({
 
 export type Budget = z.infer<typeof BudgetSchema>;
 
-export const TransformedBudgetSchema = BudgetSchema.omit({
+export const TransformedBudgetWithRelationsSchema = BudgetSchema.omit({
   balance: true,
   total_balance: true,
 }).extend({
@@ -23,19 +23,13 @@ export const TransformedBudgetSchema = BudgetSchema.omit({
   used_balance_percentage: z.coerce.number(),
   remaining_balance: BudgetSchema.shape.total_balance,
   remaining_balance_percentage: z.coerce.number(),
-  is_deletable: z.boolean(),
-});
-
-export type TransformedBudget = z.infer<typeof TransformedBudgetSchema>;
-
-export const BudgetWithRelations = BudgetSchema.extend({
   wallet: WalletSchema,
 });
 
-export type BudgetWithRelations = z.infer<typeof BudgetWithRelations>;
+export type TransformedBudgetWithRelations = z.infer<typeof TransformedBudgetWithRelationsSchema>;
 
 export const BudgetsResponseSchema = APIResponseSchema({
-  schema: TransformedBudgetSchema.array(),
+  schema: TransformedBudgetWithRelationsSchema.array(),
 });
 
 export const BudgetsRequestQuerySchema = z.object({
@@ -94,9 +88,17 @@ export const CreateBudgetResponseSchema = APIResponseSchema({
 });
 
 export const ShowBudgetResponseSchema = APIResponseSchema({
-  schema: TransformedBudgetSchema,
+  schema: TransformedBudgetWithRelationsSchema,
 });
 
 export const DeleteBudgetResponseSchema = APIResponseSchema({
+  schema: BudgetSchema,
+});
+
+export const RefundBudgetSchema = BudgetSchema.pick({ balance: true });
+
+export type RefundBudget = z.infer<typeof RefundBudgetSchema>;
+
+export const RefundBudgetResponseSchema = APIResponseSchema({
   schema: BudgetSchema,
 });
