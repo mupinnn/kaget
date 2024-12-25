@@ -6,6 +6,7 @@ import { NotFoundError, UnprocessableEntityError } from "@/utils/error.util";
 import {
   Budget,
   BudgetsRequestQuerySchema,
+  BudgetWithRelations,
   CreateBudgetSchema,
   TransformedBudget,
 } from "@/features/budgets/data/budgets.schema";
@@ -74,6 +75,18 @@ async function transformBudgetResponse(budget: Budget): Promise<TransformedBudge
     remaining_balance_percentage: remainingBalancePercentage,
     is_deletable: budgetRecords.length === 0,
   };
+}
+
+async function getBudgetWithRelations(budgetId: string): Promise<BudgetWithRelations> {
+  const storedBudgetById = await getBudgetById(budgetId);
+  const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
+
+  const storedBudgetWithRelations: BudgetWithRelations = {
+    ...storedBudgetById,
+    wallet: storedWalletById
+  }
+
+  return storedBudgetWithRelations
 }
 
 export const budgetsHandler = [

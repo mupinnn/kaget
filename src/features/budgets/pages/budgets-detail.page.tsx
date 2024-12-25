@@ -1,9 +1,19 @@
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { match } from "ts-pattern";
 import { Undo2Icon, PlusIcon, Trash2Icon, ReceiptTextIcon } from "lucide-react";
 import { PageLayout } from "@/components/page-layout";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
@@ -45,19 +55,40 @@ export function BudgetsDetailPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm">
-          <ReceiptTextIcon />
-          Use budget
+        <Button size="sm" asChild className="no-underline">
+          <Link
+            to="/records/create"
+            search={{
+              source_id: budgetId,
+              source_type: "BUDGET",
+            }}
+          >
+            <ReceiptTextIcon />
+            Use budget
+          </Link>
         </Button>
-
         <Button variant="secondary" size="sm">
           <PlusIcon />
           Add balance
         </Button>
-        <Button variant="outline" size="sm">
-          <Undo2Icon />
-          Refund
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Undo2Icon />
+              Refund
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Refund to {budgetDetail.wallet_id}</DialogTitle>
+              <DialogDescription>The quick brown fox jumps over the lazy dog.</DialogDescription>
+            </DialogHeader>
+            <Input placeholder="uwu" />
+            <DialogFooter>
+              <Button type="submit">Refund</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         {budgetDetail.is_deletable && (
           <ConfirmationDialog
             title={<>Are you sure want to delete &quot;{budgetDetail.name}&quot; budget?</>}

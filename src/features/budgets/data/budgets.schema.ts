@@ -28,6 +28,12 @@ export const TransformedBudgetSchema = BudgetSchema.omit({
 
 export type TransformedBudget = z.infer<typeof TransformedBudgetSchema>;
 
+export const BudgetWithRelations = BudgetSchema.extend({
+  wallet: WalletSchema,
+});
+
+export type BudgetWithRelations = z.infer<typeof BudgetWithRelations>;
+
 export const BudgetsResponseSchema = APIResponseSchema({
   schema: TransformedBudgetSchema.array(),
 });
