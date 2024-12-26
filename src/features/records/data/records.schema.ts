@@ -73,7 +73,7 @@ export const CreateRecordSchema = RecordSchema.pick({
     items: RecordItemSchema.pick({ note: true, amount: true }).array().optional().default([]),
   })
   .superRefine((data, ctx) => {
-    if (data.wallet && data.wallet.balance < data.amount) {
+    if (data.record_type === "EXPENSE" && data.wallet && data.wallet.balance < data.amount) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["amount"],
