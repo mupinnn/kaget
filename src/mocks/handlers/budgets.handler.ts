@@ -252,4 +252,42 @@ export const budgetsHandler = [
       return mockErrorResponse(error);
     }
   }),
+
+  http.patch("/api/v1/budgets/:budgetId/activate", async ({ params }) => {
+    try {
+      const budgetId = params.budgetId as string;
+      const storedBudgetById = await getBudgetById(budgetId);
+      const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
+
+      if (!storedBudgetById.archived_at) {
+        throw new UnprocessableEntityError("Unable to activate currently running budget");
+      }
+
+      if (storedWalletById.balance < storedBudgetById.total_balance) {
+        throw new UnprocessableEntityError(
+          `Unable to activate budget due to insufficient balance of ${storedWalletById.name} wallet`
+        );
+      }
+
+      await db.transaction("rw", db.budget, db.wallet, db.transfer, db.record, async () => {
+        await updateBudgetById(budgetId, budget => {
+          budget.archived_at = null;
+        });
+        await createTransfer({
+          amount: storedBudgetById.total_balance,
+          fee: 0,
+          note: `Add ${storedBudgetById.name} budget balance`,
+          source: storedWalletById,
+          destination: storedBudgetById,
+        });
+      });
+
+      return mockSuccessResponse({
+        data: storedBudgetById,
+        message: "Successfully reactivate the budget",
+      });
+    } catch (error) {
+      return mockErrorResponse(error);
+    }
+  }),
 ];

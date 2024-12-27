@@ -104,3 +104,7 @@ export type UpdateBudgetBalance = z.infer<typeof UpdateBudgetBalanceSchema>;
 export const UpdateBudgetBalanceResponseSchema = APIResponseSchema({
   schema: BudgetSchema,
 });
+
+export const ActivateBudgetResponseSchema = APIResponseSchema({
+  schema: BudgetSchema,
+});

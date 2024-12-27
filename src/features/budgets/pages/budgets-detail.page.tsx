@@ -1,6 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { match } from "ts-pattern";
-import { Undo2Icon, PlusIcon, Trash2Icon, ReceiptTextIcon } from "lucide-react";
+import { Undo2Icon, PlusIcon, Trash2Icon, ReceiptTextIcon, RefreshCwIcon } from "lucide-react";
 import { PageLayout } from "@/components/page-layout";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { formatCurrency } from "@/utils/common.util";
 import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
-import { useDeletBudgetMutation } from "../data/budgets.mutations";
+import { useDeletBudgetMutation, useActivateBudgetMutation } from "../data/budgets.mutations";
 import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
 import { BudgetCreateRecordsDialog } from "../components/budget-create-records-dialog";
 
@@ -24,6 +24,7 @@ export function BudgetsDetailPage() {
   const recordsQuery = useRecordsQuery({ source_id: budgetId });
   const transfersQuery = useTransfersQuery({ source_id: budgetId });
   const deleteBudgetMutation = useDeletBudgetMutation();
+  const activateBudgetMutation = useActivateBudgetMutation();
 
   if (budgetDetailQuery.isPending) return <p>Loading . . .</p>;
   if (budgetDetailQuery.isError) return <p>An error occured: {budgetDetailQuery.error.message}</p>;
@@ -47,7 +48,7 @@ export function BudgetsDetailPage() {
         </div>
       </div>
 
-      {!budgetDetail.archived_at && (
+      {!budgetDetail.archived_at ? (
         <div className="flex flex-wrap items-center gap-2">
           <BudgetCreateRecordsDialog
             budgetDetail={budgetDetail}
@@ -93,6 +94,19 @@ export function BudgetsDetailPage() {
             />
           )}
         </div>
+      ) : (
+        <ConfirmationDialog
+          title={<>Are you sure want to use &quot;{budgetDetail.name}&quot; budget again?</>}
+          description={`You will be able to use this budget again as before. Make sure your ${budgetDetail.wallet.name} balance is sufficient`}
+          trigger={
+            <Button size="sm">
+              <RefreshCwIcon />
+              Activate
+            </Button>
+          }
+          actionLabel={"Activate"}
+          onClickAction={() => activateBudgetMutation.mutate(budgetId)}
+        />
       )}
 
       <Tabs defaultValue="records">

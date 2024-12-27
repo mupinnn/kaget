@@ -4,6 +4,7 @@ import { api } from "@/libs/api.lib";
 import { walletsQueryOptions } from "@/features/wallets/data/wallets.queries";
 import { budgetsDetailQueryOptions, budgetsQueryOptions } from "./budgets.queries";
 import {
+  ActivateBudgetResponseSchema,
   CreateBudget,
   CreateBudgetResponseSchema,
   DeleteBudgetResponseSchema,
@@ -58,6 +59,25 @@ export const useUpdateBudgetBalanceMutation = () => {
     async mutationFn({ budgetId, data }: { budgetId: string; data: UpdateBudgetBalance }) {
       const res = await api.patch(data, `/budgets/${budgetId}/balance`);
       return UpdateBudgetBalanceResponseSchema.parse(res);
+    },
+    async onSuccess(data) {
+      await queryClient.invalidateQueries({ ...budgetsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...transfersQueryOptions(), exact: false });
+      await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
+      await queryClient.refetchQueries(budgetsDetailQueryOptions(data.data.id));
+    },
+  });
+};
+
+export const useActivateBudgetMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    async mutationFn(budgetId: string) {
+      console.log({ budgetId });
+      const res = await api.url(`/budgets/${budgetId}/activate`).patch();
+      return ActivateBudgetResponseSchema.parse(res);
     },
     async onSuccess(data) {
       await queryClient.invalidateQueries({ ...budgetsQueryOptions(), exact: false });
