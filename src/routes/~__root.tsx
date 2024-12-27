@@ -12,7 +12,7 @@ function RootRoute() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="flex h-svh w-full flex-1 flex-col overflow-auto">
+      <main className="flex min-h-svh w-full flex-1 flex-col overflow-auto">
         <AppNavbar />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <Outlet />

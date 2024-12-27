@@ -1,5 +1,6 @@
 import { match, P } from "ts-pattern";
 import { getRouteApi } from "@tanstack/react-router";
+import { Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
@@ -46,19 +47,22 @@ export function RecordsDetailPage() {
       }
       badge={recordDetail.record_type}
     >
-      <div className="flex items-center gap-2">
-        <ConfirmationDialog
-          title="Are you sure?"
-          description="This action cannot be undone. This will permanently delete your record and rollback the amount into the respective source (wallet, budget, or debt)."
-          trigger={
-            <Button variant="destructive" size="sm">
-              Delete
-            </Button>
-          }
-          actionLabel="Yes, delete"
-          onClickAction={() => deleteRecordMutation.mutate(recordId)}
-        />
-      </div>
+      {recordDetail.source_type === "WALLET" && (
+        <div className="flex items-center gap-2">
+          <ConfirmationDialog
+            title="Are you sure?"
+            description="This action cannot be undone. This will permanently delete your record and rollback the amount into the respective source (wallet, budget, or debt)."
+            trigger={
+              <Button variant="destructive" size="sm">
+                <Trash2Icon />
+                Delete
+              </Button>
+            }
+            actionLabel="Yes, delete"
+            onClickAction={() => deleteRecordMutation.mutate(recordId)}
+          />
+        </div>
+      )}
 
       {match(recordItems)
         .with(

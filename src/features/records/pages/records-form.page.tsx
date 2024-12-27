@@ -10,7 +10,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
 import { SelectSingleEventHandler } from "react-day-picker";
-import { CalendarIcon, PlusIcon } from "lucide-react";
+import { CalendarIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -40,7 +40,7 @@ import { cn } from "@/libs/utils.lib";
 import { useCreateRecordMutation } from "../data/records.mutations";
 import { CreateRecord, CreateRecordSchema } from "../data/records.schema";
 
-function TotalRecordsAmount({
+export function TotalRecordsAmount({
   control,
   errors,
   setValue,
@@ -124,7 +124,7 @@ export function RecordsFormPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="wallet"
+            name="source"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Wallet</FormLabel>
@@ -280,10 +280,10 @@ export function RecordsFormPage() {
                     <h2 className="text-2xl font-medium">Record {recordItemIndex + 1}</h2>
                     <Button
                       variant="destructive"
-                      size="sm"
+                      size="icon"
                       onClick={() => recordItems.remove(recordItemIndex)}
                     >
-                      Delete
+                      <Trash2Icon />
                     </Button>
                   </div>
 

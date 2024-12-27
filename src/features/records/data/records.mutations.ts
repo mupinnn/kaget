@@ -22,7 +22,7 @@ export const useCreateRecordMutation = () => {
     async onSuccess() {
       await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
       await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
-      await queryClient.invalidateQueries(budgetsQueryOptions);
+      await queryClient.invalidateQueries({ queryKey: ["budgets"], exact: false });
       await navigate({ to: "/records" });
     },
   });
@@ -40,7 +40,7 @@ export const useDeleteRecordMutation = () => {
     async onSuccess() {
       await queryClient.invalidateQueries({ ...recordsQueryOptions(), exact: false });
       await queryClient.invalidateQueries({ ...walletsQueryOptions(), exact: false });
-      await queryClient.invalidateQueries(budgetsQueryOptions);
+      await queryClient.invalidateQueries({ ...budgetsQueryOptions(), exact: false });
       await navigate({ to: "/records" });
     },
   });

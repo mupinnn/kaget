@@ -66,18 +66,18 @@ export const CreateRecordSchema = RecordSchema.pick({
   record_type: true,
 })
   .extend({
-    wallet: WalletSchema,
+    source: SourceOrDestinationSchema,
     dor: z.union([z.date(), z.string().datetime()], {
       required_error: "A date of record is required",
     }),
     items: RecordItemSchema.pick({ note: true, amount: true }).array().optional().default([]),
   })
   .superRefine((data, ctx) => {
-    if (data.wallet && data.wallet.balance < data.amount) {
+    if (data.record_type === "EXPENSE" && data.source && data.source.balance < data.amount) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["amount"],
-        message: "Amount should not greater than the selected wallet balance",
+        message: "Amount should not greater than the selected source balance",
       });
     }
   });
