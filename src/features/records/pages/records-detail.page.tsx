@@ -47,20 +47,22 @@ export function RecordsDetailPage() {
       }
       badge={recordDetail.record_type}
     >
-      <div className="flex items-center gap-2">
-        <ConfirmationDialog
-          title="Are you sure?"
-          description="This action cannot be undone. This will permanently delete your record and rollback the amount into the respective source (wallet, budget, or debt)."
-          trigger={
-            <Button variant="destructive" size="sm">
-              <Trash2Icon />
-              Delete
-            </Button>
-          }
-          actionLabel="Yes, delete"
-          onClickAction={() => deleteRecordMutation.mutate(recordId)}
-        />
-      </div>
+      {recordDetail.source_type === "WALLET" && (
+        <div className="flex items-center gap-2">
+          <ConfirmationDialog
+            title="Are you sure?"
+            description="This action cannot be undone. This will permanently delete your record and rollback the amount into the respective source (wallet, budget, or debt)."
+            trigger={
+              <Button variant="destructive" size="sm">
+                <Trash2Icon />
+                Delete
+              </Button>
+            }
+            actionLabel="Yes, delete"
+            onClickAction={() => deleteRecordMutation.mutate(recordId)}
+          />
+        </div>
+      )}
 
       {match(recordItems)
         .with(

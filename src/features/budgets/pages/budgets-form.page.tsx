@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   useForm,
@@ -32,7 +33,6 @@ import { Wallet } from "@/features/wallets/data/wallets.schema";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import {
   Sheet,
-  SheetTrigger,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -171,6 +171,7 @@ function BudgetForm({
 }
 
 export function BudgetsFormPage() {
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const form = useForm<CreateBudget>({
     resolver: zodResolver(CreateBudgetSchema),
     defaultValues: {
@@ -186,7 +187,7 @@ export function BudgetsFormPage() {
 
   const walletOptions = walletsQuery.data.data;
   const budgetsSummary = Object.entries(
-    fields.reduce<Record<string, CreateBudget["budgets"]>>((group, budget) => {
+    form.watch("budgets").reduce<Record<string, CreateBudget["budgets"]>>((group, budget) => {
       if (budget.wallet) {
         group[budget.wallet.id] = group[budget.wallet.id] ?? [];
         group[budget.wallet.id].push(budget);
@@ -198,6 +199,11 @@ export function BudgetsFormPage() {
 
   const onSubmit = (values: CreateBudget) => {
     createBudgetMutation.mutate(values);
+  };
+
+  const onSummarize = async () => {
+    const isFormValid = await form.trigger();
+    if (isFormValid) setIsSummaryOpen(true);
   };
 
   return (
@@ -229,10 +235,10 @@ export function BudgetsFormPage() {
             <Button asChild variant="outline" className="no-underline">
               <Link to="..">Back</Link>
             </Button>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button isLoading={createBudgetMutation.isPending}>Summarize</Button>
-              </SheetTrigger>
+            <Sheet open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
+              <Button onClick={onSummarize} type="button">
+                Summarize
+              </Button>
               <SheetContent side="bottom" className="max-h-svh overflow-auto">
                 <SheetHeader>
                   <SheetTitle>Budget Allocation Summary</SheetTitle>

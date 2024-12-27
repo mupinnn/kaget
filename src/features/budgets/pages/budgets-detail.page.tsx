@@ -47,51 +47,53 @@ export function BudgetsDetailPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <BudgetCreateRecordsDialog
-          budgetDetail={budgetDetail}
-          trigger={
-            <Button size="sm">
-              <ReceiptTextIcon />
-              Use budget
-            </Button>
-          }
-        />
-        <BudgetBalanceUpdateDialog
-          type="ADD"
-          budgetDetail={budgetDetail}
-          trigger={
-            <Button variant="secondary" size="sm">
-              <PlusIcon />
-              Add balance
-            </Button>
-          }
-        />
-        <BudgetBalanceUpdateDialog
-          type="REFUND"
-          budgetDetail={budgetDetail}
-          trigger={
-            <Button variant="outline" size="sm">
-              <Undo2Icon />
-              Refund
-            </Button>
-          }
-        />
-        {!budgetHasRecords && (
-          <ConfirmationDialog
-            title={<>Are you sure want to delete &quot;{budgetDetail.name}&quot; budget?</>}
-            description="This action cannot be undone. This will permanently delete your budget and will rollback the balance into the respective source (wallet)."
+      {!budgetDetail.archived_at && (
+        <div className="flex flex-wrap items-center gap-2">
+          <BudgetCreateRecordsDialog
+            budgetDetail={budgetDetail}
             trigger={
-              <Button variant="destructive" size="sm">
-                <Trash2Icon />
-                Delete
+              <Button size="sm">
+                <ReceiptTextIcon />
+                Use budget
               </Button>
             }
-            actionLabel="Yes, delete"
-            onClickAction={() => deleteBudgetMutation.mutate(budgetId)}
           />
-        )}
-      </div>
+          <BudgetBalanceUpdateDialog
+            type="ADD"
+            budgetDetail={budgetDetail}
+            trigger={
+              <Button variant="secondary" size="sm">
+                <PlusIcon />
+                Add balance
+              </Button>
+            }
+          />
+          <BudgetBalanceUpdateDialog
+            type="REFUND"
+            budgetDetail={budgetDetail}
+            trigger={
+              <Button variant="outline" size="sm">
+                <Undo2Icon />
+                Refund
+              </Button>
+            }
+          />
+          {!budgetHasRecords && (
+            <ConfirmationDialog
+              title={<>Are you sure want to delete &quot;{budgetDetail.name}&quot; budget?</>}
+              description="This action cannot be undone. This will permanently delete your budget and will rollback the balance into the respective source (wallet)."
+              trigger={
+                <Button variant="destructive" size="sm">
+                  <Trash2Icon />
+                  Delete
+                </Button>
+              }
+              actionLabel="Yes, delete"
+              onClickAction={() => deleteBudgetMutation.mutate(budgetId)}
+            />
+          )}
+        </div>
+      )}
 
       <Tabs defaultValue="records">
         <TabsList className="grid w-full grid-cols-2 sm:w-96">

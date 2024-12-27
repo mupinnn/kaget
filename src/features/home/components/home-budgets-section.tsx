@@ -10,7 +10,7 @@ export const HomeBudgetsSection = () => {
   return (
     <HomeSection title="Budgets" to="/budgets" linkText="See all budgets">
       <ScrollArea className="-mb-0.5 -ml-0.5">
-        <div className="flex w-max space-x-4 pb-0.5 pl-0.5">
+        <div className="flex w-full space-x-4 pb-0.5 pl-0.5">
           {match(budgetsQuery)
             .with({ isPending: true }, () => <BudgetListLoader />)
             .with({ isError: true }, () => <p>An error occured</p>)

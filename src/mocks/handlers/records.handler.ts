@@ -23,7 +23,7 @@ import {
   getWalletById,
   updateWalletById,
 } from "./wallets.handler";
-import { deductBudgetBalance, getBudgetById, getBudgetItemById } from "./budgets.handler";
+import { getBudgetById, getBudgetItemById, updateBudgetById } from "./budgets.handler";
 import { noop, noopAsync } from "@/utils/common.util";
 
 export function getSourceOrDestinationType(maybeSourceOrDestination: unknown) {
@@ -77,7 +77,13 @@ export async function createRecord(record: Omit<Record, "id" | "created_at" | "u
       if (isAddition) {
         noop();
       } else {
-        await deductBudgetBalance(newRecord.source_id, newRecord.amount);
+        await updateBudgetById(newRecord.source_id, budget => {
+          budget.balance -= newRecord.amount;
+
+          if (budget.balance <= 0) {
+            budget.archived_at = new Date().toISOString();
+          }
+        });
       }
     })
     .with("BUDGET_ITEM", noopAsync)
