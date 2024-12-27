@@ -1,4 +1,4 @@
-import { getRouteApi, Link } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { match } from "ts-pattern";
 import { Undo2Icon, PlusIcon, Trash2Icon, ReceiptTextIcon } from "lucide-react";
 import { PageLayout } from "@/components/page-layout";
@@ -14,6 +14,7 @@ import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
 import { useDeletBudgetMutation } from "../data/budgets.mutations";
 import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
+import { BudgetCreateRecordsDialog } from "../components/budget-create-records-dialog";
 
 const route = getRouteApi("/budgets/$budgetId");
 
@@ -31,7 +32,7 @@ export function BudgetsDetailPage() {
   const budgetHasRecords = (recordsQuery.data?.data?.length ?? 0) > 0;
 
   return (
-    <PageLayout title={budgetDetail.name} badge="BUDGET">
+    <PageLayout title={budgetDetail.name} badge={`BUDGET - ${budgetDetail.wallet.name}`}>
       <div className="flex flex-col gap-2 sm:w-96">
         <Progress value={budgetDetail.remaining_balance_percentage} />
         <div className="inline-flex items-center gap-2">
@@ -47,18 +48,15 @@ export function BudgetsDetailPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" asChild className="no-underline">
-          <Link
-            to="/records/create"
-            search={{
-              source_id: budgetId,
-              source_type: "BUDGET",
-            }}
-          >
-            <ReceiptTextIcon />
-            Use budget
-          </Link>
-        </Button>
+        <BudgetCreateRecordsDialog
+          budgetDetail={budgetDetail}
+          trigger={
+            <Button size="sm">
+              <ReceiptTextIcon />
+              Use budget
+            </Button>
+          }
+        />
         <BudgetBalanceUpdateDialog
           type="ADD"
           budgetDetail={budgetDetail}

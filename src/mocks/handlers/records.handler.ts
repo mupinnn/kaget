@@ -23,7 +23,8 @@ import {
   getWalletById,
   updateWalletById,
 } from "./wallets.handler";
-import { getBudgetById, getBudgetItemById } from "./budgets.handler";
+import { deductBudgetBalance, getBudgetById, getBudgetItemById } from "./budgets.handler";
+import { noop, noopAsync } from "@/utils/common.util";
 
 export function getSourceOrDestinationType(maybeSourceOrDestination: unknown) {
   return match(maybeSourceOrDestination)
@@ -64,13 +65,23 @@ export async function createRecord(record: Omit<Record, "id" | "created_at" | "u
 
   await db.record.add(newRecord);
 
-  if (newRecord.source_type === "WALLET") {
-    await updateWalletById(newRecord.source_id, wallet => {
-      wallet.balance = isAddition
-        ? wallet.balance + newRecord.amount
-        : wallet.balance - newRecord.amount;
-    });
-  }
+  await match(newRecord.source_type)
+    .with("WALLET", async () => {
+      await updateWalletById(newRecord.source_id, wallet => {
+        wallet.balance = isAddition
+          ? wallet.balance + newRecord.amount
+          : wallet.balance - newRecord.amount;
+      });
+    })
+    .with("BUDGET", async () => {
+      if (isAddition) {
+        noop();
+      } else {
+        await deductBudgetBalance(newRecord.source_id, newRecord.amount);
+      }
+    })
+    .with("BUDGET_ITEM", noopAsync)
+    .exhaustive();
 }
 
 export async function getRecordWithRelations(recordId: string): Promise<RecordWithRelations> {
@@ -157,12 +168,13 @@ export const recordsHandler = [
   http.post("/api/v1/records", async ({ request }) => {
     try {
       const data = CreateRecordSchema.parse(await request.json());
+      const sourceType = getSourceOrDestinationType(data.source);
       const newRecord: Record = {
         id: nanoid(),
         note: data.note,
         amount: data.amount,
-        source_id: data.wallet.id,
-        source_type: "WALLET",
+        source_id: data.source.id,
+        source_type: sourceType,
         record_type: data.record_type,
         recorded_at: new Date(data.dor).toISOString(),
         created_at: new Date().toISOString(),
@@ -177,7 +189,7 @@ export const recordsHandler = [
         updated_at: new Date().toISOString(),
       }));
 
-      await db.transaction("rw", db.record, db.record_item, db.wallet, async () => {
+      await db.transaction("rw", db.record, db.record_item, db.wallet, db.budget, async () => {
         await createRecord(newRecord);
 
         if (newRecordDetail.length > 0) {

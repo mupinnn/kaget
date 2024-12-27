@@ -40,7 +40,7 @@ import { cn } from "@/libs/utils.lib";
 import { useCreateRecordMutation } from "../data/records.mutations";
 import { CreateRecord, CreateRecordSchema } from "../data/records.schema";
 
-function TotalRecordsAmount({
+export function TotalRecordsAmount({
   control,
   errors,
   setValue,
@@ -124,7 +124,7 @@ export function RecordsFormPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="wallet"
+            name="source"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Wallet</FormLabel>
