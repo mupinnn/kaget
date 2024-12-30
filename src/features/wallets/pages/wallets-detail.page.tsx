@@ -13,7 +13,7 @@ import { RecordList, RecordListLoader } from "@/features/records/components/reco
 import { useDeleteWalletMutation } from "../data/wallets.mutations";
 import { useWalletDetailQuery } from "../data/wallets.queries";
 
-const route = getRouteApi("/wallets/$walletId");
+const route = getRouteApi("/_app/wallets/$walletId");
 
 export function WalletsDetailPage() {
   const { walletId } = route.useParams();

@@ -29,6 +29,7 @@ export function App() {
       new QueryClient({
         defaultOptions: {
           queries: {
+            refetchOnWindowFocus: false,
             retry: false,
             staleTime: 30 * 1000,
           },

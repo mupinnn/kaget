@@ -4,6 +4,7 @@ import type { Wallet } from "@/features/wallets/data/wallets.schema";
 import type { Budget, BudgetItem } from "@/features/budgets/data/budgets.schema";
 import type { Record, RecordItem } from "@/features/records/data/records.schema";
 import type { Transfer } from "@/features/transfers/data/transfers.schema";
+import type { Settings } from "@/features/settings/data/settings.schema";
 
 class KagetDB extends Dexie {
   wallet!: EntityTable<Wallet, "id">;
@@ -12,6 +13,7 @@ class KagetDB extends Dexie {
   record!: EntityTable<Record, "id">;
   record_item!: EntityTable<RecordItem, "id">;
   transfer!: EntityTable<Transfer, "id">;
+  settings!: EntityTable<Settings>;
 
   constructor() {
     super("KagetDB");
@@ -31,6 +33,10 @@ class KagetDB extends Dexie {
       budget_item: "id, balance, wallet_id, budget_id, created_at, updated_at",
       transfer:
         "id, ref_id, source_id, source_type, destination_id, destination_type, created_at, type",
+    });
+
+    this.version(3).stores({
+      settings: "++, currency",
     });
   }
 }

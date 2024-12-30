@@ -75,7 +75,6 @@ export const useActivateBudgetMutation = () => {
 
   return useMutation({
     async mutationFn(budgetId: string) {
-      console.log({ budgetId });
       const res = await api.url(`/budgets/${budgetId}/activate`).patch();
       return ActivateBudgetResponseSchema.parse(res);
     },

@@ -16,7 +16,7 @@ import { useDeletBudgetMutation, useActivateBudgetMutation } from "../data/budge
 import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
 import { BudgetCreateRecordsDialog } from "../components/budget-create-records-dialog";
 
-const route = getRouteApi("/budgets/$budgetId");
+const route = getRouteApi("/_app/budgets/$budgetId");
 
 export function BudgetsDetailPage() {
   const { budgetId } = route.useParams();

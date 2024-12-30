@@ -1,24 +1,12 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppNavbar } from "@/components/app-navbar";
-import { AppFooter } from "@/components/app-footer";
-import { AppSidebar } from "@/components/app-sidebar";
+import { createRootRoute, redirect } from "@tanstack/react-router";
+import { preloadSettings } from "@/features/settings/data/settings.queries";
 
 export const Route = createRootRoute({
-  component: RootRoute,
-});
+  beforeLoad: async ({ location }) => {
+    await preloadSettings();
 
-function RootRoute() {
-  return (
-    <SidebarProvider>
-      <AppSidebar />
-      <main className="flex min-h-svh w-full flex-1 flex-col overflow-auto">
-        <AppNavbar />
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <Outlet />
-        </div>
-        <AppFooter />
-      </main>
-    </SidebarProvider>
-  );
-}
+    if (!window.settings && !location.pathname.includes("onboarding")) {
+      redirect({ to: "/onboarding", throw: true });
+    }
+  },
+});

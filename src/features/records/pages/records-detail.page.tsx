@@ -11,7 +11,7 @@ import { getRecordAmountValueAndClasses } from "@/utils/records.util";
 import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
 import { useDeleteRecordMutation } from "../data/records.mutations";
 
-const route = getRouteApi("/records/$recordId");
+const route = getRouteApi("/_app/records/$recordId");
 
 export function RecordsDetailPage() {
   const { recordId } = route.useParams();
