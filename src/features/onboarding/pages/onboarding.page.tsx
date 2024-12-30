@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { BadgeCheckIcon, ChevronsUpDownIcon, CheckIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +29,7 @@ import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardTitle, CardDescription, CardHeader } from "@/components/ui/card";
 import { Settings, SettingsSchema } from "@/features/settings/data/settings.schema";
+import { useCreateSettingsMutation } from "@/features/settings/data/settings.mutations";
 import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
@@ -88,6 +90,7 @@ export function OnboardingIndexPage() {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [balancePreview, setBalancePreview] = useState<string | undefined>("1000");
 
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const form = useForm<Settings>({
     resolver: zodResolver(SettingsSchema),
@@ -95,9 +98,14 @@ export function OnboardingIndexPage() {
       currency: "IDR",
     },
   });
+  const createSettingsMutation = useCreateSettingsMutation();
 
   function onSubmit(values: Settings) {
-    console.log(values);
+    createSettingsMutation.mutate(values, {
+      async onSuccess() {
+        await navigate({ to: "/" });
+      },
+    });
   }
 
   return (
@@ -253,7 +261,9 @@ export function OnboardingIndexPage() {
               </CardContent>
             </Card>
 
-            <Button className="w-full">Start budgeting!</Button>
+            <Button className="w-full" isLoading={createSettingsMutation.isPending}>
+              Start budgeting!
+            </Button>
           </form>
         </Form>
       </section>

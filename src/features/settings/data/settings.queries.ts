@@ -7,6 +7,11 @@ export const getSettings = async () => {
   return SettingsResponseSchema.parse(res);
 };
 
+export const preloadSettings = async () => {
+  const settings = await getSettings();
+  window.settings = settings.data;
+};
+
 export const useSettingsQuery = () =>
   useQuery({
     queryKey: ["settings"],
