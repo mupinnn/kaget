@@ -120,7 +120,7 @@ export function OnboardingIndexPage() {
               <h3 className="inline-flex items-center gap-1 text-lg font-medium">
                 <BadgeCheckIcon className="fill-primary" /> {feature.title}
               </h3>
-              <p className="text-sm">{feature.description}</p>
+              <p>{feature.description}</p>
             </article>
           ))}
         </div>

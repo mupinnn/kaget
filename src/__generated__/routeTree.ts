@@ -11,263 +11,324 @@
 // Import Routes
 
 import { Route as rootRoute } from "./../routes/~__root";
-import { Route as IndexRouteImport } from "./../routes/~index.route";
-import { Route as walletsWalletsIndexRouteImport } from "./../routes/~(wallets)/~wallets.index.route";
-import { Route as transfersTransfersIndexRouteImport } from "./../routes/~(transfers)/~transfers.index.route";
-import { Route as settingsSettingsIndexRouteImport } from "./../routes/~(settings)/~settings.index.route";
-import { Route as recordsRecordsIndexRouteImport } from "./../routes/~(records)/~records.index.route";
-import { Route as budgetsBudgetsIndexRouteImport } from "./../routes/~(budgets)/~budgets.index.route";
-import { Route as walletsWalletsCreateRouteImport } from "./../routes/~(wallets)/~wallets.create.route";
-import { Route as walletsWalletsWalletIdRouteImport } from "./../routes/~(wallets)/~wallets.$walletId.route";
-import { Route as transfersTransfersCreateRouteImport } from "./../routes/~(transfers)/~transfers.create.route";
-import { Route as recordsRecordsCreateRouteImport } from "./../routes/~(records)/~records.create.route";
-import { Route as recordsRecordsRecordIdRouteImport } from "./../routes/~(records)/~records.$recordId.route";
-import { Route as budgetsBudgetsCreateRouteImport } from "./../routes/~(budgets)/~budgets.create.route";
-import { Route as budgetsBudgetsBudgetIdRouteImport } from "./../routes/~(budgets)/~budgets.$budgetId.route";
-import { Route as walletsWalletsWalletIdEditRouteImport } from "./../routes/~(wallets)/~wallets_.$walletId.edit.route";
+import { Route as AppImport } from "./../routes/~_app";
+import { Route as OnboardingRouteImport } from "./../routes/~onboarding.route";
+import { Route as AppIndexRouteImport } from "./../routes/~_app/~index.route";
+import { Route as AppwalletsWalletsIndexRouteImport } from "./../routes/~_app/~(wallets)/~wallets.index.route";
+import { Route as ApptransfersTransfersIndexRouteImport } from "./../routes/~_app/~(transfers)/~transfers.index.route";
+import { Route as AppsettingsSettingsIndexRouteImport } from "./../routes/~_app/~(settings)/~settings.index.route";
+import { Route as ApprecordsRecordsIndexRouteImport } from "./../routes/~_app/~(records)/~records.index.route";
+import { Route as AppbudgetsBudgetsIndexRouteImport } from "./../routes/~_app/~(budgets)/~budgets.index.route";
+import { Route as AppwalletsWalletsCreateRouteImport } from "./../routes/~_app/~(wallets)/~wallets.create.route";
+import { Route as AppwalletsWalletsWalletIdRouteImport } from "./../routes/~_app/~(wallets)/~wallets.$walletId.route";
+import { Route as ApptransfersTransfersCreateRouteImport } from "./../routes/~_app/~(transfers)/~transfers.create.route";
+import { Route as ApprecordsRecordsCreateRouteImport } from "./../routes/~_app/~(records)/~records.create.route";
+import { Route as ApprecordsRecordsRecordIdRouteImport } from "./../routes/~_app/~(records)/~records.$recordId.route";
+import { Route as AppbudgetsBudgetsCreateRouteImport } from "./../routes/~_app/~(budgets)/~budgets.create.route";
+import { Route as AppbudgetsBudgetsBudgetIdRouteImport } from "./../routes/~_app/~(budgets)/~budgets.$budgetId.route";
+import { Route as AppwalletsWalletsWalletIdEditRouteImport } from "./../routes/~_app/~(wallets)/~wallets_.$walletId.edit.route";
 
 // Create/Update Routes
 
-const IndexRouteRoute = IndexRouteImport.update({
+const AppRoute = AppImport.update({
+  id: "/_app",
+  getParentRoute: () => rootRoute,
+} as any);
+
+const OnboardingRouteRoute = OnboardingRouteImport.update({
+  path: "/onboarding",
+  getParentRoute: () => rootRoute,
+} as any);
+
+const AppIndexRouteRoute = AppIndexRouteImport.update({
   path: "/",
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AppRoute,
 } as any);
 
-const walletsWalletsIndexRouteRoute = walletsWalletsIndexRouteImport.update({
+const AppwalletsWalletsIndexRouteRoute = AppwalletsWalletsIndexRouteImport.update({
   path: "/wallets/",
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AppRoute,
 } as any);
 
-const transfersTransfersIndexRouteRoute =
-  transfersTransfersIndexRouteImport.update({
-    path: "/transfers/",
-    getParentRoute: () => rootRoute,
-  } as any);
+const ApptransfersTransfersIndexRouteRoute = ApptransfersTransfersIndexRouteImport.update({
+  path: "/transfers/",
+  getParentRoute: () => AppRoute,
+} as any);
 
-const settingsSettingsIndexRouteRoute = settingsSettingsIndexRouteImport.update(
-  {
-    path: "/settings/",
-    getParentRoute: () => rootRoute,
-  } as any,
-);
+const AppsettingsSettingsIndexRouteRoute = AppsettingsSettingsIndexRouteImport.update({
+  path: "/settings/",
+  getParentRoute: () => AppRoute,
+} as any);
 
-const recordsRecordsIndexRouteRoute = recordsRecordsIndexRouteImport.update({
+const ApprecordsRecordsIndexRouteRoute = ApprecordsRecordsIndexRouteImport.update({
   path: "/records/",
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AppRoute,
 } as any);
 
-const budgetsBudgetsIndexRouteRoute = budgetsBudgetsIndexRouteImport.update({
+const AppbudgetsBudgetsIndexRouteRoute = AppbudgetsBudgetsIndexRouteImport.update({
   path: "/budgets/",
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AppRoute,
 } as any);
 
-const walletsWalletsCreateRouteRoute = walletsWalletsCreateRouteImport.update({
+const AppwalletsWalletsCreateRouteRoute = AppwalletsWalletsCreateRouteImport.update({
   path: "/wallets/create",
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AppRoute,
 } as any);
 
-const walletsWalletsWalletIdRouteRoute =
-  walletsWalletsWalletIdRouteImport.update({
-    path: "/wallets/$walletId",
-    getParentRoute: () => rootRoute,
-  } as any);
+const AppwalletsWalletsWalletIdRouteRoute = AppwalletsWalletsWalletIdRouteImport.update({
+  path: "/wallets/$walletId",
+  getParentRoute: () => AppRoute,
+} as any);
 
-const transfersTransfersCreateRouteRoute =
-  transfersTransfersCreateRouteImport.update({
-    path: "/transfers/create",
-    getParentRoute: () => rootRoute,
-  } as any);
+const ApptransfersTransfersCreateRouteRoute = ApptransfersTransfersCreateRouteImport.update({
+  path: "/transfers/create",
+  getParentRoute: () => AppRoute,
+} as any);
 
-const recordsRecordsCreateRouteRoute = recordsRecordsCreateRouteImport.update({
+const ApprecordsRecordsCreateRouteRoute = ApprecordsRecordsCreateRouteImport.update({
   path: "/records/create",
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AppRoute,
 } as any);
 
-const recordsRecordsRecordIdRouteRoute =
-  recordsRecordsRecordIdRouteImport.update({
-    path: "/records/$recordId",
-    getParentRoute: () => rootRoute,
-  } as any);
+const ApprecordsRecordsRecordIdRouteRoute = ApprecordsRecordsRecordIdRouteImport.update({
+  path: "/records/$recordId",
+  getParentRoute: () => AppRoute,
+} as any);
 
-const budgetsBudgetsCreateRouteRoute = budgetsBudgetsCreateRouteImport.update({
+const AppbudgetsBudgetsCreateRouteRoute = AppbudgetsBudgetsCreateRouteImport.update({
   path: "/budgets/create",
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AppRoute,
 } as any);
 
-const budgetsBudgetsBudgetIdRouteRoute =
-  budgetsBudgetsBudgetIdRouteImport.update({
-    path: "/budgets/$budgetId",
-    getParentRoute: () => rootRoute,
-  } as any);
+const AppbudgetsBudgetsBudgetIdRouteRoute = AppbudgetsBudgetsBudgetIdRouteImport.update({
+  path: "/budgets/$budgetId",
+  getParentRoute: () => AppRoute,
+} as any);
 
-const walletsWalletsWalletIdEditRouteRoute =
-  walletsWalletsWalletIdEditRouteImport.update({
-    path: "/wallets/$walletId/edit",
-    getParentRoute: () => rootRoute,
-  } as any);
+const AppwalletsWalletsWalletIdEditRouteRoute = AppwalletsWalletsWalletIdEditRouteImport.update({
+  path: "/wallets/$walletId/edit",
+  getParentRoute: () => AppRoute,
+} as any);
 
 // Populate the FileRoutesByPath interface
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
+    "/onboarding": {
+      id: "/onboarding";
+      path: "/onboarding";
+      fullPath: "/onboarding";
+      preLoaderRoute: typeof OnboardingRouteImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/_app": {
+      id: "/_app";
+      path: "";
+      fullPath: "";
+      preLoaderRoute: typeof AppImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/_app/": {
+      id: "/_app/";
       path: "/";
       fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppIndexRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(budgets)/budgets/$budgetId": {
-      id: "/budgets/$budgetId";
+    "/_app/(budgets)/budgets/$budgetId": {
+      id: "/_app/budgets/$budgetId";
       path: "/budgets/$budgetId";
       fullPath: "/budgets/$budgetId";
-      preLoaderRoute: typeof budgetsBudgetsBudgetIdRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppbudgetsBudgetsBudgetIdRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(budgets)/budgets/create": {
-      id: "/budgets/create";
+    "/_app/(budgets)/budgets/create": {
+      id: "/_app/budgets/create";
       path: "/budgets/create";
       fullPath: "/budgets/create";
-      preLoaderRoute: typeof budgetsBudgetsCreateRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppbudgetsBudgetsCreateRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(records)/records/$recordId": {
-      id: "/records/$recordId";
+    "/_app/(records)/records/$recordId": {
+      id: "/_app/records/$recordId";
       path: "/records/$recordId";
       fullPath: "/records/$recordId";
-      preLoaderRoute: typeof recordsRecordsRecordIdRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof ApprecordsRecordsRecordIdRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(records)/records/create": {
-      id: "/records/create";
+    "/_app/(records)/records/create": {
+      id: "/_app/records/create";
       path: "/records/create";
       fullPath: "/records/create";
-      preLoaderRoute: typeof recordsRecordsCreateRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof ApprecordsRecordsCreateRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(transfers)/transfers/create": {
-      id: "/transfers/create";
+    "/_app/(transfers)/transfers/create": {
+      id: "/_app/transfers/create";
       path: "/transfers/create";
       fullPath: "/transfers/create";
-      preLoaderRoute: typeof transfersTransfersCreateRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof ApptransfersTransfersCreateRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(wallets)/wallets/$walletId": {
-      id: "/wallets/$walletId";
+    "/_app/(wallets)/wallets/$walletId": {
+      id: "/_app/wallets/$walletId";
       path: "/wallets/$walletId";
       fullPath: "/wallets/$walletId";
-      preLoaderRoute: typeof walletsWalletsWalletIdRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppwalletsWalletsWalletIdRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(wallets)/wallets/create": {
-      id: "/wallets/create";
+    "/_app/(wallets)/wallets/create": {
+      id: "/_app/wallets/create";
       path: "/wallets/create";
       fullPath: "/wallets/create";
-      preLoaderRoute: typeof walletsWalletsCreateRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppwalletsWalletsCreateRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(budgets)/budgets/": {
-      id: "/budgets/";
+    "/_app/(budgets)/budgets/": {
+      id: "/_app/budgets/";
       path: "/budgets";
       fullPath: "/budgets";
-      preLoaderRoute: typeof budgetsBudgetsIndexRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppbudgetsBudgetsIndexRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(records)/records/": {
-      id: "/records/";
+    "/_app/(records)/records/": {
+      id: "/_app/records/";
       path: "/records";
       fullPath: "/records";
-      preLoaderRoute: typeof recordsRecordsIndexRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof ApprecordsRecordsIndexRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(settings)/settings/": {
-      id: "/settings/";
+    "/_app/(settings)/settings/": {
+      id: "/_app/settings/";
       path: "/settings";
       fullPath: "/settings";
-      preLoaderRoute: typeof settingsSettingsIndexRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppsettingsSettingsIndexRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(transfers)/transfers/": {
-      id: "/transfers/";
+    "/_app/(transfers)/transfers/": {
+      id: "/_app/transfers/";
       path: "/transfers";
       fullPath: "/transfers";
-      preLoaderRoute: typeof transfersTransfersIndexRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof ApptransfersTransfersIndexRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(wallets)/wallets/": {
-      id: "/wallets/";
+    "/_app/(wallets)/wallets/": {
+      id: "/_app/wallets/";
       path: "/wallets";
       fullPath: "/wallets";
-      preLoaderRoute: typeof walletsWalletsIndexRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppwalletsWalletsIndexRouteImport;
+      parentRoute: typeof AppImport;
     };
-    "/(wallets)/wallets/$walletId/edit": {
-      id: "/wallets/$walletId/edit";
+    "/_app/(wallets)/wallets/$walletId/edit": {
+      id: "/_app/wallets/$walletId/edit";
       path: "/wallets/$walletId/edit";
       fullPath: "/wallets/$walletId/edit";
-      preLoaderRoute: typeof walletsWalletsWalletIdEditRouteImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof AppwalletsWalletsWalletIdEditRouteImport;
+      parentRoute: typeof AppImport;
     };
   }
 }
 
 // Create and export the route tree
 
+interface AppRouteChildren {
+  AppIndexRouteRoute: typeof AppIndexRouteRoute;
+  AppbudgetsBudgetsBudgetIdRouteRoute: typeof AppbudgetsBudgetsBudgetIdRouteRoute;
+  AppbudgetsBudgetsCreateRouteRoute: typeof AppbudgetsBudgetsCreateRouteRoute;
+  ApprecordsRecordsRecordIdRouteRoute: typeof ApprecordsRecordsRecordIdRouteRoute;
+  ApprecordsRecordsCreateRouteRoute: typeof ApprecordsRecordsCreateRouteRoute;
+  ApptransfersTransfersCreateRouteRoute: typeof ApptransfersTransfersCreateRouteRoute;
+  AppwalletsWalletsWalletIdRouteRoute: typeof AppwalletsWalletsWalletIdRouteRoute;
+  AppwalletsWalletsCreateRouteRoute: typeof AppwalletsWalletsCreateRouteRoute;
+  AppbudgetsBudgetsIndexRouteRoute: typeof AppbudgetsBudgetsIndexRouteRoute;
+  ApprecordsRecordsIndexRouteRoute: typeof ApprecordsRecordsIndexRouteRoute;
+  AppsettingsSettingsIndexRouteRoute: typeof AppsettingsSettingsIndexRouteRoute;
+  ApptransfersTransfersIndexRouteRoute: typeof ApptransfersTransfersIndexRouteRoute;
+  AppwalletsWalletsIndexRouteRoute: typeof AppwalletsWalletsIndexRouteRoute;
+  AppwalletsWalletsWalletIdEditRouteRoute: typeof AppwalletsWalletsWalletIdEditRouteRoute;
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppIndexRouteRoute: AppIndexRouteRoute,
+  AppbudgetsBudgetsBudgetIdRouteRoute: AppbudgetsBudgetsBudgetIdRouteRoute,
+  AppbudgetsBudgetsCreateRouteRoute: AppbudgetsBudgetsCreateRouteRoute,
+  ApprecordsRecordsRecordIdRouteRoute: ApprecordsRecordsRecordIdRouteRoute,
+  ApprecordsRecordsCreateRouteRoute: ApprecordsRecordsCreateRouteRoute,
+  ApptransfersTransfersCreateRouteRoute: ApptransfersTransfersCreateRouteRoute,
+  AppwalletsWalletsWalletIdRouteRoute: AppwalletsWalletsWalletIdRouteRoute,
+  AppwalletsWalletsCreateRouteRoute: AppwalletsWalletsCreateRouteRoute,
+  AppbudgetsBudgetsIndexRouteRoute: AppbudgetsBudgetsIndexRouteRoute,
+  ApprecordsRecordsIndexRouteRoute: ApprecordsRecordsIndexRouteRoute,
+  AppsettingsSettingsIndexRouteRoute: AppsettingsSettingsIndexRouteRoute,
+  ApptransfersTransfersIndexRouteRoute: ApptransfersTransfersIndexRouteRoute,
+  AppwalletsWalletsIndexRouteRoute: AppwalletsWalletsIndexRouteRoute,
+  AppwalletsWalletsWalletIdEditRouteRoute: AppwalletsWalletsWalletIdEditRouteRoute,
+};
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
+
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRouteRoute;
-  "/budgets/$budgetId": typeof budgetsBudgetsBudgetIdRouteRoute;
-  "/budgets/create": typeof budgetsBudgetsCreateRouteRoute;
-  "/records/$recordId": typeof recordsRecordsRecordIdRouteRoute;
-  "/records/create": typeof recordsRecordsCreateRouteRoute;
-  "/transfers/create": typeof transfersTransfersCreateRouteRoute;
-  "/wallets/$walletId": typeof walletsWalletsWalletIdRouteRoute;
-  "/wallets/create": typeof walletsWalletsCreateRouteRoute;
-  "/budgets": typeof budgetsBudgetsIndexRouteRoute;
-  "/records": typeof recordsRecordsIndexRouteRoute;
-  "/settings": typeof settingsSettingsIndexRouteRoute;
-  "/transfers": typeof transfersTransfersIndexRouteRoute;
-  "/wallets": typeof walletsWalletsIndexRouteRoute;
-  "/wallets/$walletId/edit": typeof walletsWalletsWalletIdEditRouteRoute;
+  "/onboarding": typeof OnboardingRouteRoute;
+  "": typeof AppRouteWithChildren;
+  "/": typeof AppIndexRouteRoute;
+  "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
+  "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
+  "/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
+  "/records/create": typeof ApprecordsRecordsCreateRouteRoute;
+  "/transfers/create": typeof ApptransfersTransfersCreateRouteRoute;
+  "/wallets/$walletId": typeof AppwalletsWalletsWalletIdRouteRoute;
+  "/wallets/create": typeof AppwalletsWalletsCreateRouteRoute;
+  "/budgets": typeof AppbudgetsBudgetsIndexRouteRoute;
+  "/records": typeof ApprecordsRecordsIndexRouteRoute;
+  "/settings": typeof AppsettingsSettingsIndexRouteRoute;
+  "/transfers": typeof ApptransfersTransfersIndexRouteRoute;
+  "/wallets": typeof AppwalletsWalletsIndexRouteRoute;
+  "/wallets/$walletId/edit": typeof AppwalletsWalletsWalletIdEditRouteRoute;
 }
 
 export interface FileRoutesByTo {
-  "/": typeof IndexRouteRoute;
-  "/budgets/$budgetId": typeof budgetsBudgetsBudgetIdRouteRoute;
-  "/budgets/create": typeof budgetsBudgetsCreateRouteRoute;
-  "/records/$recordId": typeof recordsRecordsRecordIdRouteRoute;
-  "/records/create": typeof recordsRecordsCreateRouteRoute;
-  "/transfers/create": typeof transfersTransfersCreateRouteRoute;
-  "/wallets/$walletId": typeof walletsWalletsWalletIdRouteRoute;
-  "/wallets/create": typeof walletsWalletsCreateRouteRoute;
-  "/budgets": typeof budgetsBudgetsIndexRouteRoute;
-  "/records": typeof recordsRecordsIndexRouteRoute;
-  "/settings": typeof settingsSettingsIndexRouteRoute;
-  "/transfers": typeof transfersTransfersIndexRouteRoute;
-  "/wallets": typeof walletsWalletsIndexRouteRoute;
-  "/wallets/$walletId/edit": typeof walletsWalletsWalletIdEditRouteRoute;
+  "/onboarding": typeof OnboardingRouteRoute;
+  "/": typeof AppIndexRouteRoute;
+  "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
+  "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
+  "/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
+  "/records/create": typeof ApprecordsRecordsCreateRouteRoute;
+  "/transfers/create": typeof ApptransfersTransfersCreateRouteRoute;
+  "/wallets/$walletId": typeof AppwalletsWalletsWalletIdRouteRoute;
+  "/wallets/create": typeof AppwalletsWalletsCreateRouteRoute;
+  "/budgets": typeof AppbudgetsBudgetsIndexRouteRoute;
+  "/records": typeof ApprecordsRecordsIndexRouteRoute;
+  "/settings": typeof AppsettingsSettingsIndexRouteRoute;
+  "/transfers": typeof ApptransfersTransfersIndexRouteRoute;
+  "/wallets": typeof AppwalletsWalletsIndexRouteRoute;
+  "/wallets/$walletId/edit": typeof AppwalletsWalletsWalletIdEditRouteRoute;
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute;
-  "/": typeof IndexRouteRoute;
-  "/budgets/$budgetId": typeof budgetsBudgetsBudgetIdRouteRoute;
-  "/budgets/create": typeof budgetsBudgetsCreateRouteRoute;
-  "/records/$recordId": typeof recordsRecordsRecordIdRouteRoute;
-  "/records/create": typeof recordsRecordsCreateRouteRoute;
-  "/transfers/create": typeof transfersTransfersCreateRouteRoute;
-  "/wallets/$walletId": typeof walletsWalletsWalletIdRouteRoute;
-  "/wallets/create": typeof walletsWalletsCreateRouteRoute;
-  "/budgets/": typeof budgetsBudgetsIndexRouteRoute;
-  "/records/": typeof recordsRecordsIndexRouteRoute;
-  "/settings/": typeof settingsSettingsIndexRouteRoute;
-  "/transfers/": typeof transfersTransfersIndexRouteRoute;
-  "/wallets/": typeof walletsWalletsIndexRouteRoute;
-  "/wallets/$walletId/edit": typeof walletsWalletsWalletIdEditRouteRoute;
+  "/onboarding": typeof OnboardingRouteRoute;
+  "/_app": typeof AppRouteWithChildren;
+  "/_app/": typeof AppIndexRouteRoute;
+  "/_app/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
+  "/_app/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
+  "/_app/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
+  "/_app/records/create": typeof ApprecordsRecordsCreateRouteRoute;
+  "/_app/transfers/create": typeof ApptransfersTransfersCreateRouteRoute;
+  "/_app/wallets/$walletId": typeof AppwalletsWalletsWalletIdRouteRoute;
+  "/_app/wallets/create": typeof AppwalletsWalletsCreateRouteRoute;
+  "/_app/budgets/": typeof AppbudgetsBudgetsIndexRouteRoute;
+  "/_app/records/": typeof ApprecordsRecordsIndexRouteRoute;
+  "/_app/settings/": typeof AppsettingsSettingsIndexRouteRoute;
+  "/_app/transfers/": typeof ApptransfersTransfersIndexRouteRoute;
+  "/_app/wallets/": typeof AppwalletsWalletsIndexRouteRoute;
+  "/_app/wallets/$walletId/edit": typeof AppwalletsWalletsWalletIdEditRouteRoute;
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
+    | "/onboarding"
+    | ""
     | "/"
     | "/budgets/$budgetId"
     | "/budgets/create"
@@ -284,6 +345,7 @@ export interface FileRouteTypes {
     | "/wallets/$walletId/edit";
   fileRoutesByTo: FileRoutesByTo;
   to:
+    | "/onboarding"
     | "/"
     | "/budgets/$budgetId"
     | "/budgets/create"
@@ -300,55 +362,33 @@ export interface FileRouteTypes {
     | "/wallets/$walletId/edit";
   id:
     | "__root__"
-    | "/"
-    | "/budgets/$budgetId"
-    | "/budgets/create"
-    | "/records/$recordId"
-    | "/records/create"
-    | "/transfers/create"
-    | "/wallets/$walletId"
-    | "/wallets/create"
-    | "/budgets/"
-    | "/records/"
-    | "/settings/"
-    | "/transfers/"
-    | "/wallets/"
-    | "/wallets/$walletId/edit";
+    | "/onboarding"
+    | "/_app"
+    | "/_app/"
+    | "/_app/budgets/$budgetId"
+    | "/_app/budgets/create"
+    | "/_app/records/$recordId"
+    | "/_app/records/create"
+    | "/_app/transfers/create"
+    | "/_app/wallets/$walletId"
+    | "/_app/wallets/create"
+    | "/_app/budgets/"
+    | "/_app/records/"
+    | "/_app/settings/"
+    | "/_app/transfers/"
+    | "/_app/wallets/"
+    | "/_app/wallets/$walletId/edit";
   fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
-  IndexRouteRoute: typeof IndexRouteRoute;
-  budgetsBudgetsBudgetIdRouteRoute: typeof budgetsBudgetsBudgetIdRouteRoute;
-  budgetsBudgetsCreateRouteRoute: typeof budgetsBudgetsCreateRouteRoute;
-  recordsRecordsRecordIdRouteRoute: typeof recordsRecordsRecordIdRouteRoute;
-  recordsRecordsCreateRouteRoute: typeof recordsRecordsCreateRouteRoute;
-  transfersTransfersCreateRouteRoute: typeof transfersTransfersCreateRouteRoute;
-  walletsWalletsWalletIdRouteRoute: typeof walletsWalletsWalletIdRouteRoute;
-  walletsWalletsCreateRouteRoute: typeof walletsWalletsCreateRouteRoute;
-  budgetsBudgetsIndexRouteRoute: typeof budgetsBudgetsIndexRouteRoute;
-  recordsRecordsIndexRouteRoute: typeof recordsRecordsIndexRouteRoute;
-  settingsSettingsIndexRouteRoute: typeof settingsSettingsIndexRouteRoute;
-  transfersTransfersIndexRouteRoute: typeof transfersTransfersIndexRouteRoute;
-  walletsWalletsIndexRouteRoute: typeof walletsWalletsIndexRouteRoute;
-  walletsWalletsWalletIdEditRouteRoute: typeof walletsWalletsWalletIdEditRouteRoute;
+  OnboardingRouteRoute: typeof OnboardingRouteRoute;
+  AppRoute: typeof AppRouteWithChildren;
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRouteRoute: IndexRouteRoute,
-  budgetsBudgetsBudgetIdRouteRoute: budgetsBudgetsBudgetIdRouteRoute,
-  budgetsBudgetsCreateRouteRoute: budgetsBudgetsCreateRouteRoute,
-  recordsRecordsRecordIdRouteRoute: recordsRecordsRecordIdRouteRoute,
-  recordsRecordsCreateRouteRoute: recordsRecordsCreateRouteRoute,
-  transfersTransfersCreateRouteRoute: transfersTransfersCreateRouteRoute,
-  walletsWalletsWalletIdRouteRoute: walletsWalletsWalletIdRouteRoute,
-  walletsWalletsCreateRouteRoute: walletsWalletsCreateRouteRoute,
-  budgetsBudgetsIndexRouteRoute: budgetsBudgetsIndexRouteRoute,
-  recordsRecordsIndexRouteRoute: recordsRecordsIndexRouteRoute,
-  settingsSettingsIndexRouteRoute: settingsSettingsIndexRouteRoute,
-  transfersTransfersIndexRouteRoute: transfersTransfersIndexRouteRoute,
-  walletsWalletsIndexRouteRoute: walletsWalletsIndexRouteRoute,
-  walletsWalletsWalletIdEditRouteRoute: walletsWalletsWalletIdEditRouteRoute,
+  OnboardingRouteRoute: OnboardingRouteRoute,
+  AppRoute: AppRouteWithChildren,
 };
 
 export const routeTree = rootRoute
@@ -363,63 +403,87 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "~__root.tsx",
       "children": [
-        "/",
-        "/budgets/$budgetId",
-        "/budgets/create",
-        "/records/$recordId",
-        "/records/create",
-        "/transfers/create",
-        "/wallets/$walletId",
-        "/wallets/create",
-        "/budgets/",
-        "/records/",
-        "/settings/",
-        "/transfers/",
-        "/wallets/",
-        "/wallets/$walletId/edit"
+        "/onboarding",
+        "/_app"
       ]
     },
-    "/": {
-      "filePath": "~index.route.tsx"
+    "/onboarding": {
+      "filePath": "~onboarding.route.tsx"
     },
-    "/budgets/$budgetId": {
-      "filePath": "~(budgets)/~budgets.$budgetId.route.tsx"
+    "/_app": {
+      "filePath": "~_app.tsx",
+      "children": [
+        "/_app/",
+        "/_app/budgets/$budgetId",
+        "/_app/budgets/create",
+        "/_app/records/$recordId",
+        "/_app/records/create",
+        "/_app/transfers/create",
+        "/_app/wallets/$walletId",
+        "/_app/wallets/create",
+        "/_app/budgets/",
+        "/_app/records/",
+        "/_app/settings/",
+        "/_app/transfers/",
+        "/_app/wallets/",
+        "/_app/wallets/$walletId/edit"
+      ]
     },
-    "/budgets/create": {
-      "filePath": "~(budgets)/~budgets.create.route.tsx"
+    "/_app/": {
+      "filePath": "~_app/~index.route.tsx",
+      "parent": "/_app"
     },
-    "/records/$recordId": {
-      "filePath": "~(records)/~records.$recordId.route.tsx"
+    "/_app/budgets/$budgetId": {
+      "filePath": "~_app/~(budgets)/~budgets.$budgetId.route.tsx",
+      "parent": "/_app"
     },
-    "/records/create": {
-      "filePath": "~(records)/~records.create.route.tsx"
+    "/_app/budgets/create": {
+      "filePath": "~_app/~(budgets)/~budgets.create.route.tsx",
+      "parent": "/_app"
     },
-    "/transfers/create": {
-      "filePath": "~(transfers)/~transfers.create.route.tsx"
+    "/_app/records/$recordId": {
+      "filePath": "~_app/~(records)/~records.$recordId.route.tsx",
+      "parent": "/_app"
     },
-    "/wallets/$walletId": {
-      "filePath": "~(wallets)/~wallets.$walletId.route.tsx"
+    "/_app/records/create": {
+      "filePath": "~_app/~(records)/~records.create.route.tsx",
+      "parent": "/_app"
     },
-    "/wallets/create": {
-      "filePath": "~(wallets)/~wallets.create.route.tsx"
+    "/_app/transfers/create": {
+      "filePath": "~_app/~(transfers)/~transfers.create.route.tsx",
+      "parent": "/_app"
     },
-    "/budgets/": {
-      "filePath": "~(budgets)/~budgets.index.route.tsx"
+    "/_app/wallets/$walletId": {
+      "filePath": "~_app/~(wallets)/~wallets.$walletId.route.tsx",
+      "parent": "/_app"
     },
-    "/records/": {
-      "filePath": "~(records)/~records.index.route.tsx"
+    "/_app/wallets/create": {
+      "filePath": "~_app/~(wallets)/~wallets.create.route.tsx",
+      "parent": "/_app"
     },
-    "/settings/": {
-      "filePath": "~(settings)/~settings.index.route.tsx"
+    "/_app/budgets/": {
+      "filePath": "~_app/~(budgets)/~budgets.index.route.tsx",
+      "parent": "/_app"
     },
-    "/transfers/": {
-      "filePath": "~(transfers)/~transfers.index.route.tsx"
+    "/_app/records/": {
+      "filePath": "~_app/~(records)/~records.index.route.tsx",
+      "parent": "/_app"
     },
-    "/wallets/": {
-      "filePath": "~(wallets)/~wallets.index.route.tsx"
+    "/_app/settings/": {
+      "filePath": "~_app/~(settings)/~settings.index.route.tsx",
+      "parent": "/_app"
     },
-    "/wallets/$walletId/edit": {
-      "filePath": "~(wallets)/~wallets_.$walletId.edit.route.tsx"
+    "/_app/transfers/": {
+      "filePath": "~_app/~(transfers)/~transfers.index.route.tsx",
+      "parent": "/_app"
+    },
+    "/_app/wallets/": {
+      "filePath": "~_app/~(wallets)/~wallets.index.route.tsx",
+      "parent": "/_app"
+    },
+    "/_app/wallets/$walletId/edit": {
+      "filePath": "~_app/~(wallets)/~wallets_.$walletId.edit.route.tsx",
+      "parent": "/_app"
     }
   }
 }

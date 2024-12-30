@@ -3,7 +3,7 @@ import { HomeWalletsSection } from "@/features/home/components/home-wallets-sect
 import { HomeBudgetsSection } from "@/features/home/components/home-budgets-section";
 import { HomeRecordsRecapSection } from "@/features/home/components/home-records-recap-section";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_app/")({
   component: IndexPage,
 });
 
