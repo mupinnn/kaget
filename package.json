@@ -37,6 +37,7 @@
     "@tanstack/react-router": "^1.57.13",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cmdk": "1.0.0",
     "date-fns": "^4.1.0",
     "dexie": "^4.0.8",
     "lucide-react": "^0.441.0",
@@ -50,6 +51,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "ts-pattern": "^5.5.0",
+    "vaul": "^1.1.2",
     "wretch": "^2.10.0",
     "zod": "^3.23.8"
   },
