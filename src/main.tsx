@@ -8,7 +8,11 @@ import "./index.css";
 
 async function boot() {
   const { worker } = await import("./mocks/browser");
-  await worker.start();
+  await worker.start({
+    serviceWorker: {
+      url: "/sw.js",
+    },
+  });
 
   await preloadSettings();
 }
