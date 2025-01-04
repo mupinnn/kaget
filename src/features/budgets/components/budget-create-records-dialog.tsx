@@ -30,10 +30,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/libs/utils.lib";
 import { formatDate } from "@/utils/date.util";
-import { CreateRecordSchema, CreateRecord } from "@/features/records/data/records.schema";
+import { CreateRecordSchema, CreateRecord } from "@/features/records/data/records.schemas";
 import { useCreateRecordMutation } from "@/features/records/data/records.mutations";
 import { TotalRecordsAmount } from "@/features/records/pages/records-form.page";
-import { TransformedBudgetWithRelations } from "../data/budgets.schema";
+import { TransformedBudgetWithRelations } from "../data/budgets.schemas";
 
 interface BudgetCreateRecordsDialogProps {
   trigger: React.ReactNode;

@@ -41,7 +41,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { CreateBudget, CreateBudgetSchema } from "../data/budgets.schema";
+import { CreateBudget, CreateBudgetSchema } from "../data/budgets.schemas";
 import { useCreateBudgetMutation } from "../data/budgets.mutations";
 
 function BudgetFormWalletRemainingBalance({ id, balance }: Wallet) {

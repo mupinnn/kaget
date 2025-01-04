@@ -1,18 +1,11 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
-import { api } from "@/libs/api.lib";
-import {
-  BudgetsResponseSchema,
-  BudgetsRequestQuery,
-  ShowBudgetResponseSchema,
-} from "./budgets.schema";
+import { queryOptions, useQuery, skipToken } from "@tanstack/react-query";
+import { type BudgetsRequestQuery } from "./budgets.schemas";
+import { getBudgetList, getBudgetDetail } from "./budgets.services";
 
 export const budgetsQueryOptions = (req: BudgetsRequestQuery = {}) => {
   return queryOptions({
     queryKey: ["budgets", req],
-    queryFn: async () => {
-      const response = await api.query(req).get("/budgets");
-      return BudgetsResponseSchema.parse(response);
-    },
+    queryFn: () => getBudgetList(req),
   });
 };
 
@@ -22,11 +15,7 @@ export const useBudgetsQuery = (req: BudgetsRequestQuery = {}) =>
 export const budgetsDetailQueryOptions = (budgetId?: string) => {
   return queryOptions({
     queryKey: ["budgets", budgetId],
-    enabled: !!budgetId,
-    queryFn: async () => {
-      const response = await api.get(`/budgets/${budgetId}`);
-      return ShowBudgetResponseSchema.parse(response);
-    },
+    queryFn: budgetId ? () => getBudgetDetail(budgetId) : skipToken,
   });
 };
 

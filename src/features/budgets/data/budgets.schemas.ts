@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { APIResponseSchema } from "@/schemas/api.schema";
 import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
 
 export const BudgetSchema = z.object({
@@ -27,10 +26,6 @@ export const TransformedBudgetWithRelationsSchema = BudgetSchema.omit({
 });
 
 export type TransformedBudgetWithRelations = z.infer<typeof TransformedBudgetWithRelationsSchema>;
-
-export const BudgetsResponseSchema = APIResponseSchema({
-  schema: TransformedBudgetWithRelationsSchema.array(),
-});
 
 export const BudgetsRequestQuerySchema = z.object({
   limit: z.coerce.number().positive().optional().catch(undefined),
@@ -83,28 +78,8 @@ export const CreateBudgetSchema = z.object({
 });
 export type CreateBudget = z.infer<typeof CreateBudgetSchema>;
 
-export const CreateBudgetResponseSchema = APIResponseSchema({
-  schema: BudgetSchema,
-});
-
-export const ShowBudgetResponseSchema = APIResponseSchema({
-  schema: TransformedBudgetWithRelationsSchema,
-});
-
-export const DeleteBudgetResponseSchema = APIResponseSchema({
-  schema: BudgetSchema,
-});
-
 export const UpdateBudgetBalanceSchema = BudgetSchema.pick({ balance: true }).extend({
   type: z.enum(["REFUND", "ADD"]),
 });
 
 export type UpdateBudgetBalance = z.infer<typeof UpdateBudgetBalanceSchema>;
-
-export const UpdateBudgetBalanceResponseSchema = APIResponseSchema({
-  schema: BudgetSchema,
-});
-
-export const ActivateBudgetResponseSchema = APIResponseSchema({
-  schema: BudgetSchema,
-});

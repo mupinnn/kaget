@@ -26,7 +26,7 @@ import {
   TransformedBudgetWithRelations,
   UpdateBudgetBalance,
   UpdateBudgetBalanceSchema,
-} from "../data/budgets.schema";
+} from "../data/budgets.schemas";
 import { useUpdateBudgetBalanceMutation } from "../data/budgets.mutations";
 
 interface BudgetBalanceUpdateDialogProps {

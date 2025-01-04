@@ -3,7 +3,7 @@ import { APIResponseSchema } from "@/schemas/api.schema";
 import {
   SourceTypeSchema,
   SourceOrDestinationSchema,
-} from "@/features/records/data/records.schema";
+} from "@/features/records/data/records.schemas";
 
 export const TransferTypeSchema = z.enum(["INCOMING", "OUTGOING"]);
 
