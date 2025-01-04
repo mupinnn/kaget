@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
-import { RecordWithRelations } from "../data/records.schema";
-import { getRecordAmountValueAndClasses } from "@/utils/records.util";
+import { RecordWithRelations } from "../data/records.schemas";
+import { getRecordAmountValueAndClasses } from "../data/records.services";
 
 export type RecordListItemProps = RecordWithRelations;
 

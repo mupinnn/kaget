@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Control,
   useFieldArray,
@@ -38,7 +38,7 @@ import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
 import { useCreateRecordMutation } from "../data/records.mutations";
-import { CreateRecord, CreateRecordSchema } from "../data/records.schema";
+import { CreateRecord, CreateRecordSchema } from "../data/records.schemas";
 
 export function TotalRecordsAmount({
   control,
@@ -70,6 +70,7 @@ export function TotalRecordsAmount({
 }
 
 export function RecordsFormPage() {
+  const navigate = useNavigate();
   const form = useForm<CreateRecord>({
     resolver: zodResolver(CreateRecordSchema),
     defaultValues: {
@@ -87,7 +88,11 @@ export function RecordsFormPage() {
   const dorTimeValue = `${new Date(watchDor).getHours()}:${new Date(watchDor).getMinutes()}`;
 
   function onSubmit(values: CreateRecord) {
-    createRecordMutation.mutate(values);
+    createRecordMutation.mutate(values, {
+      async onSuccess() {
+        await navigate({ to: "/records" });
+      },
+    });
   }
 
   const handleDorTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {

@@ -1,5 +1,5 @@
 import { match, P } from "ts-pattern";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
@@ -7,14 +7,15 @@ import { PageLayout } from "@/components/page-layout";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
-import { getRecordAmountValueAndClasses } from "@/utils/records.util";
 import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
 import { useDeleteRecordMutation } from "../data/records.mutations";
+import { getRecordAmountValueAndClasses } from "../data/records.services";
 
 const route = getRouteApi("/_app/records/$recordId");
 
 export function RecordsDetailPage() {
   const { recordId } = route.useParams();
+  const navigate = useNavigate();
   const recordDetailQuery = useRecordDetailQuery(recordId);
   const recordItemsQuery = useRecordItemsQuery(recordId);
   const deleteRecordMutation = useDeleteRecordMutation();
@@ -30,6 +31,14 @@ export function RecordsDetailPage() {
   const recordDetail = recordDetailQuery.data.data;
   const recordItems = recordItemsQuery.data.data;
   const { className, value, operator } = getRecordAmountValueAndClasses(recordDetail);
+
+  const handleDeleteRecord = () => {
+    deleteRecordMutation.mutate(recordId, {
+      async onSuccess() {
+        await navigate({ to: "/records" });
+      },
+    });
+  };
 
   return (
     <PageLayout
@@ -59,7 +68,7 @@ export function RecordsDetailPage() {
               </Button>
             }
             actionLabel="Yes, delete"
-            onClickAction={() => deleteRecordMutation.mutate(recordId)}
+            onClickAction={handleDeleteRecord}
           />
         </div>
       )}
