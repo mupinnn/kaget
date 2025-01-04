@@ -4,7 +4,7 @@ import type { Wallet } from "@/features/wallets/data/wallets.schemas";
 import type { Budget, BudgetItem } from "@/features/budgets/data/budgets.schema";
 import type { Record, RecordItem } from "@/features/records/data/records.schema";
 import type { Transfer } from "@/features/transfers/data/transfers.schema";
-import type { Settings } from "@/features/settings/data/settings.schema";
+import type { Settings } from "@/features/settings/data/settings.schemas";
 
 class KagetDB extends Dexie {
   wallet!: EntityTable<Wallet, "id">;

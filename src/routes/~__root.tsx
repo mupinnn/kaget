@@ -1,11 +1,11 @@
 import { createRootRoute, redirect } from "@tanstack/react-router";
-import { preloadSettings } from "@/features/settings/data/settings.queries";
+import { getSettings } from "@/features/settings/data/settings.services";
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
-    await preloadSettings();
+    const settings = await getSettings();
 
-    if (!window.settings && !location.pathname.includes("onboarding")) {
+    if (!settings.data && !location.pathname.includes("onboarding")) {
       redirect({ to: "/onboarding", throw: true });
     }
   },

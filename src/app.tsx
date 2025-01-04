@@ -5,7 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { routeTree } from "@/__generated__/routeTree";
 import { Toaster } from "./components/ui/toaster";
 import { useToast } from "./hooks/use-toast";
-import { BaseAPIResponseSchema } from "./schemas/api.schema";
+import { BaseServiceResponseSchema } from "./schemas/service.schema";
 
 const router = createRouter({ routeTree });
 
@@ -35,7 +35,7 @@ export function App() {
         },
         mutationCache: new MutationCache({
           onSuccess: response => {
-            const parsedResponse = BaseAPIResponseSchema.parse(response);
+            const parsedResponse = BaseServiceResponseSchema.parse(response);
             toast({ title: parsedResponse.message });
           },
           onError: error => {
