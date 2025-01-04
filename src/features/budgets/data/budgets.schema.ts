@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { APIResponseSchema } from "@/schemas/api.schema";
-import { WalletSchema } from "@/features/wallets/data/wallets.schema";
+import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
 
 export const BudgetSchema = z.object({
   id: z.string().nanoid(),

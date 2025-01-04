@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { APIResponseSchema } from "@/schemas/api.schema";
-import { WalletSchema } from "@/features/wallets/data/wallets.schema";
+import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
 import { BudgetSchema, BudgetItemSchema } from "@/features/budgets/data/budgets.schema";
 
 export const SourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_ITEM"]);

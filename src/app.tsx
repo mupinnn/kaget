@@ -31,7 +31,6 @@ export function App() {
           queries: {
             refetchOnWindowFocus: false,
             retry: false,
-            staleTime: 30 * 1000,
           },
         },
         mutationCache: new MutationCache({

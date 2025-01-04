@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { PageLayout } from "@/components/page-layout";
 import { formatCurrency } from "@/utils/common.util";
-import { Wallet } from "@/features/wallets/data/wallets.schema";
+import { Wallet } from "@/features/wallets/data/wallets.schemas";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import {
   Sheet,

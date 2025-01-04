@@ -1,4 +1,4 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
@@ -24,10 +24,10 @@ import {
 import { PageLayout } from "@/components/page-layout";
 import {
   CreateWalletSchema,
-  CreateWallet,
-  Wallet,
+  type CreateWallet,
+  type Wallet,
   UpdateWalletSchema,
-} from "../data/wallets.schema";
+} from "../data/wallets.schemas";
 import { useCreateWalletMutation, useUpdateWalletMutation } from "../data/wallets.mutations";
 import { useWalletDetailQuery } from "../data/wallets.queries";
 
@@ -42,14 +42,26 @@ export function WalletsFormPage() {
       initial_balance: 0,
     },
   });
+  const navigate = useNavigate();
   const createWalletMutation = useCreateWalletMutation();
   const updateWalletMutation = useUpdateWalletMutation();
 
   function onSubmit(values: CreateWallet | Wallet) {
     if (walletId) {
-      updateWalletMutation.mutate({ walletId, data: values });
+      updateWalletMutation.mutate(
+        { walletId, data: values },
+        {
+          async onSuccess() {
+            await navigate({ to: "/wallets/$walletId", params: { walletId } });
+          },
+        }
+      );
     } else {
-      createWalletMutation.mutate(values as CreateWallet);
+      createWalletMutation.mutate(values as CreateWallet, {
+        async onSuccess() {
+          await navigate({ to: "/wallets" });
+        },
+      });
     }
   }
 

@@ -1,19 +1,12 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, skipToken } from "@tanstack/react-query";
 
-import { api } from "@/libs/api.lib";
-import {
-  ShowWalletResponseSchema,
-  WalletsRequestQuery,
-  WalletsResponseSchema,
-} from "./wallets.schema";
+import { getWalletList, getWalletDetail } from "./wallets.services";
+import { WalletsRequestQuery } from "./wallets.schemas";
 
 export const walletsQueryOptions = (req: WalletsRequestQuery = {}) => {
   return queryOptions({
     queryKey: ["wallets", req],
-    queryFn: async () => {
-      const response = await api.query(req).get("/wallets");
-      return WalletsResponseSchema.parse(response);
-    },
+    queryFn: () => getWalletList(req),
   });
 };
 
@@ -23,12 +16,8 @@ export const useWalletsQuery = (req: WalletsRequestQuery = {}) => {
 
 export const walletDetailQueryOptions = (walletId?: string) => {
   return queryOptions({
-    enabled: !!walletId,
     queryKey: ["wallets", walletId],
-    queryFn: async () => {
-      const response = await api.get(`/wallets/${walletId}`);
-      return ShowWalletResponseSchema.parse(response);
-    },
+    queryFn: walletId ? () => getWalletDetail(walletId) : skipToken,
   });
 };
 

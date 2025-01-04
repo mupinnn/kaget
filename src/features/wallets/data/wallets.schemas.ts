@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { APIResponseSchema } from "@/schemas/api.schema";
 
 export const WalletTypeSchema = z.enum(["CASH", "DIGITAL"], { message: "Wallet type is required" });
 
@@ -16,10 +15,6 @@ export const WalletSchema = z.object({
 
 export type Wallet = z.infer<typeof WalletSchema>;
 
-export const WalletsResponseSchema = APIResponseSchema({
-  schema: WalletSchema.array(),
-});
-
 export const WalletsRequestQuerySchema = z.object({
   type: WalletSchema.shape.type.optional().catch(undefined),
   limit: z.coerce.number().positive().optional().catch(undefined),
@@ -35,22 +30,6 @@ export const CreateWalletSchema = z
 
 export type CreateWallet = z.infer<typeof CreateWalletSchema>;
 
-export const CreateWalletResponseSchema = APIResponseSchema({
-  schema: WalletSchema,
-});
-
-export const ShowWalletResponseSchema = APIResponseSchema({
-  schema: WalletSchema,
-});
-
-export const DeleteWalletResponseSchema = APIResponseSchema({
-  schema: WalletSchema,
-});
-
 export const UpdateWalletSchema = WalletSchema.pick({ name: true });
 
 export type UpdateWallet = z.infer<typeof UpdateWalletSchema>;
-
-export const UpdateWalletResponseSchema = APIResponseSchema({
-  schema: WalletSchema,
-});
