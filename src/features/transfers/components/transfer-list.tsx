@@ -4,7 +4,7 @@ import { ArrowRightLeftIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransferListItem } from "./transfer-list-item";
-import { Transfer } from "../data/transfers.schema";
+import { type Transfer } from "../data/transfers.schemas";
 
 export const TransferListLoader = () => {
   return (

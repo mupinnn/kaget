@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   useForm,
   useFieldArray,
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { PageLayout } from "@/components/page-layout";
 import { formatCurrency } from "@/utils/common.util";
-import { Wallet } from "@/features/wallets/data/wallets.schema";
+import { Wallet } from "@/features/wallets/data/wallets.schemas";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import {
   Sheet,
@@ -41,7 +41,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { CreateBudget, CreateBudgetSchema } from "../data/budgets.schema";
+import { CreateBudget, CreateBudgetSchema } from "../data/budgets.schemas";
 import { useCreateBudgetMutation } from "../data/budgets.mutations";
 
 function BudgetFormWalletRemainingBalance({ id, balance }: Wallet) {
@@ -181,6 +181,7 @@ export function BudgetsFormPage() {
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "budgets" });
   const walletsQuery = useWalletsQuery();
   const createBudgetMutation = useCreateBudgetMutation();
+  const navigate = useNavigate();
 
   if (walletsQuery.isPending) return <p>Loading . . .</p>;
   if (walletsQuery.isError) return <p>An error occured: {walletsQuery.error.message}</p>;
@@ -198,7 +199,11 @@ export function BudgetsFormPage() {
   );
 
   const onSubmit = (values: CreateBudget) => {
-    createBudgetMutation.mutate(values);
+    createBudgetMutation.mutate(values, {
+      async onSuccess() {
+        await navigate({ to: "/budgets" });
+      },
+    });
   };
 
   const onSummarize = async () => {

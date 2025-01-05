@@ -1,19 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/libs/api.lib";
-import { SettingsResponseSchema } from "./settings.schema";
+import { getSettings } from "./settings.services";
 
-export const getSettings = async () => {
-  const res = await api.get("/settings");
-  return SettingsResponseSchema.parse(res);
-};
-
-export const preloadSettings = async () => {
-  const settings = await getSettings();
-  window.settings = settings.data;
-};
+export const SETTINGS_QUERY_KEY = "settings";
 
 export const useSettingsQuery = () =>
   useQuery({
-    queryKey: ["settings"],
+    queryKey: [SETTINGS_QUERY_KEY],
     queryFn: getSettings,
   });

@@ -1,19 +1,13 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
-import { api } from "@/libs/api.lib";
-import {
-  RecordsRequestQuery,
-  RecordsResponseSchema,
-  ShowRecordItemsResponseSchema,
-  ShowRecordResponseSchema,
-} from "./records.schema";
+import { queryOptions, useQuery, skipToken } from "@tanstack/react-query";
+import { type RecordsRequestQuery } from "./records.schemas";
+import { getRecordList, getRecordItemList, getRecordDetail } from "./records.services";
+
+export const RECORDS_QUERY_KEY = "records";
 
 export const recordsQueryOptions = (req: RecordsRequestQuery = {}) => {
   return queryOptions({
-    queryKey: ["records", req],
-    queryFn: async () => {
-      const response = await api.query(req).get("/records");
-      return RecordsResponseSchema.parse(response);
-    },
+    queryKey: [RECORDS_QUERY_KEY, req],
+    queryFn: () => getRecordList(req),
   });
 };
 export const useRecordsQuery = (req: RecordsRequestQuery = {}) =>
@@ -21,12 +15,8 @@ export const useRecordsQuery = (req: RecordsRequestQuery = {}) =>
 
 export const recordDetailQueryOptions = (recordId?: string) => {
   return queryOptions({
-    enabled: !!recordId,
-    queryKey: ["records", recordId],
-    queryFn: async () => {
-      const response = await api.get(`/records/${recordId}`);
-      return ShowRecordResponseSchema.parse(response);
-    },
+    queryKey: [RECORDS_QUERY_KEY, recordId],
+    queryFn: recordId ? () => getRecordDetail(recordId) : skipToken,
   });
 };
 
@@ -36,12 +26,8 @@ export const useRecordDetailQuery = (recordId?: string) => {
 
 export const recordItemsQueryOptions = (recordId?: string) => {
   return queryOptions({
-    enabled: !!recordId,
-    queryKey: ["records", recordId, "items"],
-    queryFn: async () => {
-      const response = await api.get(`/records/${recordId}/items`);
-      return ShowRecordItemsResponseSchema.parse(response);
-    },
+    queryKey: [RECORDS_QUERY_KEY, recordId, "items"],
+    queryFn: recordId ? () => getRecordItemList(recordId) : skipToken,
   });
 };
 

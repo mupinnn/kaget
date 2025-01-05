@@ -4,7 +4,7 @@ import { WalletIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WalletListItem } from "./wallet-list-item";
-import { Wallet } from "../data/wallets.schema";
+import { type Wallet } from "../data/wallets.schemas";
 
 export const WalletListLoader = () => {
   return Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />);

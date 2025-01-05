@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardTitle, CardDescription, CardHeader } from "@/components/ui/card";
-import { Settings, SettingsSchema } from "@/features/settings/data/settings.schema";
+import { Settings, SettingsSchema } from "@/features/settings/data/settings.schemas";
 import { useCreateSettingsMutation } from "@/features/settings/data/settings.mutations";
 import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";

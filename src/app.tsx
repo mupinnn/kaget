@@ -1,11 +1,12 @@
-import { StrictMode, useState, lazy, Suspense } from "react";
+import { StrictMode, lazy, Suspense } from "react";
+import { ZodError } from "zod";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { routeTree } from "@/__generated__/routeTree";
 import { Toaster } from "./components/ui/toaster";
-import { useToast } from "./hooks/use-toast";
-import { BaseAPIResponseSchema } from "./schemas/api.schema";
+import { toast } from "./hooks/use-toast";
+import { BaseServiceResponseSchema } from "./schemas/service.schema";
 
 const router = createRouter({ routeTree });
 
@@ -22,35 +23,45 @@ const TanStackRouterDevtools =
         import("@tanstack/router-devtools").then(res => ({ default: res.TanStackRouterDevtools }))
       );
 
-export function App() {
-  const { toast } = useToast();
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            refetchOnWindowFocus: false,
-            retry: false,
-            staleTime: 30 * 1000,
-          },
-        },
-        mutationCache: new MutationCache({
-          onSuccess: response => {
-            const parsedResponse = BaseAPIResponseSchema.parse(response);
-            toast({ title: parsedResponse.message });
-          },
-          onError: error => {
-            toast({ variant: "destructive", title: error.message });
-          },
-        }),
-        queryCache: new QueryCache({
-          onError: error => {
-            toast({ variant: "destructive", title: error.message });
-          },
-        }),
-      })
-  );
+const queryAndMutationErrorHandler = (error: Error) => {
+  if (error instanceof ZodError) {
+    toast({
+      variant: "destructive",
+      title: "Invalid payload",
+      description: (
+        <ul className="list-inside list-disc">
+          {error.issues.map((issue, index) => (
+            <li key={index}>{issue.message}</li>
+          ))}
+        </ul>
+      ),
+    });
+    return;
+  }
 
+  toast({ variant: "destructive", title: error.message });
+};
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+  mutationCache: new MutationCache({
+    onSuccess: response => {
+      const parsedResponse = BaseServiceResponseSchema.parse(response);
+      toast({ title: parsedResponse.message });
+    },
+    onError: queryAndMutationErrorHandler,
+  }),
+  queryCache: new QueryCache({
+    onError: queryAndMutationErrorHandler,
+  }),
+});
+
+export function App() {
   return (
     <StrictMode>
       <QueryClientProvider client={queryClient}>

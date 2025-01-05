@@ -1,4 +1,4 @@
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { match } from "ts-pattern";
 import { Undo2Icon, PlusIcon, Trash2Icon, ReceiptTextIcon, RefreshCwIcon } from "lucide-react";
 import { PageLayout } from "@/components/page-layout";
@@ -12,7 +12,7 @@ import { formatCurrency } from "@/utils/common.util";
 import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
-import { useDeletBudgetMutation, useActivateBudgetMutation } from "../data/budgets.mutations";
+import { useDeleteBudgetMutation, useActivateBudgetMutation } from "../data/budgets.mutations";
 import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
 import { BudgetCreateRecordsDialog } from "../components/budget-create-records-dialog";
 
@@ -20,10 +20,11 @@ const route = getRouteApi("/_app/budgets/$budgetId");
 
 export function BudgetsDetailPage() {
   const { budgetId } = route.useParams();
+  const navigate = useNavigate();
   const budgetDetailQuery = useBudgetDetailQuery(budgetId);
   const recordsQuery = useRecordsQuery({ source_id: budgetId });
   const transfersQuery = useTransfersQuery({ source_id: budgetId });
-  const deleteBudgetMutation = useDeletBudgetMutation();
+  const deleteBudgetMutation = useDeleteBudgetMutation();
   const activateBudgetMutation = useActivateBudgetMutation();
 
   if (budgetDetailQuery.isPending) return <p>Loading . . .</p>;
@@ -31,6 +32,14 @@ export function BudgetsDetailPage() {
 
   const budgetDetail = budgetDetailQuery.data.data;
   const budgetHasRecords = (recordsQuery.data?.data?.length ?? 0) > 0;
+
+  const handleDeleteBudget = () => {
+    deleteBudgetMutation.mutate(budgetId, {
+      async onSuccess() {
+        await navigate({ to: "/budgets" });
+      },
+    });
+  };
 
   return (
     <PageLayout title={budgetDetail.name} badge={`BUDGET - ${budgetDetail.wallet.name}`}>
@@ -90,7 +99,7 @@ export function BudgetsDetailPage() {
                 </Button>
               }
               actionLabel="Yes, delete"
-              onClickAction={() => deleteBudgetMutation.mutate(budgetId)}
+              onClickAction={handleDeleteBudget}
             />
           )}
         </div>

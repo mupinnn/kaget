@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import { Settings } from "./features/settings/data/settings.schema";
+import { Settings } from "./features/settings/data/settings.schemas";
 
 declare global {
   interface Window {

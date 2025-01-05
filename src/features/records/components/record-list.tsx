@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ReceiptTextIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RecordWithRelations } from "../data/records.schema";
+import { type RecordWithRelations } from "../data/records.schemas";
 import { RecordListItem } from "./record-list-item";
 
 export const RecordListLoader = () => {

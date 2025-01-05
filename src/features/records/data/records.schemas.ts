@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { APIResponseSchema } from "@/schemas/api.schema";
-import { WalletSchema } from "@/features/wallets/data/wallets.schema";
-import { BudgetSchema, BudgetItemSchema } from "@/features/budgets/data/budgets.schema";
+import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
+import { BudgetSchema, BudgetItemSchema } from "@/features/budgets/data/budgets.schemas";
 
 export const SourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_ITEM"]);
 
@@ -37,10 +36,6 @@ export const RecordWithRelationsSchema = RecordSchema.extend({
 });
 
 export type RecordWithRelations = z.infer<typeof RecordWithRelationsSchema>;
-
-export const RecordsResponseSchema = APIResponseSchema({
-  schema: RecordWithRelationsSchema.array(),
-});
 
 export const RecordsRequestQuerySchema = z.object({
   start: z.string().date().optional().catch(undefined),
@@ -83,19 +78,3 @@ export const CreateRecordSchema = RecordSchema.pick({
   });
 
 export type CreateRecord = z.infer<typeof CreateRecordSchema>;
-
-export const CreateRecordResponseSchema = APIResponseSchema({
-  schema: RecordSchema,
-});
-
-export const ShowRecordResponseSchema = APIResponseSchema({
-  schema: RecordWithRelationsSchema,
-});
-
-export const ShowRecordItemsResponseSchema = APIResponseSchema({
-  schema: RecordItemSchema.array().default([]),
-});
-
-export const DeleteRecordResponseSchema = APIResponseSchema({
-  schema: RecordSchema,
-});

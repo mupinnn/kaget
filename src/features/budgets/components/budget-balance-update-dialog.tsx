@@ -23,10 +23,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  TransformedBudgetWithRelations,
-  UpdateBudgetBalance,
+  type TransformedBudgetWithRelations,
+  type UpdateBudgetBalance,
   UpdateBudgetBalanceSchema,
-} from "../data/budgets.schema";
+} from "../data/budgets.schemas";
 import { useUpdateBudgetBalanceMutation } from "../data/budgets.mutations";
 
 interface BudgetBalanceUpdateDialogProps {

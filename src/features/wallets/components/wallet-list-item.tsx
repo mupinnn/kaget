@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/utils/common.util";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Wallet } from "../data/wallets.schema";
+import { type Wallet } from "../data/wallets.schemas";
 
 export type WalletListItemProps = Wallet;
 

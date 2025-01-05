@@ -2,8 +2,8 @@ import { ArrowRightIcon, ArrowLeftIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
-import { Transfer } from "../data/transfers.schema";
 import { Badge } from "@/components/ui/badge";
+import { type Transfer } from "../data/transfers.schemas";
 
 export type TransferListItemProps = Transfer;
 
