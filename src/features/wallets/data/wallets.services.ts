@@ -115,7 +115,7 @@ export async function deleteWallet(walletId: string) {
 
   if (walletRecord) {
     await db.record.where("source_id").equals(walletId).delete();
-    await db.record_item.where("source_id").equals(walletRecord.id).delete();
+    await db.record_item.where("record_id").equals(walletRecord.id).delete();
   }
 
   return successResponse({

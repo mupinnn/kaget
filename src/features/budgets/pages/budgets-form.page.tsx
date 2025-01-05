@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   useForm,
   useFieldArray,
@@ -181,6 +181,7 @@ export function BudgetsFormPage() {
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "budgets" });
   const walletsQuery = useWalletsQuery();
   const createBudgetMutation = useCreateBudgetMutation();
+  const navigate = useNavigate();
 
   if (walletsQuery.isPending) return <p>Loading . . .</p>;
   if (walletsQuery.isError) return <p>An error occured: {walletsQuery.error.message}</p>;
@@ -198,7 +199,11 @@ export function BudgetsFormPage() {
   );
 
   const onSubmit = (values: CreateBudget) => {
-    createBudgetMutation.mutate(values);
+    createBudgetMutation.mutate(values, {
+      async onSuccess() {
+        await navigate({ to: "/budgets" });
+      },
+    });
   };
 
   const onSummarize = async () => {

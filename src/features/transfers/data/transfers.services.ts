@@ -119,7 +119,7 @@ export async function createTransfer(payload: CreateTransfer) {
   const data = CreateTransferSchema.parse(payload);
 
   await db.transaction("rw", db.transfer, db.wallet, db.record, async () => {
-    await createTransfer(data);
+    await commitTransfer(data);
   });
 
   const latestCreatedTransfer = await db.transfer.orderBy("created_at").last();

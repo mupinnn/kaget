@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyInput from "react-currency-input-field";
@@ -27,6 +27,7 @@ import { type CreateTransfer, CreateTransferSchema } from "../data/transfers.sch
 import { useCreateTransferMutation } from "../data/transfers.mutations";
 
 export function TransfersFormPage() {
+  const navigate = useNavigate();
   const form = useForm<CreateTransfer>({
     resolver: zodResolver(CreateTransferSchema),
   });
@@ -37,7 +38,11 @@ export function TransfersFormPage() {
   const selectedSourceWallet = form.watch("source");
 
   const onSubmit = (values: CreateTransfer) => {
-    createTransferMutation.mutate(values);
+    createTransferMutation.mutate(values, {
+      async onSuccess() {
+        await navigate({ to: "/transfers" });
+      },
+    });
   };
 
   return (

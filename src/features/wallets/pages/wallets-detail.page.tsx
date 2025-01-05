@@ -1,5 +1,5 @@
 import { match } from "ts-pattern";
-import { Link, getRouteApi } from "@tanstack/react-router";
+import { Link, getRouteApi, useNavigate } from "@tanstack/react-router";
 import { Trash2Icon, PencilIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/common.util";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ const route = getRouteApi("/_app/wallets/$walletId");
 
 export function WalletsDetailPage() {
   const { walletId } = route.useParams();
+  const navigate = useNavigate();
   const walletDetailQuery = useWalletDetailQuery(walletId);
   const recordsQuery = useRecordsQuery({ source_id: walletId });
   const transfersQuery = useTransfersQuery({ source_id: walletId });
@@ -24,6 +25,14 @@ export function WalletsDetailPage() {
 
   if (walletDetailQuery.isPending) return <p>Loading . . .</p>;
   if (walletDetailQuery.isError) return <p>An error occured: {walletDetailQuery.error.message}</p>;
+
+  const handleDeleteWallet = () => {
+    deleteWalletMutation.mutate(walletId, {
+      async onSuccess() {
+        await navigate({ to: "/wallets" });
+      },
+    });
+  };
 
   return (
     <PageLayout
@@ -48,7 +57,7 @@ export function WalletsDetailPage() {
             </Button>
           }
           actionLabel="Yes, delete"
-          onClickAction={() => deleteWalletMutation.mutate(walletId)}
+          onClickAction={handleDeleteWallet}
         />
       </div>
 
