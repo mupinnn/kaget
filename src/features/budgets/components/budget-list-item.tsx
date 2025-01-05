@@ -3,7 +3,7 @@ import { formatCurrency } from "@/utils/common.util";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { TransformedBudgetWithRelations } from "../data/budgets.schemas";
+import { type TransformedBudgetWithRelations } from "../data/budgets.schemas";
 
 export type BudgetListItemProps = TransformedBudgetWithRelations;
 

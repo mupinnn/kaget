@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { APIResponseSchema } from "@/schemas/api.schema";
 import {
   SourceTypeSchema,
   SourceOrDestinationSchema,
@@ -32,10 +31,6 @@ export const TransferSchema = z.object({
 
 export type Transfer = z.infer<typeof TransferSchema>;
 
-export const TransfersResponseSchema = APIResponseSchema({
-  schema: TransferSchema.array(),
-});
-
 export const TransfersRequestQuerySchema = z.object({
   source_id: z.string().nanoid().optional().catch(undefined),
 });
@@ -59,11 +54,3 @@ export const CreateTransferSchema = TransferSchema.pick({
 });
 
 export type CreateTransfer = z.infer<typeof CreateTransferSchema>;
-
-export const CreateTransferResponseSchema = APIResponseSchema({
-  schema: TransferSchema,
-});
-
-export const ShowTransferResponseSchema = APIResponseSchema({
-  schema: TransferSchema,
-});

@@ -1,12 +1,20 @@
 import { nanoid } from "nanoid";
 import { match } from "ts-pattern";
 import { db } from "@/libs/db.lib";
-import { type CreateTransfer, type Transfer } from "./transfers.schemas";
+import {
+  type TransfersRequestQuery,
+  type CreateTransfer,
+  type Transfer,
+  TransferSchema,
+  TransfersRequestQuerySchema,
+  CreateTransferSchema,
+} from "./transfers.schemas";
 import { commitRecord, getSourceOrDestinationType } from "@/features/records/data/records.services";
 import { addWalletBalance, deductWalletBalance } from "@/features/wallets/data/wallets.services";
 import { addBudgetBalance, deductBudgetBalance } from "@/features/budgets/data/budgets.services";
 import { addSeconds } from "@/utils/date.util";
 import { noopAsync } from "@/utils/common.util";
+import { successResponse } from "@/utils/service.util";
 
 export async function commitTransfer(transfer: CreateTransfer) {
   const sourceType = getSourceOrDestinationType(transfer.source);
@@ -77,4 +85,47 @@ export async function commitTransfer(transfer: CreateTransfer) {
     })
     .with("BUDGET_ITEM", noopAsync)
     .exhaustive();
+}
+
+export async function getTransferList(query: TransfersRequestQuery) {
+  const parsedFilters = TransfersRequestQuerySchema.parse(query);
+  const storedTransfers = await db.transfer.orderBy("created_at").reverse().toArray();
+  const filteredStoredTransfers = storedTransfers.filter(transfer => {
+    if (parsedFilters.source_id && transfer.source_id !== parsedFilters.source_id) {
+      return false;
+    }
+
+    return true;
+  });
+  const sortedStoredTransfers = filteredStoredTransfers
+    .sort((a, b) => {
+      if (a.type === "INCOMING" && b.type === "OUTGOING") return -1;
+      if (b.type === "OUTGOING" && a.type === "INCOMING") return 1;
+      return 0;
+    })
+    .sort((a, b) => {
+      if (a.ref_id < b.ref_id) return -1;
+      if (b.ref_id > a.ref_id) return 1;
+      return 0;
+    });
+
+  return successResponse({
+    data: TransferSchema.array().parse(sortedStoredTransfers),
+    message: "Successfully retrieved transfers",
+  });
+}
+
+export async function createTransfer(payload: CreateTransfer) {
+  const data = CreateTransferSchema.parse(payload);
+
+  await db.transaction("rw", db.transfer, db.wallet, db.record, async () => {
+    await createTransfer(data);
+  });
+
+  const latestCreatedTransfer = await db.transfer.orderBy("created_at").last();
+
+  return successResponse({
+    data: TransferSchema.parse(latestCreatedTransfer),
+    message: "Success transferring a fund",
+  });
 }

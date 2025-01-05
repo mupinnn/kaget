@@ -3,7 +3,7 @@ import Dexie, { type EntityTable } from "dexie";
 import type { Wallet } from "@/features/wallets/data/wallets.schemas";
 import type { Budget, BudgetItem } from "@/features/budgets/data/budgets.schemas";
 import type { Record, RecordItem } from "@/features/records/data/records.schemas";
-import type { Transfer } from "@/features/transfers/data/transfers.schema";
+import type { Transfer } from "@/features/transfers/data/transfers.schemas";
 import type { Settings } from "@/features/settings/data/settings.schemas";
 
 class KagetDB extends Dexie {

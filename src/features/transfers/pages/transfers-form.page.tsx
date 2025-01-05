@@ -23,7 +23,7 @@ import {
 import { PageLayout } from "@/components/page-layout";
 import { formatCurrency } from "@/utils/common.util";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
-import { CreateTransfer, CreateTransferSchema } from "../data/transfers.schema";
+import { type CreateTransfer, CreateTransferSchema } from "../data/transfers.schemas";
 import { useCreateTransferMutation } from "../data/transfers.mutations";
 
 export function TransfersFormPage() {

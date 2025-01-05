@@ -11,6 +11,11 @@ export async function getSettings() {
   });
 }
 
+export async function preloadSettings() {
+  const settings = await getSettings();
+  window.settings = settings.data;
+}
+
 export async function createSettings(payload: Settings) {
   const data = SettingsSchema.parse(payload);
   const newSettings: Settings = {
