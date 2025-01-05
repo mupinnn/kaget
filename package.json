@@ -41,7 +41,6 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.0.8",
     "lucide-react": "^0.441.0",
-    "msw": "^2.4.5",
     "nanoid": "^5.0.8",
     "react": "^18.3.1",
     "react-currency-input-field": "^3.9.0",
@@ -87,10 +86,5 @@
   "lint-staged": {
     "**/*.{ts,tsx,md,mdx,js,jsx,json,yaml,yml,html,css}": "prettier -w",
     "**/*.{ts,tsx}": "eslint --fix ."
-  },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
   }
 }
