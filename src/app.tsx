@@ -4,7 +4,9 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { routeTree } from "@/__generated__/routeTree";
+import { useRegisterSW } from "virtual:pwa-register/react";
 import { Toaster } from "./components/ui/toaster";
+import { ToastAction } from "./components/ui/toast";
 import { toast } from "./hooks/use-toast";
 import { BaseServiceResponseSchema } from "./schemas/service.schema";
 
@@ -62,6 +64,33 @@ const queryClient = new QueryClient({
 });
 
 export function App() {
+  const {
+    offlineReady: [, setOfflineReady],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onNeedRefresh() {
+      toast({
+        title: "New version available",
+        description: "Click on reload button to update",
+        action: (
+          <ToastAction altText="Reload" onClick={() => updateServiceWorker(true)}>
+            Reload
+          </ToastAction>
+        ),
+      });
+    },
+    onOfflineReady() {
+      toast({
+        description: "App ready to work offline",
+        action: (
+          <ToastAction altText="Close" onClick={() => setOfflineReady(false)}>
+            Close
+          </ToastAction>
+        ),
+      });
+    },
+  });
+
   return (
     <StrictMode>
       <QueryClientProvider client={queryClient}>

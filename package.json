@@ -84,7 +84,8 @@
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1",
     "vite-plugin-pwa": "^0.21.1",
-    "vitest": "^2.1.1"
+    "vitest": "^2.1.1",
+    "workbox-window": "^7.3.0"
   },
   "lint-staged": {
     "**/*.{ts,tsx,md,mdx,js,jsx,json,yaml,yml,html,css}": "prettier -w",

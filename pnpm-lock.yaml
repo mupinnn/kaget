@@ -208,6 +208,9 @@ devDependencies:
   vitest:
     specifier: ^2.1.1
     version: 2.1.1(@types/node@22.5.4)
+  workbox-window:
+    specifier: ^7.3.0
+    version: 7.3.0
 
 packages:
 
