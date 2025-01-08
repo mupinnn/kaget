@@ -4,6 +4,7 @@ import {
   WalletIcon,
   ArrowRightLeftIcon,
   ReceiptTextIcon,
+  SettingsIcon,
 } from "lucide-react";
 import { Link, RoutePaths, RegisteredRouter } from "@tanstack/react-router";
 import {
@@ -49,6 +50,11 @@ const menuItems: MenuItem[] = [
     title: "Transfers",
     url: "/transfers",
     icon: ArrowRightLeftIcon,
+  },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: SettingsIcon,
   },
 ];
 
