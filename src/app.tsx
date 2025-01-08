@@ -4,9 +4,13 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { routeTree } from "@/__generated__/routeTree";
+import { useRegisterSW } from "virtual:pwa-register/react";
 import { Toaster } from "./components/ui/toaster";
+import { ToastAction } from "./components/ui/toast";
 import { toast } from "./hooks/use-toast";
 import { BaseServiceResponseSchema } from "./schemas/service.schema";
+import { ThemeProvider } from "./components/providers/theme-provider";
+import { HidableBalanceProvider } from "./components/providers/hidable-balance-provider";
 
 const router = createRouter({ routeTree });
 
@@ -62,16 +66,48 @@ const queryClient = new QueryClient({
 });
 
 export function App() {
+  const {
+    offlineReady: [, setOfflineReady],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onNeedRefresh() {
+      toast({
+        title: "New version available",
+        description: "Click on reload button to update",
+        action: (
+          <ToastAction altText="Reload" onClick={() => updateServiceWorker(true)}>
+            Reload
+          </ToastAction>
+        ),
+      });
+    },
+    onOfflineReady() {
+      toast({
+        title: "App ready to work offline",
+        description: "Now you can use KaGet without internet connection",
+        action: (
+          <ToastAction altText="Close" onClick={() => setOfflineReady(false)}>
+            Close
+          </ToastAction>
+        ),
+      });
+    },
+  });
+
   return (
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <Suspense>
-          <TanStackRouterDevtools router={router} />
-        </Suspense>
-        <ReactQueryDevtools buttonPosition="bottom-right" />
-        <Toaster />
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <HidableBalanceProvider>
+            <RouterProvider router={router} />
+            <Suspense>
+              <TanStackRouterDevtools router={router} />
+            </Suspense>
+            <ReactQueryDevtools buttonPosition="bottom-right" />
+            <Toaster />
+          </HidableBalanceProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </StrictMode>
   );
 }
