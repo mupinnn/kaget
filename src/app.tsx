@@ -9,6 +9,7 @@ import { Toaster } from "./components/ui/toaster";
 import { ToastAction } from "./components/ui/toast";
 import { toast } from "./hooks/use-toast";
 import { BaseServiceResponseSchema } from "./schemas/service.schema";
+import { ThemeProvider } from "./components/providers/theme-provider";
 
 const router = createRouter({ routeTree });
 
@@ -94,14 +95,16 @@ export function App() {
 
   return (
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <Suspense>
-          <TanStackRouterDevtools router={router} />
-        </Suspense>
-        <ReactQueryDevtools buttonPosition="bottom-right" />
-        <Toaster />
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <Suspense>
+            <TanStackRouterDevtools router={router} />
+          </Suspense>
+          <ReactQueryDevtools buttonPosition="bottom-right" />
+          <Toaster />
+        </QueryClientProvider>
+      </ThemeProvider>
     </StrictMode>
   );
 }

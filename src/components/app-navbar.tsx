@@ -3,6 +3,7 @@ import { EyeIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
+import { ThemeSelector } from "./theme-selector";
 
 export function AppNavbar() {
   return (
@@ -15,9 +16,12 @@ export function AppNavbar() {
         </Link>
       </div>
 
-      <Button variant="ghost" size="icon">
-        <EyeIcon />
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon">
+          <EyeIcon />
+        </Button>
+        <ThemeSelector />
+      </div>
     </nav>
   );
 }
