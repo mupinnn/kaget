@@ -4,9 +4,9 @@ import { Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
-import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
+import { HidableBalance } from "@/components/hidable-balance";
 import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
 import { useDeleteRecordMutation } from "../data/records.mutations";
 import { getRecordAmountValueAndClasses } from "../data/records.services";
@@ -46,8 +46,10 @@ export function RecordsDetailPage() {
       subtitle={
         <>
           <p className="text-xl">
-            <span className={cn("font-medium", className)}>{value}</span> -{" "}
-            {recordDetail.source.name}
+            <span className={cn("font-medium", className)}>
+              <HidableBalance value={value} />
+            </span>{" "}
+            - {recordDetail.source.name}
           </p>
           <p className="text-sm text-muted-foreground">
             {formatDate(recordDetail.recorded_at, { dateStyle: "full", timeStyle: "long" })}
@@ -83,7 +85,7 @@ export function RecordsDetailPage() {
                   <p>{recordItem.note}</p>
                   <p className={cn("text-right", className)}>
                     {operator}
-                    {formatCurrency(recordItem.amount)}
+                    <HidableBalance value={recordItem.amount} />
                   </p>
                 </div>
               ))}

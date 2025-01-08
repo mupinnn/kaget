@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { formatCurrency } from "@/utils/common.util";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { HidableBalance } from "@/components/hidable-balance";
 import { type TransformedBudgetWithRelations } from "../data/budgets.schemas";
 
 export type BudgetListItemProps = TransformedBudgetWithRelations;
@@ -25,11 +25,15 @@ export const BudgetListItem = (props: BudgetListItemProps) => {
           <Progress value={props.remaining_balance_percentage} />
           <div className="inline-flex items-center gap-2">
             <div className="h-3 w-3 bg-primary" />
-            <span className="text-xs">Remaining : {formatCurrency(props.remaining_balance)}</span>
+            <span className="text-xs">
+              Remaining : <HidableBalance value={props.remaining_balance} />
+            </span>
           </div>
           <div className="inline-flex items-center gap-2">
             <div className="h-3 w-3 bg-primary/20" />
-            <span className="text-xs">Used : {formatCurrency(props.used_balance)}</span>
+            <span className="text-xs">
+              Used : <HidableBalance value={props.used_balance} />
+            </span>
           </div>
         </CardContent>
       </Card>

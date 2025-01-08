@@ -10,6 +10,7 @@ import { ToastAction } from "./components/ui/toast";
 import { toast } from "./hooks/use-toast";
 import { BaseServiceResponseSchema } from "./schemas/service.schema";
 import { ThemeProvider } from "./components/providers/theme-provider";
+import { HidableBalanceProvider } from "./components/providers/hidable-balance-provider";
 
 const router = createRouter({ routeTree });
 
@@ -97,12 +98,14 @@ export function App() {
     <StrictMode>
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-          <Suspense>
-            <TanStackRouterDevtools router={router} />
-          </Suspense>
-          <ReactQueryDevtools buttonPosition="bottom-right" />
-          <Toaster />
+          <HidableBalanceProvider>
+            <RouterProvider router={router} />
+            <Suspense>
+              <TanStackRouterDevtools router={router} />
+            </Suspense>
+            <ReactQueryDevtools buttonPosition="bottom-right" />
+            <Toaster />
+          </HidableBalanceProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>

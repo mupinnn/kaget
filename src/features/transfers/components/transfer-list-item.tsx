@@ -1,8 +1,8 @@
 import { ArrowRightIcon, ArrowLeftIcon } from "lucide-react";
-import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { cn } from "@/libs/utils.lib";
 import { Badge } from "@/components/ui/badge";
+import { HidableBalance } from "@/components/hidable-balance";
 import { type Transfer } from "../data/transfers.schemas";
 
 export type TransferListItemProps = Transfer;
@@ -30,7 +30,7 @@ export const TransferListItem = (props: TransferListItemProps) => {
           <p className="text-xs">{formatDate(props.created_at, { timeStyle: "short" })}</p>
         </div>
         <p className={cn("break-all text-right font-bold", transferTypeClassname)}>
-          {formatCurrency(props.amount)}
+          <HidableBalance value={props.amount} />
         </p>
       </div>
     </div>

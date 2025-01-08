@@ -1,7 +1,6 @@
 import { match } from "ts-pattern";
 import { Link, getRouteApi, useNavigate } from "@tanstack/react-router";
 import { Trash2Icon, PencilIcon } from "lucide-react";
-import { formatCurrency } from "@/utils/common.util";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageLayout } from "@/components/page-layout";
@@ -10,6 +9,7 @@ import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
 import { RecordList, RecordListLoader } from "@/features/records/components/record-list";
+import { HidableBalance } from "@/components/hidable-balance";
 import { useDeleteWalletMutation } from "../data/wallets.mutations";
 import { useWalletDetailQuery } from "../data/wallets.queries";
 
@@ -37,8 +37,11 @@ export function WalletsDetailPage() {
   return (
     <PageLayout
       title={walletDetailQuery.data.data.name}
-      subtitle={formatCurrency(walletDetailQuery.data.data.balance)}
-      subtitleClassName="text-lg"
+      subtitle={
+        <p className="text-lg text-muted-foreground">
+          <HidableBalance value={walletDetailQuery.data.data.balance} />
+        </p>
+      }
     >
       <div className="flex items-center gap-2">
         <Button asChild className="no-underline" size="sm">

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { formatCurrency } from "@/utils/common.util";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { HidableBalance } from "@/components/hidable-balance";
 import { type Wallet } from "../data/wallets.schemas";
 
 export type WalletListItemProps = Wallet;
@@ -13,7 +13,9 @@ export const WalletListItem = (props: WalletListItemProps) => {
           <CardTitle className="text-sm font-normal">{props.name}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{formatCurrency(props.balance)}</p>
+          <p className="text-2xl font-bold">
+            <HidableBalance value={props.balance} />
+          </p>
         </CardContent>
       </Card>
     </Link>

@@ -8,9 +8,9 @@ import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
 import { RecordList, RecordListLoader } from "@/features/records/components/record-list";
-import { formatCurrency } from "@/utils/common.util";
 import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
+import { HidableBalance } from "@/components/hidable-balance";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
 import { useDeleteBudgetMutation, useActivateBudgetMutation } from "../data/budgets.mutations";
 import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
@@ -48,12 +48,14 @@ export function BudgetsDetailPage() {
         <div className="inline-flex items-center gap-2">
           <div className="h-3 w-3 bg-primary" />
           <span className="text-xs">
-            Remaining : {formatCurrency(budgetDetail.remaining_balance)}
+            Remaining : <HidableBalance value={budgetDetail.remaining_balance} />
           </span>
         </div>
         <div className="inline-flex items-center gap-2">
           <div className="h-3 w-3 bg-primary/20" />
-          <span className="text-xs">Used : {formatCurrency(budgetDetail.used_balance)}</span>
+          <span className="text-xs">
+            Used : <HidableBalance value={budgetDetail.used_balance} />
+          </span>
         </div>
       </div>
 
