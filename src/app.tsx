@@ -81,7 +81,8 @@ export function App() {
     },
     onOfflineReady() {
       toast({
-        description: "App ready to work offline",
+        title: "App ready to work offline",
+        description: "Now you can use KaGet without internet connection",
         action: (
           <ToastAction altText="Close" onClick={() => setOfflineReady(false)}>
             Close
