@@ -96,6 +96,9 @@
     "**/*.{ts,tsx}": "eslint --fix ."
   },
   "release-it": {
+    "git": {
+      "commitMessage": "release: v${version}"
+    },
     "github": {
       "release": true,
       "web": true
