@@ -66,7 +66,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            KaGet<sup>v0.1.0</sup>
+            KaGet<sup>{__APP_VERSION__}</sup>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
