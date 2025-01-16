@@ -80,4 +80,8 @@ export default defineConfig({
   worker: {
     format: "es",
   },
+
+  define: {
+    __APP_VERSION__: JSON.stringify("v" + process.env.npm_package_version),
+  },
 });

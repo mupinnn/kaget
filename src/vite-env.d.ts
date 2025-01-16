@@ -7,4 +7,6 @@ declare global {
   interface Window {
     settings?: Settings;
   }
+
+  const __APP_VERSION__: string;
 }
