@@ -11,6 +11,7 @@
     "format": "prettier -w -c \"**/*.{ts,tsx,md,mdx,js,jsx,json,yaml,yml,html,css}\"",
     "prepare": "husky",
     "test": "vitest",
+    "release": "release-it",
     "gen:routes": "tsr generate",
     "gen:pwa-assets": "pwa-assets-generator --preset minimal-2023 public/kaget-logo.svg",
     "ui:add": "pnpm dlx shadcn@latest add"
@@ -81,6 +82,7 @@
     "postcss": "^8.4.45",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
+    "release-it": "^18.1.1",
     "tailwindcss": "^3.4.11",
     "typescript": "~5.5.3",
     "typescript-eslint": "^8.0.1",
@@ -92,5 +94,11 @@
   "lint-staged": {
     "**/*.{ts,tsx,md,mdx,js,jsx,json,yaml,yml,html,css}": "prettier -w",
     "**/*.{ts,tsx}": "eslint --fix ."
+  },
+  "release-it": {
+    "github": {
+      "release": true,
+      "web": true
+    }
   }
 }
