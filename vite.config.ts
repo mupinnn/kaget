@@ -1,8 +1,37 @@
 import path from "node:path";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import { VitePWA } from "vite-plugin-pwa";
+
+/** @see https://github.com/vitejs/vite/issues/16719#issuecomment-2308170706 */
+function workerChunkPlugin(): Plugin {
+  return {
+    name: workerChunkPlugin.name,
+    apply: "build",
+    enforce: "pre",
+    async resolveId(source, importer) {
+      if (source.endsWith("?worker")) {
+        const resolved = await this.resolve(source.split("?")[0], importer);
+        return "\0" + resolved?.id + "?worker-chunk";
+      }
+    },
+    load(id) {
+      if (id.startsWith("\0") && id.endsWith("?worker-chunk")) {
+        const referenceId = this.emitFile({
+          type: "chunk",
+          id: id.slice(1).split("?")[0],
+        });
+
+        return `
+          export default function WorkerWrapper() {
+            return new Worker(import.meta.ROLLUP_FILE_URL_${referenceId}, { type: "module" })
+          }
+        `;
+      }
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -39,11 +68,16 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,icon,png,svg,woff,woff2,ttf,otf}"],
       },
     }),
+    workerChunkPlugin(),
   ],
 
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+
+  worker: {
+    format: "es",
   },
 });

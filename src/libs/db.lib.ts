@@ -42,3 +42,25 @@ class KagetDB extends Dexie {
 }
 
 export const db = new KagetDB();
+
+export function exportDB() {
+  return db.transaction("r", db.tables, () => {
+    return Promise.all(
+      db.tables.map(table => table.toArray().then(rows => ({ table: table.name, rows })))
+    );
+  });
+}
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export function importDB(data: Array<{ table: string; rows: any[] }>) {
+  return db.transaction("rw", db.tables, () => {
+    return Promise.all(
+      data.map(d =>
+        db
+          .table(d.table)
+          .clear()
+          .then(() => db.table(d.table).bulkAdd(d.rows))
+      )
+    );
+  });
+}
