@@ -8,9 +8,10 @@ declare global {
 
   type ImportWorkerData = {
     type: "import";
-    status: "idle" | "start" | "loading" | "done";
+    status: "idle" | "start" | "loading" | "done" | "error";
     progress: number;
     importedFile: Blob;
+    message: string;
   };
 
   type ImportExportWorkerData = ExportWorkerData | ImportWorkerData;
