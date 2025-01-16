@@ -1,24 +1,26 @@
-self.onmessage = (event: MessageEvent<number>) => {
-  const total = event.data;
-  let progress = 0;
-  let current = 0;
+import { exportDB } from "@/libs/db.lib";
 
-  const processBatch = () => {
-    const batchSize = 1000;
-    const end = Math.min(current + batchSize, total);
+self.onmessage = async (event: MessageEvent<ImportExportWorkerData>) => {
+  const { type, status } = event.data;
 
-    for (; current < end; current++) {
-      progress = (current / total) * 100;
-    }
+  switch (type) {
+    case "export":
+      if (status === "start") {
+        self.postMessage({ status: "loading", type });
 
-    postMessage(progress);
+        const allData = await exportDB();
+        const allDataSerialized = JSON.stringify(allData);
+        const allDataBlob = new Blob([allDataSerialized], { type: "text/json" });
+        const downloadURL = URL.createObjectURL(allDataBlob);
 
-    if (current < total) {
-      setTimeout(processBatch, 0);
-    } else {
-      postMessage("done");
-    }
-  };
+        self.postMessage({ status: "done", exportedFile: downloadURL, type });
+      }
+      break;
 
-  processBatch();
+    case "import":
+      break;
+
+    default:
+      break;
+  }
 };
