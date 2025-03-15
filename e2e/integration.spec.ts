@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 test.use({
   locale: "en-US",
@@ -403,6 +405,51 @@ test("KaGet app should running just fine", async ({ page, baseURL }) => {
       await page.waitForURL("/transfers");
 
       await expect(page.getByText("Transfer to BNX").first()).toBeVisible();
+    });
+  });
+
+  await test.step("Settings", async () => {
+    await page.goto("/settings");
+    await page.waitForURL("/settings");
+    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+
+    await test.step("Export and backup", async () => {
+      await expect(page.getByRole("heading", { name: "Export data" })).toBeVisible();
+
+      await page.getByRole("button", { name: "Export" }).click();
+
+      const downloadLink = page.getByRole("link").filter({ hasText: /Click here to download/ });
+      const downloadPromise = page.waitForEvent("download");
+
+      await expect(downloadLink).toBeVisible();
+      await downloadLink.click();
+
+      const download = await downloadPromise;
+      await download.saveAs((await download.path()) + download.suggestedFilename());
+    });
+
+    await test.step("Import and restore", async () => {
+      const fileChooserPromise = page.waitForEvent("filechooser");
+      await page.getByRole("button", { name: "Select file" }).click();
+
+      const fileChooser = await fileChooserPromise;
+      await fileChooser.setFiles(
+        path.join(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "./test-data/kaget-export_2025-03-15T12_19_03.691Z.json"
+        )
+      );
+
+      await page.getByRole("button", { name: "Import" }).click();
+
+      await expect(page.getByRole("heading", { name: "Restore Backup" })).toBeVisible();
+      await page.getByRole("button", { name: "Continue" }).click();
+      await expect(page.getByText("Successfully imported").first()).toBeVisible();
+
+      await page.getByRole("link", { name: "Wallets" }).click();
+      await expect(page.getByText("BXA")).toBeVisible();
+      await expect(page.getByText("IDR 17,081,945.00")).toBeVisible();
+      await expect(page.locator('[data-testid=wallet-list] > a[href^="/wallets/"]')).toHaveCount(1);
     });
   });
 });
