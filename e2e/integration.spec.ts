@@ -285,4 +285,98 @@ test("KaGet app should running just fine", async ({ page, baseURL }) => {
       await expect(page.getByText("Groceries")).toBeVisible();
     });
   });
+
+  await test.step("Budgets", async () => {
+    await page.goto("/budgets");
+    await page.waitForURL("/budgets");
+
+    await test.step("Create budgets", async () => {
+      await page.getByRole("link", { name: "Allocate money" }).click();
+      await page.waitForURL("/budgets/create");
+
+      await expect(page.getByRole("heading", { name: "Allocate your money" })).toBeVisible();
+
+      for (let i = 0; i < 2; i++) {
+        await page.getByTestId(`budgets.${i}.wallet-trigger`).click();
+        await page.getByRole("option", { name: /BNX/ }).click();
+        await expect(page.getByTestId(`budgets.${i}.wallet-trigger`)).toHaveText(/BNX/);
+
+        await page.locator(`input[name="budgets.${i}.name"]`).fill(`Budget ${i + 1}`);
+        await page.locator(`input[name="budgets.${i}.balance"]`).fill("4000");
+
+        if (i < 1) await page.getByRole("button", { name: "Add allocation" }).click();
+      }
+
+      await page.getByRole("button", { name: "Summarize" }).click();
+      await expect(page.getByRole("heading", { name: "Budget Allocation Summary" })).toBeVisible();
+
+      await page.getByRole("button", { name: "Allocate!" }).click();
+      await page.waitForURL("/budgets");
+      await expect(page.locator('[data-testid=budget-list] > a[href^="/budgets/"]')).toHaveCount(2);
+    });
+
+    await test.step("Delete a budget", async () => {
+      await page.getByText("Budget 2").click();
+      await page.waitForURL("/budgets/**");
+
+      await expect(page.getByRole("heading", { name: "Budget 2" })).toBeVisible();
+      await expect(page.getByText("BUDGET - BNX")).toBeVisible();
+
+      await page.getByRole("button", { name: "Delete" }).click();
+      await page.getByRole("button", { name: "Yes, delete" }).click();
+      await page.waitForURL("/budgets");
+
+      await expect(page.getByText("Budget 2")).toBeHidden();
+    });
+
+    await test.step("Add balance to existing budget", async () => {
+      await page.getByText("Budget 1").click();
+      await page.waitForURL("/budgets/**");
+
+      const addBalanceButton = page.getByRole("button", { name: "Add balance" });
+      await expect(addBalanceButton).toBeVisible();
+
+      await addBalanceButton.click();
+      await expect(page.getByRole("heading", { name: "Add balance from BNX" })).toBeVisible();
+      await page.getByLabel("Balance", { exact: true }).fill("2000");
+      await page.locator("button[type=submit]").click();
+
+      await expect(page.getByText("$6,000.00")).toBeVisible();
+    });
+
+    await test.step("Refund balance from existing budget", async () => {
+      await page.getByRole("button", { name: "Refund" }).click();
+      await expect(page.getByRole("heading", { name: "Refund to BNX" })).toBeVisible();
+
+      await page.getByLabel("Balance", { exact: true }).fill("2000");
+      await page.locator("button[type=submit]").click();
+
+      await expect(page.getByText("$4,000.00")).toBeVisible();
+    });
+
+    await test.step("Use a budget", async () => {
+      await page.getByRole("button", { name: "Use budget" }).click();
+      await expect(page.getByRole("heading", { name: "Use budget" })).toBeVisible();
+
+      await page.getByLabel("Amount").fill("2500");
+      await page.getByLabel("Note").fill("Get some food");
+      await page.getByRole("button", { name: "Save" }).click();
+
+      await expect(page.getByText("Get some food")).toBeVisible();
+      await expect(page.getByText("$1,500.00")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Delete" })).toBeHidden();
+    });
+
+    await test.step("Use a budget to its limit", async () => {
+      await page.getByRole("button", { name: "Use budget" }).click();
+      await page.getByLabel("Amount").fill("1500");
+      await page.getByLabel("Note").fill("Party");
+      await page.getByRole("button", { name: "Save" }).click();
+
+      await expect(page.getByText("Party")).toBeVisible();
+      await expect(page.getByText("$0.00")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Use budget" })).toBeHidden();
+      await expect(page.getByRole("button", { name: "Activate" })).toBeVisible();
+    });
+  });
 });

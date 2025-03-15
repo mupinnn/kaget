@@ -20,7 +20,7 @@ export function BudgetsIndexPage() {
         </Button>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="budget-list">
         {match(budgetsQuery)
           .with({ isPending: true }, () => <BudgetListLoader />)
           .with({ isError: true }, () => <p>An error occured</p>)
