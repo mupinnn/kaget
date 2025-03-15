@@ -379,4 +379,30 @@ test("KaGet app should running just fine", async ({ page, baseURL }) => {
       await expect(page.getByRole("button", { name: "Activate" })).toBeVisible();
     });
   });
+
+  await test.step("Transfers", async () => {
+    await page.goto("/transfers");
+    await page.waitForURL("/transfers");
+    await expect(page.getByRole("heading", { name: "Transfers" })).toBeVisible();
+
+    await test.step("Transfer balance to between wallet", async () => {
+      await page.getByRole("link", { name: "Transfer balance" }).click();
+      await page.waitForURL("/transfers/create");
+
+      await page.getByText("Choose a source wallet").click();
+      await page.getByRole("option", { name: /BXI/ }).click();
+      await expect(page.getByRole("combobox", { name: "Source wallet" })).toHaveText(/BXI/);
+
+      await page.getByText("Choose a destination wallet").click();
+      await page.getByRole("option", { name: /BNX/ }).click();
+      await expect(page.getByRole("combobox", { name: "Destination wallet" })).toHaveText(/BNX/);
+
+      await page.getByLabel("Amount").fill("50000");
+      await page.getByLabel("Note").fill("Transfer to BNX");
+      await page.getByRole("button", { name: "Save" }).click();
+      await page.waitForURL("/transfers");
+
+      await expect(page.getByText("Transfer to BNX").first()).toBeVisible();
+    });
+  });
 });
