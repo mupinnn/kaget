@@ -26,7 +26,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:5173",
+    baseURL: "http://localhost:5173/",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -48,7 +48,7 @@ export default defineConfig({
       },
     },
 
-    // TODO: get up and running with headless/headed mode in WSL
+    // TODO: get up and running locally with headless/headed mode in WSL
     {
       name: "firefox",
       use: {
@@ -63,7 +63,7 @@ export default defineConfig({
       },
     },
 
-    // TODO: get up and running with headless/headed mode in WSL (minibrowser-gtk not exist)
+    // TODO: get up and running with locally headless/headed mode in WSL (minibrowser-gtk not exist)
     {
       name: "webkit",
       use: {
