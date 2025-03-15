@@ -33,6 +33,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
 
+  globalTimeout: process.env.CI ? 60 * 60 * 1000 : undefined,
   timeout: 60_000,
 
   /* Configure projects for major browsers */
