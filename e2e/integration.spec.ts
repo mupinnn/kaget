@@ -150,7 +150,7 @@ test("KaGet app should running just fine", async ({ page, baseURL }) => {
       await page.waitForURL("/wallets");
 
       await expect(page.getByRole("heading", { name: "No wallet created" })).toBeHidden();
-      await expect(page.locator('[data-testid=wallet-list] > a[href^="/wallets/"]')).toHaveCount(2);
+      await expect(page.locator('[data-testid=wallet-list] > a[href^="/wallets/"]')).toHaveCount(3);
     });
 
     await test.step("Wallet detail", async () => {
@@ -191,9 +191,98 @@ test("KaGet app should running just fine", async ({ page, baseURL }) => {
 
         await expect(page.getByText("JAGX")).toBeHidden();
         await expect(page.locator('[data-testid=wallet-list] > a[href^="/wallets/"]')).toHaveCount(
-          1
+          2
         );
       });
+    });
+  });
+
+  await test.step("Records", async () => {
+    await page.goto("/records");
+    await page.waitForURL("/records");
+
+    await test.step("Create an expense record", async () => {
+      await page.getByRole("link", { name: "Record cashflow" }).click();
+      await page.waitForURL("/records/create");
+
+      await page.getByText("Choose a wallet").click();
+      await page.getByRole("option", { name: "BNX" }).click();
+      await expect(page.getByRole("combobox", { name: "Wallet" })).toHaveText(/BNX/);
+
+      await page.getByText("Choose a record type").click();
+      await page.getByRole("option", { name: "EXPENSE" }).click();
+      await expect(page.getByRole("combobox", { name: "Type" })).toHaveText("EXPENSE");
+
+      await page.getByLabel("Amount").fill("12500");
+      await page.getByLabel("Note").fill("Buy chicken noodle soup");
+
+      await page.getByRole("button", { name: "Save" }).click();
+      await page.waitForURL("/records");
+
+      await expect(page.getByText("Buy chicken noodle soup")).toBeVisible();
+    });
+
+    await test.step("Create an income record", async () => {
+      await page.getByRole("link", { name: "New record" }).click();
+      await page.waitForURL("/records/create");
+
+      await page.getByText("Choose a wallet").click();
+      await page.getByRole("option", { name: "BNX" }).click();
+      await expect(page.getByRole("combobox", { name: "Wallet" })).toHaveText(/BNX/);
+
+      await page.getByText("Choose a record type").click();
+      await page.getByRole("option", { name: "INCOME" }).click();
+      await expect(page.getByRole("combobox", { name: "Type" })).toHaveText("INCOME");
+
+      await page.getByLabel("Amount").fill("12500");
+      await page.getByLabel("Note").fill("Aunt May gives me");
+
+      await page.getByRole("button", { name: "Save" }).click();
+      await page.waitForURL("/records");
+
+      await expect(page.getByText("Aunt May gives me")).toBeVisible();
+    });
+
+    await test.step("Delete a record", async () => {
+      await page.getByText("Aunt May gives me").click();
+      await page.waitForURL("/records/**");
+
+      const deleteButton = page.getByRole("button", { name: "Delete" });
+      await expect(deleteButton).toBeVisible();
+
+      await deleteButton.click();
+      await page.getByRole("button", { name: "Yes, delete" }).click();
+      await page.waitForURL("/records");
+
+      await expect(page.getByText("Aunt May gives me")).toBeHidden();
+    });
+
+    await test.step("Create an splitted expense record", async () => {
+      await page.getByRole("link", { name: "New record" }).click();
+      await page.waitForURL("/records/create");
+
+      await page.getByText("Choose a wallet").click();
+      await page.getByRole("option", { name: "BNX" }).click();
+      await expect(page.getByRole("combobox", { name: "Wallet" })).toHaveText(/BNX/);
+
+      await page.getByText("Choose a record type").click();
+      await page.getByRole("option", { name: "EXPENSE" }).click();
+      await expect(page.getByRole("combobox", { name: "Type" })).toHaveText(/EXPENSE/);
+
+      await page.getByLabel("Note").fill("Groceries");
+
+      for (let i = 0; i < 3; i++) {
+        await page.getByRole("button", { name: "Split record" }).click();
+        await page.locator(`input[name="items.${i}.amount"]`).fill("1000");
+        await page.locator(`textarea[name="items.${i}.note"]`).fill(`Note for record ${i + 1}`);
+      }
+
+      expect(await page.locator(`p:near(:text("Total amount"))`).textContent()).toBe("$3,000.00");
+
+      await page.getByRole("button", { name: "Save" }).click();
+      await page.waitForURL("/records");
+
+      await expect(page.getByText("Groceries")).toBeVisible();
     });
   });
 });
