@@ -20,7 +20,7 @@ export function WalletsIndexPage() {
         </Button>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="wallet-list">
         {match(walletsQuery)
           .with({ isPending: true }, () => <WalletListLoader />)
           .with({ isError: true }, () => <p>An error occured</p>)

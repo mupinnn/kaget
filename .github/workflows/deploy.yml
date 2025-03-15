@@ -1,6 +1,11 @@
 name: Deploy to Cloudflare Pages
 
 on:
+  workflow_run:
+    workflows: ["E2E Test"]
+    branches: [main]
+    types: [completed]
+
   workflow_dispatch:
     inputs:
       environment:
@@ -33,7 +38,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
           run_install: false
 
       - uses: actions/setup-node@v4
@@ -42,7 +47,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build

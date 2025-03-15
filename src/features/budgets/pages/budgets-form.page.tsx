@@ -110,7 +110,7 @@ function BudgetForm({
               disabled={hasNoWallets}
             >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger data-testid={field.name + "-trigger"}>
                   <SelectValue
                     placeholder={
                       hasNoWallets
@@ -123,6 +123,7 @@ function BudgetForm({
               <SelectContent>
                 {walletOptions.map(wallet => (
                   <SelectItem
+                    data-testid={field.name + "-item"}
                     key={wallet.id}
                     value={wallet.id}
                     className="w-full"

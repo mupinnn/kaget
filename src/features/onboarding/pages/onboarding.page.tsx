@@ -63,7 +63,10 @@ function CurrencyList({
 }) {
   return (
     <Command>
-      <CommandInput placeholder="Filter currency . . ." />
+      <CommandInput
+        placeholder="Filter currency . . ."
+        data-testid="onboarding-currency-search-input"
+      />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
@@ -75,6 +78,7 @@ function CurrencyList({
                 setSelectedCurrency(value);
                 setOpen(false);
               }}
+              data-testid={`onboarding-currency-item-${currency}`}
             >
               {currency}
               {currency === value && <CheckIcon className="ml-auto" />}
@@ -112,7 +116,7 @@ export function OnboardingIndexPage() {
     <main className="mx-auto flex min-h-svh w-full max-w-lg flex-1 flex-col gap-4 p-4">
       <header className="space-y-1">
         <Badge variant="outline">Onboarding</Badge>
-        <h1 className="text-2xl">
+        <h1 className="text-2xl" data-testid="onboarding-welcome-title">
           Welcome to <br /> <span className="font-bold">KaGet: Kawan Budget!</span>
         </h1>
         <p className="text-muted-foreground">
@@ -161,7 +165,7 @@ export function OnboardingIndexPage() {
                   {isMobile ? (
                     <Drawer open={isCurrencyOpen} onOpenChange={setIsCurrencyOpen}>
                       <DrawerTrigger asChild>
-                        <FormControl>
+                        <FormControl data-testid="onboarding-select-currency-trigger">
                           <Button
                             variant="outline"
                             role="combobox"
@@ -191,7 +195,7 @@ export function OnboardingIndexPage() {
                   ) : (
                     <Popover open={isCurrencyOpen} onOpenChange={setIsCurrencyOpen}>
                       <PopoverTrigger asChild>
-                        <FormControl>
+                        <FormControl data-testid="onboarding-select-currency-trigger">
                           <Button
                             variant="outline"
                             role="combobox"
@@ -225,6 +229,7 @@ export function OnboardingIndexPage() {
             <FormItem>
               <FormLabel>Sample balance</FormLabel>
               <CurrencyInput
+                data-testid="onboarding-sample-balance-input"
                 placeholder="e.g, 100"
                 value={balancePreview}
                 onValueChange={value => setBalancePreview(value)}
@@ -241,7 +246,10 @@ export function OnboardingIndexPage() {
                 <CardDescription>Example of the formatted balance</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-lg font-semibold">
+                <p
+                  className="text-lg font-semibold"
+                  data-testid="onboarding-sample-balance-preview"
+                >
                   {formatCurrency(Number(balancePreview ?? 0), {
                     currency: form.watch("currency"),
                   })}
@@ -255,13 +263,17 @@ export function OnboardingIndexPage() {
                 <CardDescription>Example of the formatted date</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-lg font-semibold">
+                <p className="text-lg font-semibold" data-testid="onboarding-sample-date-preview">
                   {formatDate(new Date(), { dateStyle: "full", timeStyle: "long" })}
                 </p>
               </CardContent>
             </Card>
 
-            <Button className="w-full" isLoading={createSettingsMutation.isPending}>
+            <Button
+              className="w-full"
+              isLoading={createSettingsMutation.isPending}
+              data-testid="onboarding-createSettings-button"
+            >
               Start budgeting!
             </Button>
           </form>
