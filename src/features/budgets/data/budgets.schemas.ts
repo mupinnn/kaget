@@ -77,7 +77,8 @@ export const CreateBudgetSchema = z.object({
 });
 export type CreateBudget = z.infer<typeof CreateBudgetSchema>;
 
-export const UpdateBudgetBalanceSchema = BudgetSchema.pick({ balance: true }).extend({
+export const UpdateBudgetBalanceSchema = z.object({
+  balance: z.coerce.number({ invalid_type_error: "Balance is required" }).positive(),
   type: z.enum(["REFUND", "ADD"]),
 });
 
