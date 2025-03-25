@@ -79,6 +79,7 @@ async function transformBudgetWithRelationsResponse(
     used_balance_percentage: usedBalancePercentage,
     remaining_balance: remainingBalance,
     remaining_balance_percentage: remainingBalancePercentage,
+    total_balance: budget.total_balance,
     wallet: storedWalletById,
   };
 }
@@ -202,10 +203,6 @@ export async function updateBudgetBalanceDetail(budgetId: string, payload: Updat
           source: storedBudgetById,
           destination: storedWalletById,
         });
-
-        await updateBudgetById(budgetId, budget => {
-          budget.total_balance -= data.balance;
-        });
       })
       .with("ADD", async () => {
         if (data.balance > storedWalletById.balance) {
@@ -218,10 +215,6 @@ export async function updateBudgetBalanceDetail(budgetId: string, payload: Updat
           note: `Add ${storedBudgetById.name} budget balance`,
           source: storedWalletById,
           destination: storedBudgetById,
-        });
-
-        await updateBudgetById(budgetId, budget => {
-          budget.total_balance += data.balance;
         });
       })
       .exhaustive();

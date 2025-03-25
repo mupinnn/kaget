@@ -16,7 +16,6 @@ export type Budget = z.infer<typeof BudgetSchema>;
 
 export const TransformedBudgetWithRelationsSchema = BudgetSchema.omit({
   balance: true,
-  total_balance: true,
 }).extend({
   used_balance: BudgetSchema.shape.total_balance,
   used_balance_percentage: z.coerce.number(),
