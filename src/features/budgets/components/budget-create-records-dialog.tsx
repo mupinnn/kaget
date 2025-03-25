@@ -50,19 +50,8 @@ export function BudgetCreateRecordsDialog({
     resolver: zodResolver(CreateRecordSchema),
     defaultValues: {
       note: "",
-      dor: new Date(),
       items: [],
       record_type: "EXPENSE",
-      source: {
-        id: budgetDetail.id,
-        name: budgetDetail.name,
-        balance: budgetDetail.remaining_balance,
-        total_balance: Math.abs(budgetDetail.used_balance + budgetDetail.remaining_balance),
-        wallet_id: budgetDetail.wallet_id,
-        created_at: budgetDetail.created_at,
-        updated_at: budgetDetail.updated_at,
-        archived_at: budgetDetail.archived_at,
-      },
     },
   });
   const recordItems = useFieldArray({ control: form.control, name: "items" });
@@ -109,7 +98,20 @@ export function BudgetCreateRecordsDialog({
 
   function onOpenChange(open: boolean) {
     setIsOpen(open);
-    form.reset();
+    form.reset({
+      ...form.formState.defaultValues,
+      dor: new Date(),
+      source: {
+        id: budgetDetail.id,
+        name: budgetDetail.name,
+        balance: budgetDetail.remaining_balance,
+        total_balance: Math.abs(budgetDetail.used_balance + budgetDetail.remaining_balance),
+        wallet_id: budgetDetail.wallet_id,
+        created_at: budgetDetail.created_at,
+        updated_at: budgetDetail.updated_at,
+        archived_at: budgetDetail.archived_at,
+      },
+    });
   }
 
   return (

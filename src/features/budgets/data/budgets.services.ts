@@ -18,6 +18,7 @@ import {
   BudgetSchema,
   type UpdateBudgetBalance,
 } from "./budgets.schemas";
+import { formatCurrency } from "@/utils/common.util";
 
 export async function getBudgetById(budgetId: string) {
   const storedBudgetById = await db.budget.get(budgetId);
@@ -79,6 +80,7 @@ async function transformBudgetWithRelationsResponse(
     used_balance_percentage: usedBalancePercentage,
     remaining_balance: remainingBalance,
     remaining_balance_percentage: remainingBalancePercentage,
+    total_balance: budget.total_balance,
     wallet: storedWalletById,
   };
 }
@@ -204,12 +206,21 @@ export async function updateBudgetBalanceDetail(budgetId: string, payload: Updat
         });
 
         await updateBudgetById(budgetId, budget => {
-          budget.total_balance -= data.balance;
+          if (budget.balance <= 0) {
+            budget.archived_at = new Date().toISOString();
+          }
         });
       })
       .with("ADD", async () => {
         if (data.balance > storedWalletById.balance) {
           throw new Error("Unable to add balance. The added balance exceeds the wallet balance.");
+        }
+
+        const balanceAfterAdding = data.balance + storedBudgetById.balance;
+        if (balanceAfterAdding > storedBudgetById.total_balance) {
+          throw new Error(
+            `Unable to add balance. The remaining balance after adding (${formatCurrency(balanceAfterAdding)}) exceed the total budget balance (${formatCurrency(storedBudgetById.total_balance)})`
+          );
         }
 
         await commitTransfer({
@@ -218,10 +229,6 @@ export async function updateBudgetBalanceDetail(budgetId: string, payload: Updat
           note: `Add ${storedBudgetById.name} budget balance`,
           source: storedWalletById,
           destination: storedBudgetById,
-        });
-
-        await updateBudgetById(budgetId, budget => {
-          budget.total_balance += data.balance;
         });
       })
       .exhaustive();

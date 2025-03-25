@@ -16,7 +16,6 @@ export type Budget = z.infer<typeof BudgetSchema>;
 
 export const TransformedBudgetWithRelationsSchema = BudgetSchema.omit({
   balance: true,
-  total_balance: true,
 }).extend({
   used_balance: BudgetSchema.shape.total_balance,
   used_balance_percentage: z.coerce.number(),
@@ -78,7 +77,8 @@ export const CreateBudgetSchema = z.object({
 });
 export type CreateBudget = z.infer<typeof CreateBudgetSchema>;
 
-export const UpdateBudgetBalanceSchema = BudgetSchema.pick({ balance: true }).extend({
+export const UpdateBudgetBalanceSchema = z.object({
+  balance: z.coerce.number({ invalid_type_error: "Balance is required" }).positive(),
   type: z.enum(["REFUND", "ADD"]),
 });
 

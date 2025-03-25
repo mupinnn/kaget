@@ -1,4 +1,5 @@
 import path from "node:path";
+import { execSync } from "node:child_process";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
@@ -32,6 +33,8 @@ function workerChunkPlugin(): Plugin {
     },
   };
 }
+
+const lastRevisionSHA = execSync("git rev-parse --short HEAD").toString().trim();
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -82,6 +85,10 @@ export default defineConfig({
   },
 
   define: {
-    __APP_VERSION__: JSON.stringify("v" + process.env.npm_package_version),
+    __APP_VERSION__: JSON.stringify(
+      "v" +
+        process.env.npm_package_version +
+        (process.env.IS_PRODUCTION ? "" : `-${lastRevisionSHA}`)
+    ),
   },
 });

@@ -12,28 +12,23 @@ export const BudgetListItem = (props: BudgetListItemProps) => {
     <Link to="/budgets/$budgetId" params={{ budgetId: props.id }} className="no-underline">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle>
+          <div className="inline-flex items-center gap-1">
             {props.archived_at && (
               <Badge variant="destructive" className="mr-1">
                 Archived
               </Badge>
-            )}{" "}
-            {props.name}
-          </CardTitle>
+            )}
+            <Badge variant="secondary" className="mr-1">
+              {props.wallet.name}
+            </Badge>
+          </div>
+          <CardTitle>{props.name}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-nowrap">
           <Progress value={props.remaining_balance_percentage} />
-          <div className="inline-flex items-center gap-2">
+          <div className="inline-flex items-center gap-2 text-xs">
             <div className="h-3 w-3 bg-primary" />
-            <span className="text-xs">
-              Remaining : <HidableBalance value={props.remaining_balance} />
-            </span>
-          </div>
-          <div className="inline-flex items-center gap-2">
-            <div className="h-3 w-3 bg-primary/20" />
-            <span className="text-xs">
-              Used : <HidableBalance value={props.used_balance} />
-            </span>
+            <HidableBalance value={props.remaining_balance} />
           </div>
         </CardContent>
       </Card>

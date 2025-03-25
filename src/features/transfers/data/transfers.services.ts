@@ -17,6 +17,8 @@ import { noopAsync } from "@/utils/common.util";
 import { successResponse } from "@/utils/service.util";
 
 export async function commitTransfer(transfer: CreateTransfer) {
+  await CreateTransferSchema.parseAsync(transfer);
+
   const sourceType = getSourceOrDestinationType(transfer.source);
   const destinationType = getSourceOrDestinationType(transfer.destination);
   const generalTransferData: Pick<Transfer, "note" | "amount" | "ref_id"> = {

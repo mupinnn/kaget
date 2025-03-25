@@ -1,10 +1,10 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  workflow_run:
-    workflows: ["E2E Test"]
-    branches: [main]
-    types: [completed]
+  # workflow_run:
+  #   workflows: ["E2E Test"]
+  #   branches: [main]
+  #   types: [completed]
 
   workflow_dispatch:
     inputs:
@@ -32,6 +32,7 @@ env:
 
 jobs:
   build:
+    if: ${{ !contains(github.event.head_commit.message, 'release:') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
