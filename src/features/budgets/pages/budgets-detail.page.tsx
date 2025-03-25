@@ -42,20 +42,24 @@ export function BudgetsDetailPage() {
   };
 
   return (
-    <PageLayout title={budgetDetail.name} badge={`BUDGET - ${budgetDetail.wallet.name}`}>
+    <PageLayout
+      title={budgetDetail.name}
+      subtitle={
+        <p className="text-lg text-muted-foreground">
+          <HidableBalance value={budgetDetail.remaining_balance} />
+        </p>
+      }
+      badge={`BUDGET - ${budgetDetail.wallet.name}`}
+    >
       <div className="flex flex-col gap-2 sm:w-96">
         <Progress value={budgetDetail.remaining_balance_percentage} />
-        <div className="inline-flex items-center gap-2">
-          <div className="h-3 w-3 bg-primary" />
-          <span className="text-xs">
-            Remaining : <HidableBalance value={budgetDetail.remaining_balance} />
+        <div className="inline-flex items-center gap-1 text-xs">
+          <span className="inline-flex items-center gap-2">
+            <div className="h-3 w-3 bg-primary/20" />
+            <HidableBalance value={budgetDetail.used_balance} />
           </span>
-        </div>
-        <div className="inline-flex items-center gap-2">
-          <div className="h-3 w-3 bg-primary/20" />
-          <span className="text-xs">
-            Used : <HidableBalance value={budgetDetail.used_balance} />
-          </span>
+          <span>out of</span>
+          <HidableBalance value={budgetDetail.total_balance} />
         </div>
       </div>
 
