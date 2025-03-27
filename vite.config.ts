@@ -34,6 +34,11 @@ function workerChunkPlugin(): Plugin {
   };
 }
 
+// to test the workflow variables. will be removed.
+const isProduction =
+  typeof process.env.IS_PRODUCTION === "string"
+    ? process.env.IS_PRODUCTION === "true"
+    : process.env.IS_PRODUCTION;
 const lastRevisionSHA = execSync("git rev-parse --short HEAD").toString().trim();
 
 // https://vitejs.dev/config/
@@ -86,9 +91,7 @@ export default defineConfig({
 
   define: {
     __APP_VERSION__: JSON.stringify(
-      "v" +
-        process.env.npm_package_version +
-        (process.env.IS_PRODUCTION ? "" : `-${lastRevisionSHA}`)
+      "v" + process.env.npm_package_version + (isProduction ? "" : `-${lastRevisionSHA}`)
     ),
   },
 });
