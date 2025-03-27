@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import ImportExportWorker from "@/workers/import-export.worker?worker";
 import { formatDate } from "@/utils/date.util";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
 import { toast } from "@/hooks/use-toast";
 import { preloadSettings } from "../data/settings.services";
 
@@ -94,6 +95,10 @@ export function SettingsIndexPage() {
 
   return (
     <PageLayout title="Settings">
+      <StoragePersistenceNotice />
+
+      <Separator />
+
       <div className="flex flex-col items-start gap-1">
         <h2 className="text-lg font-semibold">Export data</h2>
         <p className="text-sm text-muted-foreground">Export and backup your data</p>
