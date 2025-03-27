@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardTitle, CardDescription, CardHeader } from "@/components/ui/card";
+import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
 import { Settings, SettingsSchema } from "@/features/settings/data/settings.schemas";
 import { useCreateSettingsMutation } from "@/features/settings/data/settings.mutations";
 import { cn } from "@/libs/utils.lib";
@@ -141,6 +142,9 @@ export function OnboardingIndexPage() {
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">Getting Started</h2>
         <p>Before using the app, you need to know a few things:</p>
+
+        <StoragePersistenceNotice />
+
         <ol className="list-disc space-y-2 pl-4">
           <li>
             Numbers are formatted based on your browser&apos;s language (locale) settings and
