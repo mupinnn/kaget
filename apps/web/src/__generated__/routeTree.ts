@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from "./../routes/~__root";
 import { Route as AppRouteImport } from "./../routes/~_app";
 import { Route as OnboardingRouteRouteImport } from "./../routes/~onboarding.route";
-import { Route as AppIndexRouteRouteImport } from "./../routes/~_app/~index.route";
+import { Route as AppIndexRouteImport } from "./../routes/~_app/~index";
 import { Route as AppwalletsWalletsIndexRouteRouteImport } from "./../routes/~_app/~(wallets)/~wallets.index.route";
 import { Route as ApptransfersTransfersIndexRouteRouteImport } from "./../routes/~_app/~(transfers)/~transfers.index.route";
 import { Route as AppsettingsSettingsIndexRouteRouteImport } from "./../routes/~_app/~(settings)/~settings.index.route";
@@ -35,9 +35,9 @@ const OnboardingRouteRoute = OnboardingRouteRouteImport.update({
   path: "/onboarding",
   getParentRoute: () => rootRouteImport,
 } as any);
-const AppIndexRouteRoute = AppIndexRouteRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
   id: "/",
-  path: "",
+  path: "/",
   getParentRoute: () => AppRoute,
 } as any);
 const AppwalletsWalletsIndexRouteRoute = AppwalletsWalletsIndexRouteRouteImport.update({
@@ -109,6 +109,7 @@ const AppwalletsWalletsWalletIdEditRouteRoute =
 
 export interface FileRoutesByFullPath {
   "/onboarding": typeof OnboardingRouteRoute;
+  "/": typeof AppIndexRoute;
   "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
   "/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
@@ -125,6 +126,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   "/onboarding": typeof OnboardingRouteRoute;
+  "/": typeof AppIndexRoute;
   "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
   "/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
@@ -143,7 +145,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/onboarding": typeof OnboardingRouteRoute;
   "/_app": typeof AppRouteWithChildren;
-  "/_app/": typeof AppIndexRouteRoute;
+  "/_app/": typeof AppIndexRoute;
   "/_app/(budgets)/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/_app/(budgets)/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
   "/_app/(records)/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
@@ -162,6 +164,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | "/onboarding"
+    | "/"
     | "/budgets/$budgetId"
     | "/budgets/create"
     | "/records/$recordId"
@@ -178,6 +181,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/onboarding"
+    | "/"
     | "/budgets/$budgetId"
     | "/budgets/create"
     | "/records/$recordId"
@@ -234,9 +238,9 @@ declare module "@tanstack/react-router" {
     };
     "/_app/": {
       id: "/_app/";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof AppIndexRouteRouteImport;
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof AppIndexRouteImport;
       parentRoute: typeof AppRoute;
     };
     "/_app/(wallets)/wallets/": {
@@ -334,7 +338,7 @@ declare module "@tanstack/react-router" {
 }
 
 interface AppRouteChildren {
-  AppIndexRouteRoute: typeof AppIndexRouteRoute;
+  AppIndexRoute: typeof AppIndexRoute;
   AppbudgetsBudgetsBudgetIdRouteRoute: typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   AppbudgetsBudgetsCreateRouteRoute: typeof AppbudgetsBudgetsCreateRouteRoute;
   ApprecordsRecordsRecordIdRouteRoute: typeof ApprecordsRecordsRecordIdRouteRoute;
@@ -351,7 +355,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppIndexRouteRoute: AppIndexRouteRoute,
+  AppIndexRoute: AppIndexRoute,
   AppbudgetsBudgetsBudgetIdRouteRoute: AppbudgetsBudgetsBudgetIdRouteRoute,
   AppbudgetsBudgetsCreateRouteRoute: AppbudgetsBudgetsCreateRouteRoute,
   ApprecordsRecordsRecordIdRouteRoute: ApprecordsRecordsRecordIdRouteRoute,

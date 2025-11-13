@@ -8,5 +8,9 @@ export const Route = createRootRoute({
     if (!window.settings && !location.pathname.includes("onboarding")) {
       redirect({ to: "/onboarding", throw: true });
     }
+
+    if (window.settings && location.pathname.includes("onboarding")) {
+      redirect({ to: "/", throw: true });
+    }
   },
 });

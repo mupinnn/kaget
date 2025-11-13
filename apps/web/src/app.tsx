@@ -1,8 +1,9 @@
-import { StrictMode, lazy, Suspense } from "react";
+import { StrictMode } from "react";
 import { ZodError } from "zod";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { routeTree } from "@/__generated__/routeTree";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { Toaster } from "./components/ui/toaster";
@@ -19,13 +20,6 @@ declare module "@tanstack/react-router" {
     router: typeof router;
   }
 }
-
-const TanStackRouterDevtools =
-  process.env.NODE_ENV === "production"
-    ? () => null
-    : lazy(() =>
-        import("@tanstack/router-devtools").then(res => ({ default: res.TanStackRouterDevtools }))
-      );
 
 const queryAndMutationErrorHandler = (error: Error) => {
   if (error instanceof ZodError) {
@@ -100,9 +94,7 @@ export function App() {
         <QueryClientProvider client={queryClient}>
           <HidableBalanceProvider>
             <RouterProvider router={router} />
-            <Suspense>
-              <TanStackRouterDevtools router={router} />
-            </Suspense>
+            <TanStackRouterDevtools router={router} />
             <ReactQueryDevtools buttonPosition="bottom-right" />
             <Toaster />
           </HidableBalanceProvider>

@@ -1,9 +1,13 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { zValidator } from "@hono/zod-validator";
 import * as z from "zod";
 
 const app = new Hono();
+
+// TODO: better CORS implementation, dynamic based on the environment and necessary origin
+app.use("/api/*", cors());
 
 export const route = app.get(
   "/api/hello",

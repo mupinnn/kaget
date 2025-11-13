@@ -2,7 +2,7 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 /** @see https://github.com/vitejs/vite/issues/16719#issuecomment-2308170706 */
@@ -44,7 +44,9 @@ const lastRevisionSHA = execSync("git rev-parse --short HEAD").toString().trim()
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    TanStackRouterVite(),
+    tanstackRouter({
+      target: "react",
+    }),
     react(),
     VitePWA({
       registerType: "prompt",
