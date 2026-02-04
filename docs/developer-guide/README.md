@@ -9,16 +9,18 @@ Technical documentation for engineers working on KaGet.
 Technical flows and implementation details for each feature.
 
 - [Onboarding](./features/onboarding/) — Onboarding flow and locale handling
+- [Wallets](./features/wallets/) — Wallet data model and operations
 
 ### Architecture Decision Records
 
 Key technical decisions and their rationale.
 
 - [ADR-001: Locale and Currency Handling](./adr/001-locale-and-currency-handling.md)
+- [ADR-002: Balance as Denormalized Cache](./adr/002-balance-as-denormalized-cache.md)
+- [ADR-003: Cascade Delete on Wallet Removal](./adr/003-cascade-delete-on-wallet-removal.md)
 
 ## Upcoming Documentation
 
-- Wallets
 - Records
 - Budgets
 - Transfers

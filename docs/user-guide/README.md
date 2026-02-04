@@ -8,7 +8,7 @@ This guide helps you get started with KaGet and learn how to use each feature.
 
 ## Features
 
-- Wallets — _Coming soon_
+- [Wallets](./wallets/) — Create and manage your wallets
 - Records — _Coming soon_
 - Budgets — _Coming soon_
 - Transfers — _Coming soon_
