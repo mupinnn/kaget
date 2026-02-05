@@ -14,6 +14,7 @@ Technical flows and implementation details for each feature.
 - [Budgets](./features/budgets/) — Budget and goal data model and operations
 - [Transfers](./features/transfers/) — Transfer data model and double-entry system
 - [Settings](./features/settings/) — Settings data model and import/export
+- [Debts & Loans](./features/debts-loans/) — Debt/loan tracking and record integration
 
 ### Architecture Decision Records
 
@@ -23,6 +24,6 @@ Key technical decisions and their rationale.
 - [ADR-002: Balance as Denormalized Cache](./adr/002-balance-as-denormalized-cache.md)
 - [ADR-003: Cascade Delete on Wallet Removal](./adr/003-cascade-delete-on-wallet-removal.md)
 
-## Upcoming Documentation
+## Contributing
 
-- Debts & Loans
+See the main repository for contribution guidelines.

@@ -12,8 +12,8 @@ Record
 ├── note            VARCHAR     Optional
 ├── amount          DECIMAL     Computed from items
 ├── source_id       UUID        FK (polymorphic)
-├── source_type     ENUM        (WALLET, ...future)
-├── record_type     ENUM        (INCOME, EXPENSE)
+├── source_type     ENUM        (WALLET, BUDGET)
+├── record_type     ENUM        (INCOME, EXPENSE, DEBT, DEBT_REPAYMENT, LOAN, LOAN_COLLECTION)
 ├── created_at      TIMESTAMP
 ├── updated_at      TIMESTAMP
 └── recorded_at     TIMESTAMP   User-specified date
@@ -41,8 +41,8 @@ RecordItem
 | `note`        | VARCHAR(500)  | NULL          | Optional description                      |
 | `amount`      | DECIMAL(19,4) | NOT NULL, > 0 | Total amount (must equal sum of items)    |
 | `source_id`   | UUID          | NOT NULL      | Reference to source entity (e.g., wallet) |
-| `source_type` | ENUM          | NOT NULL      | Type of source: `WALLET` (extensible)     |
-| `record_type` | ENUM          | NOT NULL      | `INCOME` or `EXPENSE`                     |
+| `source_type` | ENUM          | NOT NULL      | Type of source: `WALLET` or `BUDGET`      |
+| `record_type` | ENUM          | NOT NULL      | See Record Types below                    |
 | `created_at`  | TIMESTAMP     | NOT NULL      | Record creation timestamp                 |
 | `updated_at`  | TIMESTAMP     | NOT NULL      | Last modification timestamp               |
 | `recorded_at` | TIMESTAMP     | NOT NULL      | User-specified transaction date           |
@@ -84,8 +84,36 @@ The `source_id` + `source_type` pattern allows records to reference different en
 
 | Type     | Description       | Resolution                     | Allowed record_type |
 | -------- | ----------------- | ------------------------------ | ------------------- |
-| `WALLET` | Personal wallet   | `wallets` table by `source_id` | INCOME, EXPENSE     |
+| `WALLET` | Personal wallet   | `wallets` table by `source_id` | All types           |
 | `BUDGET` | Budget allocation | `budgets` table by `source_id` | EXPENSE only        |
+
+## Record Types
+
+| Type              | Balance Impact | Description                |
+| ----------------- | -------------- | -------------------------- |
+| `INCOME`          | + (increase)   | Money received             |
+| `EXPENSE`         | − (decrease)   | Money spent                |
+| `DEBT`            | + (increase)   | Borrowed money received    |
+| `DEBT_REPAYMENT`  | − (decrease)   | Paying back borrowed money |
+| `LOAN`            | − (decrease)   | Lent money out             |
+| `LOAN_COLLECTION` | + (increase)   | Collecting lent money      |
+
+### Balance Impact Calculation
+
+```javascript
+const BALANCE_IMPACT = {
+  INCOME: +1,
+  EXPENSE: -1,
+  DEBT: +1,
+  DEBT_REPAYMENT: -1,
+  LOAN: -1,
+  LOAN_COLLECTION: +1,
+};
+
+function getBalanceDelta(recordType, amount) {
+  return BALANCE_IMPACT[recordType] * amount;
+}
+```
 
 ### Future Extensibility
 

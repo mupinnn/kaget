@@ -13,4 +13,4 @@ This guide helps you get started with KaGet and learn how to use each feature.
 - [Budgets](./budgets/) — Allocate spending limits and saving goals
 - [Transfers](./transfers/) — Move money between wallets and budgets
 - [Settings](./settings/) — App preferences and data import/export
-- Debts & Loans — _Coming soon_
+- [Debts & Loans](./debts-loans/) — Track money borrowed and lent

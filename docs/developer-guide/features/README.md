@@ -10,7 +10,4 @@ Technical documentation for each KaGet feature.
 - [Budgets](./budgets/) — Budget and goal data model and operations
 - [Transfers](./transfers/) — Transfer data model and double-entry system
 - [Settings](./settings/) — Settings data model and import/export
-
-## Upcoming
-
-- Debts & Loans
+- [Debts & Loans](./debts-loans/) — Debt/loan tracking and record integration
