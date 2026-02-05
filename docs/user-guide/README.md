@@ -11,6 +11,6 @@ This guide helps you get started with KaGet and learn how to use each feature.
 - [Wallets](./wallets/) — Create and manage your wallets
 - [Records](./records/) — Track income and expenses
 - [Budgets](./budgets/) — Allocate spending limits and saving goals
-- Transfers — _Coming soon_
+- [Transfers](./transfers/) — Move money between wallets and budgets
 - Settings — _Coming soon_
 - Debts & Loans — _Coming soon_

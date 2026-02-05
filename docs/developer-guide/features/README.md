@@ -8,10 +8,11 @@ Technical documentation for each KaGet feature.
 - [Wallets](./wallets/) — Wallet data model and CRUD operations
 - [Records](./records/) — Record data model and CRUD operations
 - [Budgets](./budgets/) — Budget and goal data model and operations
+- [Transfers](./transfers/) — Transfer data model and double-entry system
 
 ## Upcoming
 
-- Transfers
+- Settings
 - Transfers
 - Settings
 - Debts & Loans

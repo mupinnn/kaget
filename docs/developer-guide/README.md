@@ -12,6 +12,7 @@ Technical flows and implementation details for each feature.
 - [Wallets](./features/wallets/) — Wallet data model and operations
 - [Records](./features/records/) — Record data model and operations
 - [Budgets](./features/budgets/) — Budget and goal data model and operations
+- [Transfers](./features/transfers/) — Transfer data model and double-entry system
 
 ### Architecture Decision Records
 
@@ -23,7 +24,7 @@ Key technical decisions and their rationale.
 
 ## Upcoming Documentation
 
-- Transfers
+- Settings
 - Transfers
 - Settings
 - Debts & Loans
