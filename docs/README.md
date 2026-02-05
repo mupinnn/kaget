@@ -15,6 +15,7 @@ Task-oriented documentation for KaGet users. Learn how to use each feature effec
 - [Records](./user-guide/records/) — Track income and expenses
 - [Budgets](./user-guide/budgets/) — Allocate spending limits and saving goals
 - [Transfers](./user-guide/transfers/) — Move money between wallets and budgets
+- [Settings](./user-guide/settings/) — App preferences and data import/export
 
 ### [Developer Guide](./developer-guide/)
 
@@ -32,5 +33,5 @@ Technical documentation for engineers working on KaGet.
 | Records       | [Creating Records](./user-guide/records/)                     | [Data Model](./developer-guide/features/records/data-model.md), [Operations](./developer-guide/features/records/operations.md)     |
 | Budgets       | [Using Budgets](./user-guide/budgets/)                        | [Data Model](./developer-guide/features/budgets/data-model.md), [Operations](./developer-guide/features/budgets/operations.md)     |
 | Transfers     | [Creating Transfers](./user-guide/transfers/)                 | [Data Model](./developer-guide/features/transfers/data-model.md), [Operations](./developer-guide/features/transfers/operations.md) |
-| Settings      | _Coming soon_                                                 | _Coming soon_                                                                                                                      |
+| Settings      | [App Settings](./user-guide/settings/)                        | [Data Model](./developer-guide/features/settings/data-model.md), [Operations](./developer-guide/features/settings/operations.md)   |
 | Debts & Loans | _Coming soon_                                                 | _Coming soon_                                                                                                                      |
