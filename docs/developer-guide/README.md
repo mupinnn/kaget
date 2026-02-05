@@ -11,6 +11,7 @@ Technical flows and implementation details for each feature.
 - [Onboarding](./features/onboarding/) — Onboarding flow and locale handling
 - [Wallets](./features/wallets/) — Wallet data model and operations
 - [Records](./features/records/) — Record data model and operations
+- [Budgets](./features/budgets/) — Budget and goal data model and operations
 
 ### Architecture Decision Records
 
@@ -22,7 +23,7 @@ Key technical decisions and their rationale.
 
 ## Upcoming Documentation
 
-- Budgets
+- Transfers
 - Transfers
 - Settings
 - Debts & Loans

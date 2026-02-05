@@ -74,17 +74,18 @@ The `source_id` + `source_type` pattern allows records to reference different en
         │            │            │
         ▼            ▼            ▼
    ┌─────────┐  ┌─────────┐  ┌─────────┐
-   │ Wallet  │  │ (Future)│  │ (Future)│
-   │  type:  │  │         │  │         │
-   │ WALLET  │  │         │  │         │
+   │ Wallet  │  │ Budget  │  │ (Future)│
+   │  type:  │  │  type:  │  │         │
+   │ WALLET  │  │ BUDGET  │  │         │
    └─────────┘  └─────────┘  └─────────┘
 ```
 
 ### Current Source Types
 
-| Type     | Description     | Resolution                     |
-| -------- | --------------- | ------------------------------ |
-| `WALLET` | Personal wallet | `wallets` table by `source_id` |
+| Type     | Description       | Resolution                     | Allowed record_type |
+| -------- | ----------------- | ------------------------------ | ------------------- |
+| `WALLET` | Personal wallet   | `wallets` table by `source_id` | INCOME, EXPENSE     |
+| `BUDGET` | Budget allocation | `budgets` table by `source_id` | EXPENSE only        |
 
 ### Future Extensibility
 

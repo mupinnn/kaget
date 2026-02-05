@@ -13,6 +13,7 @@ Task-oriented documentation for KaGet users. Learn how to use each feature effec
 - [Onboarding](./user-guide/onboarding/) — Get started with KaGet
 - [Wallets](./user-guide/wallets/) — Create and manage your wallets
 - [Records](./user-guide/records/) — Track income and expenses
+- [Budgets](./user-guide/budgets/) — Allocate spending limits and saving goals
 
 ### [Developer Guide](./developer-guide/)
 
@@ -28,7 +29,7 @@ Technical documentation for engineers working on KaGet.
 | Onboarding    | [Getting Started](./user-guide/onboarding/getting-started.md) | [Flow](./developer-guide/features/onboarding/flow.md)                                                                          |
 | Wallets       | [Managing Wallets](./user-guide/wallets/)                     | [Data Model](./developer-guide/features/wallets/data-model.md), [Operations](./developer-guide/features/wallets/operations.md) |
 | Records       | [Creating Records](./user-guide/records/)                     | [Data Model](./developer-guide/features/records/data-model.md), [Operations](./developer-guide/features/records/operations.md) |
-| Budgets       | _Coming soon_                                                 | _Coming soon_                                                                                                                  |
+| Budgets       | [Using Budgets](./user-guide/budgets/)                        | [Data Model](./developer-guide/features/budgets/data-model.md), [Operations](./developer-guide/features/budgets/operations.md) |
 | Transfers     | _Coming soon_                                                 | _Coming soon_                                                                                                                  |
 | Settings      | _Coming soon_                                                 | _Coming soon_                                                                                                                  |
 | Debts & Loans | _Coming soon_                                                 | _Coming soon_                                                                                                                  |
