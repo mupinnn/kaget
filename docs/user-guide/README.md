@@ -1,0 +1,16 @@
+# User Guide
+
+This guide helps you get started with KaGet and learn how to use each feature.
+
+## Getting Started
+
+- [Onboarding](./onboarding/) — Set up KaGet for the first time
+
+## Features
+
+- [Wallets](./wallets/) — Create and manage your wallets
+- [Records](./records/) — Track income and expenses
+- [Budgets](./budgets/) — Allocate spending limits and saving goals
+- [Transfers](./transfers/) — Move money between wallets and budgets
+- [Settings](./settings/) — App preferences and data import/export
+- [Debts & Loans](./debts-loans/) — Track money borrowed and lent
