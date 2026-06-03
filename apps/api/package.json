@@ -1,25 +1,29 @@
 {
   "name": "@kaget/api",
+  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "bun --watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "lint": "eslint ."
+    "start": "bun dist/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
-  "types": "./src/index.ts",
+  "types": "./src/app.ts",
   "dependencies": {
-    "@hono/node-server": "^1.19.6",
     "@hono/zod-validator": "^0.7.4",
+    "better-auth": "^1.2.9",
+    "drizzle-orm": "^0.44.2",
     "hono": "catalog:",
+    "postgres": "^3.4.7",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
+    "@types/bun": "^1.2.18",
     "@types/node": "catalog:",
-    "eslint": "catalog:",
-    "tsx": "^4.7.1",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "drizzle-kit": "^0.31.1",
+    "typescript": "catalog:"
   }
 }

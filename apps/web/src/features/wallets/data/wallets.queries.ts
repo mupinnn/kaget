@@ -1,6 +1,6 @@
-import { queryOptions, useQuery, skipToken } from "@tanstack/react-query";
-import { getWalletList, getWalletDetail } from "./wallets.services";
-import { WalletsRequestQuery } from "./wallets.schemas";
+import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
+import type { WalletsRequestQuery } from "./wallets.schemas";
+import { getWalletDetail, getWalletList } from "./wallets.services";
 
 export const WALLETS_QUERY_KEY = "wallets";
 

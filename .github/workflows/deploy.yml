@@ -1,11 +1,6 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  # workflow_run:
-  #   workflows: ["E2E Test"]
-  #   branches: [main]
-  #   types: [completed]
-
   workflow_dispatch:
     inputs:
       environment:
@@ -37,27 +32,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 9
-          run_install: false
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+          bun-version: 1.3.14
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files
-          path: ./dist
+          path: apps/web/dist
 
   deploy:
     needs: build
@@ -69,9 +58,9 @@ jobs:
           name: build-files
           path: ./dist
 
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 8
+          bun-version: 1.3.14
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -79,6 +68,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          packageManager: pnpm
+          packageManager: bun
           command: |
             pages deploy dist --project-name=kaget --branch=${{ env.IS_PRODUCTION == 'true' && 'production' || 'main' }}

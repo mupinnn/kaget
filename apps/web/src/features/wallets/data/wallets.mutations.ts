@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { type CreateWallet, type UpdateWallet } from "./wallets.schemas";
-import { createWallet, updateWalletDetail, deleteWallet } from "./wallets.services";
+import type { CreateWallet, UpdateWallet } from "./wallets.schemas";
+import { createWallet, deleteWallet, updateWalletDetail } from "./wallets.services";
 
 export const useCreateWalletMutation = () => {
   return useMutation({

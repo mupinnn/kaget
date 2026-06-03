@@ -1,12 +1,12 @@
+import { Link } from "@tanstack/react-router";
 import {
+  ArrowRightLeftIcon,
   BanknoteIcon,
   HomeIcon,
-  WalletIcon,
-  ArrowRightLeftIcon,
   ReceiptTextIcon,
   SettingsIcon,
+  WalletIcon,
 } from "lucide-react";
-import { Link, RoutePaths, RegisteredRouter } from "@tanstack/react-router";
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +21,7 @@ import {
 
 type MenuItem = {
   title: string;
-  url: RoutePaths<RegisteredRouter["routeTree"]>;
+  url: "/" | "/wallets" | "/records" | "/budgets" | "/transfers" | "/settings";
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 

@@ -1,9 +1,9 @@
-import { ArrowRightIcon, ArrowLeftIcon } from "lucide-react";
-import { formatDate } from "@/utils/date.util";
-import { cn } from "@/libs/utils.lib";
-import { Badge } from "@/components/ui/badge";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { HidableBalance } from "@/components/hidable-balance";
-import { type Transfer } from "../data/transfers.schemas";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/libs/utils.lib";
+import { formatDate } from "@/utils/date.util";
+import type { Transfer } from "../data/transfers.schemas";
 
 export type TransferListItemProps = Transfer;
 

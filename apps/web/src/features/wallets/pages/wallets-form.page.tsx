@@ -1,17 +1,18 @@
-import { Link, useParams, useNavigate } from "@tanstack/react-router";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import CurrencyInput from "react-currency-input-field";
+import { useForm } from "react-hook-form";
 import { match, P } from "ts-pattern";
+import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,15 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PageLayout } from "@/components/page-layout";
-import {
-  CreateWalletSchema,
-  type CreateWallet,
-  type Wallet,
-  UpdateWalletSchema,
-} from "../data/wallets.schemas";
 import { useCreateWalletMutation, useUpdateWalletMutation } from "../data/wallets.mutations";
 import { useWalletDetailQuery } from "../data/wallets.queries";
+import {
+  type CreateWallet,
+  CreateWalletSchema,
+  UpdateWalletSchema,
+  type Wallet,
+} from "../data/wallets.schemas";
 
 export function WalletsFormPage() {
   const { walletId } = useParams({ strict: false });

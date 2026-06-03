@@ -20,5 +20,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "src/@types/**/*.d.ts", "e2e/**/*.ts"]
+  "include": ["src", "src/@types/**/*.d.ts", "e2e/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
 }

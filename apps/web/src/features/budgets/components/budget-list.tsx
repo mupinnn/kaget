@@ -1,13 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
 import { BanknoteIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { TransformedBudgetWithRelations } from "../data/budgets.schemas";
 import { BudgetListItem } from "./budget-list-item";
-import { type TransformedBudgetWithRelations } from "../data/budgets.schemas";
 
 export const BudgetListLoader = () => {
-  return Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />);
+  return Array.from({ length: 5 }, (_, i) => i).map(i => (
+    <Skeleton key={i} className="h-24 w-full" />
+  ));
 };
 
 export interface BudgetListProps {

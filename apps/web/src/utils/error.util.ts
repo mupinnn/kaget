@@ -7,10 +7,6 @@ export class SomethingWentWrongError extends Error {
 
 export class HttpResponseError extends Error {
   status?: number;
-
-  constructor(message?: string) {
-    super(message);
-  }
 }
 
 export class BadRequestError extends HttpResponseError {

@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type CreateRecord } from "./records.schemas";
-import { createRecord, deleteRecord } from "./records.services";
-import { WALLETS_QUERY_KEY } from "@/features/wallets/data/wallets.queries";
 import { BUDGETS_QUERY_KEY } from "@/features/budgets/data/budgets.queries";
+import { WALLETS_QUERY_KEY } from "@/features/wallets/data/wallets.queries";
 import { RECORDS_QUERY_KEY } from "./records.queries";
+import type { CreateRecord } from "./records.schemas";
+import { createRecord, deleteRecord } from "./records.services";
 
 export const useCreateRecordMutation = () => {
   const queryClient = useQueryClient();

@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import { PageLayout } from "@/components/page-layout";
-import { useWalletsQuery } from "../data/wallets.queries";
+import { Button } from "@/components/ui/button";
 import { WalletList, WalletListLoader } from "../components/wallet-list";
+import { useWalletsQuery } from "../data/wallets.queries";
 
 export function WalletsIndexPage() {
   const walletsQuery = useWalletsQuery();

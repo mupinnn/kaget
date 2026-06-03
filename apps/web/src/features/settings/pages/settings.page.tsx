@@ -1,13 +1,13 @@
-import { useRef, useState, useEffect } from "react";
-import { DownloadIcon, UploadIcon, FileTextIcon } from "lucide-react";
+import { DownloadIcon, FileTextIcon, UploadIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
+import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import ImportExportWorker from "@/workers/import-export.worker?worker";
-import { formatDate } from "@/utils/date.util";
-import { ConfirmationDialog } from "@/components/confirmation-dialog";
-import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
 import { toast } from "@/hooks/use-toast";
+import { formatDate } from "@/utils/date.util";
+import ImportExportWorker from "@/workers/import-export.worker?worker";
 import { preloadSettings } from "../data/settings.services";
 
 const importExportWorker = new ImportExportWorker();
@@ -81,7 +81,7 @@ export function SettingsIndexPage() {
   const handleSelectFile = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    if (!importFileRef || !importFileRef.current) return;
+    if (!importFileRef?.current) return;
 
     importFileRef.current.click();
   };
@@ -100,7 +100,7 @@ export function SettingsIndexPage() {
       <Separator />
 
       <div className="flex flex-col items-start gap-1">
-        <h2 className="text-lg font-semibold">Export data</h2>
+        <h2 className="font-semibold text-lg">Export data</h2>
         <p className="text-muted-foreground text-sm">Export and backup your data</p>
         <Button
           variant="outline"
@@ -126,7 +126,7 @@ export function SettingsIndexPage() {
       <Separator />
 
       <div className="flex flex-col items-start gap-1">
-        <h2 className="text-lg font-semibold">Import data</h2>
+        <h2 className="font-semibold text-lg">Import data</h2>
         <p className="text-muted-foreground text-sm">Import your backup data</p>
         <input
           type="file"

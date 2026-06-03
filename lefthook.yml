@@ -1,0 +1,12 @@
+pre-commit:
+  parallel: true
+  commands:
+    check:
+      glob: "*.{ts,tsx,js,jsx,json,md,mdx,yaml,yml,css,html}"
+      run: bun biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    commitlint:
+      run: bun commitlint --edit {1}

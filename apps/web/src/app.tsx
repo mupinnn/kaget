@@ -1,17 +1,17 @@
-import { StrictMode } from "react";
-import { ZodError } from "zod";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { useRegisterSW } from "virtual:pwa-register/react";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { StrictMode } from "react";
+import { ZodError } from "zod";
 import { routeTree } from "@/__generated__/routeTree";
-import { useRegisterSW } from "virtual:pwa-register/react";
-import { Toaster } from "./components/ui/toaster";
+import { HidableBalanceProvider } from "./components/providers/hidable-balance-provider";
+import { ThemeProvider } from "./components/providers/theme-provider";
 import { ToastAction } from "./components/ui/toast";
+import { Toaster } from "./components/ui/toaster";
 import { toast } from "./hooks/use-toast";
 import { BaseServiceResponseSchema } from "./schemas/service.schema";
-import { ThemeProvider } from "./components/providers/theme-provider";
-import { HidableBalanceProvider } from "./components/providers/hidable-balance-provider";
 
 const router = createRouter({ routeTree });
 
@@ -28,8 +28,8 @@ const queryAndMutationErrorHandler = (error: Error) => {
       title: "Invalid payload",
       description: (
         <ul className="list-inside list-disc">
-          {error.issues.map((issue, index) => (
-            <li key={index}>{issue.message}</li>
+          {error.issues.map(issue => (
+            <li key={issue.path.join(".")}>{issue.message}</li>
           ))}
         </ul>
       ),

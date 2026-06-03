@@ -1,5 +1,6 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalDependencies": ["biome.json"],
   "tasks": {
     "build": {
       "outputs": ["dist/**"]

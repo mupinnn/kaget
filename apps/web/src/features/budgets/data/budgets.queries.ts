@@ -1,6 +1,6 @@
-import { queryOptions, useQuery, skipToken } from "@tanstack/react-query";
-import { type BudgetsRequestQuery } from "./budgets.schemas";
-import { getBudgetList, getBudgetDetail } from "./budgets.services";
+import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
+import type { BudgetsRequestQuery } from "./budgets.schemas";
+import { getBudgetDetail, getBudgetList } from "./budgets.services";
 
 export const BUDGETS_QUERY_KEY = "budgets";
 

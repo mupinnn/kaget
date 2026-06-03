@@ -1,5 +1,5 @@
-import { useQuery, queryOptions } from "@tanstack/react-query";
-import { type TransfersRequestQuery } from "./transfers.schemas";
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import type { TransfersRequestQuery } from "./transfers.schemas";
 import { getTransferList } from "./transfers.services";
 
 export const TRANSFERS_QUERY_KEY = "transfers";

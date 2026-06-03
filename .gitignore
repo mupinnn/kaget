@@ -14,6 +14,8 @@ dist-ssr
 .env*
 !.envrc
 .turbo
+.devenv
+.direnv
 
 # Editor directories and files
 .vscode/*

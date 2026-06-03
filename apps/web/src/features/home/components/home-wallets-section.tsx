@@ -1,7 +1,7 @@
 import { match } from "ts-pattern";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import { WalletList, WalletListLoader } from "@/features/wallets/components/wallet-list";
+import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import { HomeSection } from "./home-section";
 
 export const HomeWalletsSection = () => {

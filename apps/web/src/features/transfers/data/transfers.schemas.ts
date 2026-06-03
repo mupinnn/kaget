@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
-  SourceTypeSchema,
   SourceOrDestinationSchema,
+  SourceTypeSchema,
 } from "@/features/records/data/records.schemas";
 
 export const TransferTypeSchema = z.enum(["INCOMING", "OUTGOING"]);

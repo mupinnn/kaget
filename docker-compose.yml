@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kaget
+      POSTGRES_PASSWORD: kaget
+      POSTGRES_DB: kaget
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kaget -d kaget"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://kaget:kaget@db:5432/kaget
+      BETTER_AUTH_SECRET: change-me-to-a-secret-with-at-least-32-characters
+      BETTER_AUTH_URL: http://localhost:3000
+      PORT: "3000"
+      CORS_ORIGINS: http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,10 +1,9 @@
 import Dexie, { type EntityTable } from "dexie";
-
-import type { Wallet } from "@/features/wallets/data/wallets.schemas";
 import type { Budget, BudgetItem } from "@/features/budgets/data/budgets.schemas";
 import type { Record, RecordItem } from "@/features/records/data/records.schemas";
-import type { Transfer } from "@/features/transfers/data/transfers.schemas";
 import type { Settings } from "@/features/settings/data/settings.schemas";
+import type { Transfer } from "@/features/transfers/data/transfers.schemas";
+import type { Wallet } from "@/features/wallets/data/wallets.schemas";
 
 class KagetDB extends Dexie {
   wallet!: EntityTable<Wallet, "id">;
@@ -51,7 +50,7 @@ export function exportDB() {
   });
 }
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+// biome-ignore lint/suspicious/noExplicitAny: currently don't know the type
 export function importDB(data: Array<{ table: string; rows: any[] }>) {
   return db.transaction("rw", db.tables, () => {
     return Promise.all(

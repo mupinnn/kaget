@@ -1,6 +1,6 @@
-import { queryOptions, useQuery, skipToken } from "@tanstack/react-query";
-import { type RecordsRequestQuery } from "./records.schemas";
-import { getRecordList, getRecordItemList, getRecordDetail } from "./records.services";
+import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
+import type { RecordsRequestQuery } from "./records.schemas";
+import { getRecordDetail, getRecordItemList, getRecordList } from "./records.services";
 
 export const RECORDS_QUERY_KEY = "records";
 

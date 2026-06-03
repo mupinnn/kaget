@@ -1,19 +1,19 @@
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { match } from "ts-pattern";
-import { Link, getRouteApi, useNavigate } from "@tanstack/react-router";
-import { Trash2Icon, PencilIcon } from "lucide-react";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { HidableBalance } from "@/components/hidable-balance";
+import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageLayout } from "@/components/page-layout";
-import { ConfirmationDialog } from "@/components/confirmation-dialog";
-import { useRecordsQuery } from "@/features/records/data/records.queries";
-import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
-import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
 import { RecordList, RecordListLoader } from "@/features/records/components/record-list";
-import { HidableBalance } from "@/components/hidable-balance";
+import { useRecordsQuery } from "@/features/records/data/records.queries";
+import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
+import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useDeleteWalletMutation } from "../data/wallets.mutations";
 import { useWalletDetailQuery } from "../data/wallets.queries";
 
-const route = getRouteApi("/_app/wallets/$walletId");
+const route = getRouteApi("/_app/(wallets)/wallets/$walletId");
 
 export function WalletsDetailPage() {
   const { walletId } = route.useParams();
@@ -38,7 +38,7 @@ export function WalletsDetailPage() {
     <PageLayout
       title={walletDetailQuery.data.data.name}
       subtitle={
-        <p className="text-muted-foreground text-lg">
+        <p className="text-lg text-muted-foreground">
           <HidableBalance value={walletDetailQuery.data.data.balance} />
         </p>
       }

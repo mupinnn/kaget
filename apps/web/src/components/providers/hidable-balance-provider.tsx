@@ -1,4 +1,4 @@
-import { useContext, useState, createContext } from "react";
+import { createContext, useContext, useState } from "react";
 
 type HidableBalanceProviderProps = {
   children: React.ReactNode;

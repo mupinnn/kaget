@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { PlusIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
+import CurrencyInput from "react-currency-input-field";
 import {
-  useForm,
+  type UseFieldArrayRemove,
   useFieldArray,
+  useForm,
   useFormContext,
-  UseFieldArrayRemove,
   useWatch,
 } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import CurrencyInput from "react-currency-input-field";
-import { Trash2Icon, PlusIcon } from "lucide-react";
+import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,22 +28,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PageLayout } from "@/components/page-layout";
-import { formatCurrency } from "@/utils/common.util";
-import { Wallet } from "@/features/wallets/data/wallets.schemas";
-import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
-  SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { CreateBudget, CreateBudgetSchema } from "../data/budgets.schemas";
+import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
+import type { Wallet } from "@/features/wallets/data/wallets.schemas";
+import { formatCurrency } from "@/utils/common.util";
 import { useCreateBudgetMutation } from "../data/budgets.mutations";
+import { type CreateBudget, CreateBudgetSchema } from "../data/budgets.schemas";
 
 function BudgetFormWalletRemainingBalance({ id, balance }: Wallet) {
   const formContext = useFormContext<CreateBudget>();
@@ -79,7 +79,7 @@ function BudgetForm({
   return (
     <div className="space-y-4 rounded-lg border border-dashed p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-medium">{name ? name : `Budget ${index + 1}`}</h2>
+        <h2 className="font-medium text-2xl">{name ? name : `Budget ${index + 1}`}</h2>
         <Button variant="destructive" size="icon" onClick={() => remove(index)}>
           <Trash2Icon />
         </Button>
@@ -110,7 +110,7 @@ function BudgetForm({
               disabled={hasNoWallets}
             >
               <FormControl>
-                <SelectTrigger data-testid={field.name + "-trigger"}>
+                <SelectTrigger data-testid={`${field.name}-trigger`}>
                   <SelectValue
                     placeholder={
                       hasNoWallets
@@ -123,7 +123,7 @@ function BudgetForm({
               <SelectContent>
                 {walletOptions.map(wallet => (
                   <SelectItem
-                    data-testid={field.name + "-item"}
+                    data-testid={`${field.name}-item`}
                     key={wallet.id}
                     value={wallet.id}
                     className="w-full"
@@ -265,13 +265,13 @@ export function BudgetsFormPage() {
                             key={budgetIndex}
                           >
                             <p className="text-sm">{budget.name}</p>
-                            <p className="text-sm font-medium">{formatCurrency(budget.balance)}</p>
+                            <p className="font-medium text-sm">{formatCurrency(budget.balance)}</p>
                           </div>
                         ))}
                         <Separator className="my-1" />
                         <div className="flex justify-between gap-2">
                           <p className="text-sm">Total</p>
-                          <p className="flex flex-col gap-1 text-right text-sm font-medium">
+                          <p className="flex flex-col gap-1 text-right font-medium text-sm">
                             <span>{formatCurrency(usedBalance)}</span>
                             <span className="text-muted-foreground text-xs">
                               {usedPercentage.toFixed()}% used from{" "}

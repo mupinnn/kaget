@@ -23,6 +23,7 @@ Key technical decisions and their rationale.
 - [ADR-001: Locale and Currency Handling](./adr/001-locale-and-currency-handling.md)
 - [ADR-002: Balance as Denormalized Cache](./adr/002-balance-as-denormalized-cache.md)
 - [ADR-003: Cascade Delete on Wallet Removal](./adr/003-cascade-delete-on-wallet-removal.md)
+- [ADR-004: Tooling Stack Migration](./adr/004-tooling-stack-migration.md)
 
 ## Contributing
 
