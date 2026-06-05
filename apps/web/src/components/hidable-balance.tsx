@@ -1,13 +1,13 @@
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/common.util";
-import { Button } from "./ui/button";
 import { useHidableBalance } from "./providers/hidable-balance-provider";
+import { Button } from "./ui/button";
 
 export function ToggleHidableBalance() {
   const { hidden, toggleHidable } = useHidableBalance();
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleHidable}>
+    <Button variant="ghost" size="icon-sm" onClick={toggleHidable}>
       {hidden ? <EyeOffIcon /> : <EyeIcon />}
     </Button>
   );

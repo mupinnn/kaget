@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { toast } from "./use-toast";
+import { toast } from "sonner";
 
 export function usePersistentStorage() {
   const [isStoragePersisted, setIsStoragePersisted] = useState(false);
 
   useEffect(() => {
     async function checkStoragePersistence() {
-      if (navigator.storage && navigator.storage.persisted) {
+      if (navigator.storage?.persisted) {
         const result = await navigator.storage.persisted();
         setIsStoragePersisted(result);
       } else {
@@ -18,15 +18,13 @@ export function usePersistentStorage() {
   }, []);
 
   const requestPersistedStorage = async () => {
-    if (navigator.storage && navigator.storage.persist) {
+    if (navigator.storage?.persist) {
       const result = await navigator.storage.persist();
       setIsStoragePersisted(result);
 
       if (!result) {
-        toast({
+        toast.error("Storage is not persisted", {
           duration: 10_000,
-          variant: "destructive",
-          title: "Storage is not persisted",
           description: (
             <div className="space-y-1">
               <p>
@@ -55,7 +53,7 @@ export function usePersistentStorage() {
       return true;
     }
 
-    toast({ title: "Storage persistence is not supported in your browser" });
+    toast("Storage persistence is not supported in your browser");
 
     return false;
   };

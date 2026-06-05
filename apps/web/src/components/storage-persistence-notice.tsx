@@ -1,8 +1,8 @@
 import { DatabaseIcon } from "lucide-react";
 import { usePersistentStorage } from "@/hooks/use-persistent-storage";
-import { Button } from "./ui/button";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Badge } from "./ui/badge";
-import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
+import { Button } from "./ui/button";
 
 export function StoragePersistenceNotice() {
   const { isStoragePersisted, requestPersistedStorage } = usePersistentStorage();

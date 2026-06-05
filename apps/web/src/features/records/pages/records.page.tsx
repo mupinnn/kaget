@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import { PageLayout } from "@/components/page-layout";
-import { useRecordsQuery } from "../data/records.queries";
+import { Button } from "@/components/ui/button";
 import { RecordList, RecordListLoader } from "../components/record-list";
+import { useRecordsQuery } from "../data/records.queries";
 
 export function RecordsIndexPage() {
   const recordsQuery = useRecordsQuery();

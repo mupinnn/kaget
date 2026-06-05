@@ -13,7 +13,11 @@ dist-ssr
 *.local
 .env*
 !.envrc
+!.env.example
 .turbo
+.devenv
+.direnv
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*

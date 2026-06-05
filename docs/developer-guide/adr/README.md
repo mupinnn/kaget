@@ -24,3 +24,4 @@ Each ADR follows this structure:
 | [001](./001-locale-and-currency-handling.md)     | Locale and Currency Handling     | Accepted | 2026-02-04 |
 | [002](./002-balance-as-denormalized-cache.md)    | Balance as Denormalized Cache    | Accepted | 2026-02-04 |
 | [003](./003-cascade-delete-on-wallet-removal.md) | Cascade Delete on Wallet Removal | Accepted | 2026-02-04 |
+| [004](./004-tooling-stack-migration.md)       | Tooling Stack Migration          | Accepted | 2026-06-02 |

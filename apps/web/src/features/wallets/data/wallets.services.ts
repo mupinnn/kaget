@@ -2,14 +2,14 @@ import { nanoid } from "nanoid";
 import { db } from "@/libs/db.lib";
 import { successResponse } from "@/utils/service.util";
 import {
-  type WalletsRequestQuery,
-  type Wallet,
   type CreateWallet,
+  CreateWalletSchema,
   type UpdateWallet,
   UpdateWalletSchema,
-  CreateWalletSchema,
-  WalletsRequestQuerySchema,
+  type Wallet,
   WalletSchema,
+  type WalletsRequestQuery,
+  WalletsRequestQuerySchema,
 } from "./wallets.schemas";
 
 export async function getWalletById(walletId: string) {

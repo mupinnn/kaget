@@ -1,22 +1,22 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { PlusIcon, ReceiptTextIcon, RefreshCwIcon, Trash2Icon, Undo2Icon } from "lucide-react";
 import { match } from "ts-pattern";
-import { Undo2Icon, PlusIcon, Trash2Icon, ReceiptTextIcon, RefreshCwIcon } from "lucide-react";
-import { PageLayout } from "@/components/page-layout";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { HidableBalance } from "@/components/hidable-balance";
+import { PageLayout } from "@/components/page-layout";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
 import { RecordList, RecordListLoader } from "@/features/records/components/record-list";
 import { useRecordsQuery } from "@/features/records/data/records.queries";
+import { TransferList, TransferListLoader } from "@/features/transfers/components/transfer-list";
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
-import { HidableBalance } from "@/components/hidable-balance";
-import { useBudgetDetailQuery } from "../data/budgets.queries";
-import { useDeleteBudgetMutation, useActivateBudgetMutation } from "../data/budgets.mutations";
 import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
 import { BudgetCreateRecordsDialog } from "../components/budget-create-records-dialog";
+import { useActivateBudgetMutation, useDeleteBudgetMutation } from "../data/budgets.mutations";
+import { useBudgetDetailQuery } from "../data/budgets.queries";
 
-const route = getRouteApi("/_app/budgets/$budgetId");
+const route = getRouteApi("/_app/(budgets)/budgets/$budgetId");
 
 export function BudgetsDetailPage() {
   const { budgetId } = route.useParams();
@@ -45,7 +45,7 @@ export function BudgetsDetailPage() {
     <PageLayout
       title={budgetDetail.name}
       subtitle={
-        <p className="text-muted-foreground text-lg">
+        <p className="text-lg text-muted-foreground">
           <HidableBalance value={budgetDetail.remaining_balance} />
         </p>
       }
@@ -55,7 +55,7 @@ export function BudgetsDetailPage() {
         <Progress value={budgetDetail.remaining_balance_percentage} />
         <div className="inline-flex items-center gap-1 text-xs">
           <span className="inline-flex items-center gap-2">
-            <div className="bg-primary/20 h-3 w-3" />
+            <div className="h-3 w-3 bg-primary/20" />
             <HidableBalance value={budgetDetail.used_balance} />
           </span>
           <span>out of</span>

@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { formatDate } from "@/utils/date.util";
-import { cn } from "@/libs/utils.lib";
 import { HidableBalance } from "@/components/hidable-balance";
-import { type RecordWithRelations } from "../data/records.schemas";
+import { cn } from "@/libs/utils.lib";
+import { formatDate } from "@/utils/date.util";
+import type { RecordWithRelations } from "../data/records.schemas";
 import { getRecordAmountValueAndClasses } from "../data/records.services";
 
 export type RecordListItemProps = RecordWithRelations;

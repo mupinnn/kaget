@@ -1,8 +1,9 @@
-import { exportDB, importDB } from "@/libs/db.lib";
 import { ImportSchema } from "@/features/settings/data/settings.schemas";
+import { exportDB, importDB } from "@/libs/db.lib";
 
 self.onmessage = async (event: MessageEvent<ImportExportWorkerData>) => {
-  const { type, status } = event.data;
+  const type = event.data.type;
+  const status = event.data.status;
 
   switch (type) {
     case "export":
@@ -24,7 +25,8 @@ self.onmessage = async (event: MessageEvent<ImportExportWorkerData>) => {
 
         const dataToImport = JSON.parse(await event.data.importedFile.text()) as Array<{
           table: string;
-          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+
+          // biome-ignore lint/suspicious/noExplicitAny: currently don't know the type
           rows: any[];
         }>;
         const parsingResult = ImportSchema.safeParse(dataToImport);

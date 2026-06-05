@@ -1,10 +1,8 @@
-import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
+import { createRoot } from "react-dom/client";
 import { App } from "./app";
 import { preloadSettings } from "./features/settings/data/settings.services";
 
-import "@fontsource-variable/inter";
-import "@fontsource-variable/inter/wght-italic.css";
 import "./index.css";
 
 Sentry.init({

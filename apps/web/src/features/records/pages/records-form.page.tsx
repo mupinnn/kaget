@@ -1,27 +1,30 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { CalendarIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import CurrencyInput from "react-currency-input-field";
+import type { SelectSingleEventHandler } from "react-day-picker";
 import {
-  Control,
+  type Control,
+  type FieldErrors,
+  type UseFormSetValue,
   useFieldArray,
   useForm,
-  UseFormSetValue,
   useWatch,
-  FieldErrors,
 } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import CurrencyInput from "react-currency-input-field";
-import { SelectSingleEventHandler } from "react-day-picker";
-import { CalendarIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -29,16 +32,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
-import { PageLayout } from "@/components/page-layout";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
+import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
-import { cn } from "@/libs/utils.lib";
 import { useCreateRecordMutation } from "../data/records.mutations";
-import { CreateRecord, CreateRecordSchema } from "../data/records.schemas";
+import { type CreateRecord, CreateRecordSchema } from "../data/records.schemas";
 
 export function TotalRecordsAmount({
   control,
@@ -61,9 +61,9 @@ export function TotalRecordsAmount({
   return (
     <div className="rounded-lg border border-dashed p-4">
       <h2 className="text-muted-foreground">Total amount</h2>
-      <p className="text-2xl font-medium">{formatCurrency(totalAmount)}</p>
+      <p className="font-medium text-2xl">{formatCurrency(totalAmount)}</p>
       {errors.amount?.message && (
-        <p className="text-destructive text-[0.8rem] font-medium">{errors.amount.message}</p>
+        <p className="font-medium text-[0.8rem] text-destructive">{errors.amount.message}</p>
       )}
     </div>
   );
@@ -282,7 +282,7 @@ export function RecordsFormPage() {
             ? recordItems.fields.map((recordItem, recordItemIndex) => (
                 <div className="space-y-4 rounded-lg border border-dashed p-4" key={recordItem.id}>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-medium">Record {recordItemIndex + 1}</h2>
+                    <h2 className="font-medium text-2xl">Record {recordItemIndex + 1}</h2>
                     <Button
                       variant="destructive"
                       size="icon"

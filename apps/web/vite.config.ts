@@ -1,8 +1,9 @@
-import path from "node:path";
 import { execSync } from "node:child_process";
-import { defineConfig, type Plugin } from "vite";
-import react from "@vitejs/plugin-react";
+import path from "node:path";
+import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 /** @see https://github.com/vitejs/vite/issues/16719#issuecomment-2308170706 */
@@ -14,7 +15,7 @@ function workerChunkPlugin(): Plugin {
     async resolveId(source, importer) {
       if (source.endsWith("?worker")) {
         const resolved = await this.resolve(source.split("?")[0], importer);
-        return "\0" + resolved?.id + "?worker-chunk";
+        return `\0${resolved?.id}?worker-chunk`;
       }
     },
     load(id) {
@@ -44,6 +45,7 @@ const lastRevisionSHA = execSync("git rev-parse --short HEAD").toString().trim()
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     tanstackRouter({
       target: "react",
     }),
@@ -87,13 +89,17 @@ export default defineConfig({
     },
   },
 
+  build: {
+    target: "es2022",
+  },
+
   worker: {
     format: "es",
   },
 
   define: {
     __APP_VERSION__: JSON.stringify(
-      "v" + process.env.npm_package_version + (isProduction ? "" : `-${lastRevisionSHA}`)
+      `v${process.env.npm_package_version}${isProduction ? "" : `-${lastRevisionSHA}`}`
     ),
   },
 });

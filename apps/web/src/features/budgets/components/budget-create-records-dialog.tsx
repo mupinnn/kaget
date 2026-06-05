@@ -1,39 +1,39 @@
-import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SelectSingleEventHandler } from "react-day-picker";
 import { CalendarIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 import CurrencyInput from "react-currency-input-field";
+import type { SelectSingleEventHandler } from "react-day-picker";
+import { useFieldArray, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-  SheetClose,
-} from "@/components/ui/sheet";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateRecordMutation } from "@/features/records/data/records.mutations";
+import { type CreateRecord, CreateRecordSchema } from "@/features/records/data/records.schemas";
+import { TotalRecordsAmount } from "@/features/records/pages/records-form.page";
 import { cn } from "@/libs/utils.lib";
 import { formatDate } from "@/utils/date.util";
-import { CreateRecordSchema, type CreateRecord } from "@/features/records/data/records.schemas";
-import { useCreateRecordMutation } from "@/features/records/data/records.mutations";
-import { TotalRecordsAmount } from "@/features/records/pages/records-form.page";
-import { type TransformedBudgetWithRelations } from "../data/budgets.schemas";
+import type { TransformedBudgetWithRelations } from "../data/budgets.schemas";
 
 interface BudgetCreateRecordsDialogProps {
   trigger: React.ReactNode;
@@ -232,7 +232,7 @@ export function BudgetCreateRecordsDialog({
                       key={recordItem.id}
                     >
                       <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-medium">Record {recordItemIndex + 1}</h2>
+                        <h2 className="font-medium text-2xl">Record {recordItemIndex + 1}</h2>
                         <Button
                           variant="destructive"
                           size="sm"

@@ -1,8 +1,8 @@
+import { z } from "zod";
 import { BudgetItemSchema, BudgetSchema } from "@/features/budgets/data/budgets.schemas";
 import { RecordItemSchema, RecordSchema } from "@/features/records/data/records.schemas";
 import { TransferSchema } from "@/features/transfers/data/transfers.schemas";
 import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
-import { z } from "zod";
 
 export const SettingsSchema = z.object({
   currency: z.string({ required_error: "Currency is required" }),

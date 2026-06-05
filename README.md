@@ -1,50 +1,252 @@
 # KaGet (Kawan Budget)
 
-KaGet, Kawan Budget. A fully offline (soon) web-based budgeting app that meets your need.
+> KaGet helps you plan spending, track cash flow, and stay on budget — with wallets, budgets, records, and transfers in one offline-first PWA.
 
-## Docs
+## Tech Stack
 
-### Wallets
+**Frontend** (`apps/web`)
 
-Wallets hold the main source of everything.
+- [React 18](https://react.dev) + [TypeScript](https://www.typescriptlang.org)
+- [Vite](https://vitejs.dev) — build tool and dev server
+- [TanStack Router](https://tanstack.com/router) — file-based routing
+- [TanStack Query](https://tanstack.com/query) — server/async state (API integration)
+- [Dexie](https://dexie.org) — IndexedDB persistence (primary data store today)
+- [Tailwind CSS](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com) — styling and components
+- [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) — installable PWA
 
-- A wallet can have two different types of balance-holding:
-  - `CASH` wallet
-  - `DIGITAL` wallet
-- Able to update the wallet name
-- Deletion will delete all data referencing the wallet, such as budgets and records (cascade)
+**Backend** (`apps/api`)
 
-### Budgets
+- [Bun](https://bun.sh) — runtime and package manager
+- [Hono](https://hono.dev) — API framework
+- [better-auth](https://www.better-auth.com) — authentication (email/password boilerplate)
+- [Drizzle ORM](https://orm.drizzle.team) + [PostgreSQL](https://www.postgresql.org) — database layer
+- [Zod](https://zod.dev) — env and request validation
 
-Budgets are the main purpose of this app. Planning and maintaining a budget with ease.
+**Monorepo & Tooling**
 
-- Able to refund the balance to its source wallet
-- A budget is allocated based on the wallet’s origin. If the wallet is `CASH`, then the budget will act like the wallet, and _vice versa_.
-- Deletion will delete all data referencing the budget, such as records.
-  - A budget only deletable when its freshly created—not used. Which means no records for this budget at all.
-  - Deletion will roll back all unallocated budget to the wallet origin.
-- A budget will be archived when there is no balance can be used (0).
-  - The balance and used balance will be reset to 0 and the budget will become archived
-  - Able to reactivate the archived budget for next cycle from fresh state while previous record still intact
-  - When archived, no activity can be performed within this budget: delete, add balance, and refund.
+- [Turborepo](https://turbo.build) — task orchestration (`dev`, `build`, `lint`)
+- [Bun workspaces](https://bun.sh/docs/install/workspaces) — JavaScript package manager
+- [Biome](https://biomejs.dev) — linter and formatter (root `biome.json`, shared across apps)
+- [Lefthook](https://lefthook.dev) — Git hooks
+- [commitlint](https://commitlint.js.org) — commit message linting
+- [devenv](https://devenv.sh) — optional reproducible dev environment (Bun + Playwright)
+- [Docker Compose](https://docs.docker.com/compose/) — local PostgreSQL and API
 
-### Records
+**Deployment**
 
-A central place to record your cash flow.
+- [Cloudflare Pages](https://pages.cloudflare.com) — frontend static hosting (see `.github/workflows/deploy.yml`)
 
-- A record will have several properties and use the polymorphic table to provide the flexibility
-  - `source_type` → `WALLET`, `BUDGET`, `BUDGET_ITEM`
-  - `record_type` → `INCOME`, `EXPENSE`, `LOAN`, `DEBT`, `DEBT_REPAYMENT`, `DEBT_COLLECTION`
-- A record can have a sub-item
-  - Each sub-item will only have a note and amount
-- Deletion will delete all data that reference the record, such as record sub-item (CASCADE)
-  - Deletion will roll back the amount to the respective source.
+## Prerequisites
 
-### Transfer
+Install [Bun](https://bun.sh) 1.3+ (manages dependencies and runs the API):
 
-Track internal fund movement between wallet and budget.
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
 
-- A transfer will have two records for each transfer. One is for incoming funds and the other is for outgoing funds.
-- A transfer can record a transfer fee.
-- A transfer will save the source and destination data as a snapshot to prevent errors when either the source or destination is deleted.
-- A transfer can not be deleted.
+You also need [Docker](https://docs.docker.com/get-docker/) (or a local PostgreSQL 16 instance) for API and database development.
+
+Optional: [devenv](https://devenv.sh) + [direnv](https://direnv.net) for Playwright and pinned tooling via `devenv.nix`.
+
+## Getting Started
+
+### Clone the repo
+
+```bash
+git clone https://github.com/<your-org>/kaget.git kaget
+cd kaget
+```
+
+### Install dependencies and set up Git hooks
+
+```bash
+bun install
+```
+
+`bun install` runs `lefthook install` via the `prepare` script (Biome on pre-commit, commitlint on commit-msg).
+
+### Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your secrets (see [Environment variables](#environment-variables) below).
+
+### Start PostgreSQL and run migrations
+
+```bash
+docker compose up -d db
+cd apps/api && bun run db:migrate && cd ../..
+```
+
+## Running the Project
+
+```bash
+# Start web + API (Turborepo)
+bun run dev
+
+# Or run apps individually
+cd apps/web && bun run dev   # http://localhost:5173
+cd apps/api && bun run dev   # http://localhost:3000
+```
+
+| Service | URL |
+|---------|-----|
+| Web (PWA) | http://localhost:5173 |
+| API | http://localhost:3000 |
+| API health | http://localhost:3000/api/health |
+| better-auth | http://localhost:3000/api/auth/* |
+
+Run API + database in Docker:
+
+```bash
+docker compose up --build
+```
+
+## Project Structure
+
+```
+kaget/
+├── apps/
+│   ├── web/                      # React PWA (primary product UI)
+│   │   ├── src/
+│   │   │   ├── features/         # Feature modules (pages, components, data)
+│   │   │   ├── routes/           # TanStack file-based routes (~*.route.tsx)
+│   │   │   ├── libs/             # db.lib.ts (Dexie), api.lib.ts (Hono client)
+│   │   │   ├── components/       # Shared UI (shadcn, layout)
+│   │   │   └── workers/          # Web workers (import/export)
+│   │   └── package.json
+│   └── api/                      # Hono API on Bun
+│       ├── src/
+│       │   ├── app.ts            # Hono app + AppType export for web RPC client
+│       │   ├── config/           # Zod-validated env
+│       │   ├── db/               # Drizzle client + schema
+│       │   ├── lib/              # better-auth setup
+│       │   ├── routes/           # /api/health, /api/me, etc.
+│       │   └── middleware/       # CORS
+│       ├── migrations/           # Drizzle SQL migrations
+│       ├── drizzle.config.ts
+│       └── Dockerfile
+├── docs/
+│   ├── user-guide/               # End-user documentation
+│   └── developer-guide/          # Technical docs + ADRs
+├── biome.json                    # Shared Biome config (root)
+├── lefthook.yml                  # Git hook definitions
+├── commitlint.config.js          # Commit message rules
+├── docker-compose.yml            # PostgreSQL + API
+├── turbo.json
+└── package.json                  # Bun workspaces root
+```
+
+## Common Tasks
+
+### Frontend (`@kaget/web`)
+
+```bash
+cd apps/web
+bun run dev              # Dev server (port 5173)
+bun run build            # Production build
+bun run lint             # Biome check
+bun run gen:routes       # Regenerate TanStack Router route tree
+bun run ui:add           # Add shadcn/ui component (bunx shadcn)
+```
+
+From repo root with Turborepo:
+
+```bash
+bun run dev              # web + api
+bun run build            # all packages
+bun run lint             # all packages
+bun run format           # Biome check --write (entire repo)
+```
+
+### Backend (`@kaget/api`)
+
+```bash
+cd apps/api
+bun run dev              # Bun watch mode
+bun run build            # tsc → dist/
+bun run start            # Run compiled output
+bun run lint             # Biome check
+bun run db:generate      # Generate migration from schema changes
+bun run db:migrate       # Apply migrations
+bun run db:studio        # Drizzle Studio
+```
+
+See [apps/api/README.md](apps/api/README.md) for auth routes and Docker details.
+
+## Type-Safe API Client
+
+The web app imports `AppType` from `@kaget/api` and uses Hono’s RPC client:
+
+```ts
+import { hc } from "hono/client";
+import type { AppType } from "@kaget/api";
+
+export const api = hc<AppType>(import.meta.env.VITE_API_URL);
+```
+
+When you add or change API routes in `apps/api/src/app.ts`, TypeScript types flow to `apps/web` through the workspace package (`"types": "./src/app.ts"`). Rebuild or rely on IDE checking after route changes.
+
+**Note:** Budgeting data (wallets, budgets, records, transfers) still lives in **Dexie (IndexedDB)** on the client. The API currently provides auth boilerplate and health checks; server-side domain sync is a planned follow-up.
+
+## Database Migrations
+
+Auth tables are managed with Drizzle Kit from `apps/api`:
+
+```bash
+cd apps/api
+
+# After changing src/db/schema/
+bun run db:generate
+bun run db:migrate
+```
+
+Migrations run automatically in Docker via `apps/api/docker-entrypoint.sh` before the server starts.
+
+## Environment Variables
+
+Copy [.env.example](.env.example) to `.env` at the repository root.
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `BETTER_AUTH_SECRET` | Auth secret (min 32 characters) |
+| `BETTER_AUTH_URL` | Public API base URL (e.g. `http://localhost:3000`) |
+| `PORT` | API port (default `3000`) |
+| `CORS_ORIGINS` | Comma-separated allowed origins (e.g. `http://localhost:5173`) |
+| `VITE_API_URL` | API base URL for the web app (e.g. `http://localhost:3000`) |
+
+Docker Compose reads root `.env` for the `api` and `db` services. The API loads variables at startup via `apps/api/src/config/env.ts` (Zod-validated).
+
+For the web app, set `VITE_API_URL` in `.env` (Vite exposes `VITE_*` variables to the client).
+
+## Documentation
+
+- [User guide](docs/user-guide/README.md) — how to use wallets, budgets, records, transfers, and settings
+- [Developer guide](docs/developer-guide/README.md) — feature technical docs and [ADRs](docs/developer-guide/adr/README.md)
+
+### Product overview
+
+| Area | Summary |
+|------|---------|
+| **Wallets** | Cash or digital balance containers; cascade delete to related data |
+| **Budgets** | Spending plans tied to a wallet; archive when balance is zero |
+| **Records** | Income, expense, debt, and loan entries with optional line items |
+| **Transfers** | Internal moves between wallets/budgets (immutable, snapshot metadata) |
+
+Details: [docs/user-guide/](docs/user-guide/).
+
+## Contributing
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org) with scopes such as `feat`, `fix`, `docs`, `chore`, and `deps` (see [commitlint.config.js](commitlint.config.js)).
+
+- **Pre-commit:** Lefthook runs Biome on staged files
+- **Commit-msg:** commitlint validates the message
+
+For agent-assisted development conventions, see [AGENTS.md](AGENTS.md).
+
+## License
+
+See the repository license file if present; otherwise contact the maintainers.

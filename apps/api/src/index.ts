@@ -1,38 +1,18 @@
-import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { zValidator } from "@hono/zod-validator";
-import * as z from "zod";
+import { createApp } from './app'
+import { loadEnv } from './config/env'
+import { createDb } from './db/client'
+import { createAuth } from './lib/auth'
 
-const app = new Hono();
+const env = loadEnv()
+const db = createDb(env.DATABASE_URL)
+export const auth = createAuth(db, env)
+const app = createApp(env, db, auth)
 
-// TODO: better CORS implementation, dynamic based on the environment and necessary origin
-app.use("/api/*", cors());
+const server = Bun.serve({
+  port: env.API_PORT,
+  fetch: app.fetch,
+})
 
-export const route = app.get(
-  "/api/hello",
-  zValidator(
-    "query",
-    z.object({
-      name: z.string(),
-    })
-  ),
-  c => {
-    const { name } = c.req.valid("query");
-    return c.json({
-      message: `Hello, ${name}`,
-    });
-  }
-);
+console.log(`Server is running on http://${server.hostname}:${server.port}`)
 
-export type AppType = typeof route;
-
-serve(
-  {
-    fetch: app.fetch,
-    port: 3000,
-  },
-  info => {
-    console.log(`Server is running on http://localhost:${info.port}`);
-  }
-);
+export type { AppType } from './app'

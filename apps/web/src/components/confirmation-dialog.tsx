@@ -1,5 +1,6 @@
 import {
   AlertDialog,
+  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -7,7 +8,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  AlertDialogAction,
 } from "./ui/alert-dialog";
 
 interface ConfirmationDialogProps {

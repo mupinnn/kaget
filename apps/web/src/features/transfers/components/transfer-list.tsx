@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
 import { ArrowRightLeftIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Transfer } from "../data/transfers.schemas";
 import { TransferListItem } from "./transfer-list-item";
-import { type Transfer } from "../data/transfers.schemas";
 
 export const TransferListLoader = () => {
   return (

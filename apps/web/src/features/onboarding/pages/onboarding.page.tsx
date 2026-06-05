@@ -1,36 +1,36 @@
-import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { BadgeCheckIcon, ChevronsUpDownIcon, CheckIcon } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "@tanstack/react-router";
+import { BadgeCheckIcon, CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { useState } from "react";
 import CurrencyInput from "react-currency-input-field";
+import { useForm } from "react-hook-form";
+import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormControl,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandItem,
   CommandInput,
+  CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Card, CardContent, CardTitle, CardDescription, CardHeader } from "@/components/ui/card";
-import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
-import { Settings, SettingsSchema } from "@/features/settings/data/settings.schemas";
 import { useCreateSettingsMutation } from "@/features/settings/data/settings.mutations";
+import { type Settings, SettingsSchema } from "@/features/settings/data/settings.schemas";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
@@ -126,11 +126,11 @@ export function OnboardingIndexPage() {
       </header>
 
       <section className="space-y-2">
-        <h2 className="text-xl font-semibold">Features Overview</h2>
+        <h2 className="font-semibold text-xl">Features Overview</h2>
         <div className="space-y-4">
           {features.map(feature => (
             <article key={feature.title}>
-              <h3 className="inline-flex items-center gap-1 text-lg font-medium">
+              <h3 className="inline-flex items-center gap-1 font-medium text-lg">
                 <BadgeCheckIcon className="fill-primary" /> {feature.title}
               </h3>
               <p>{feature.description}</p>
@@ -140,7 +140,7 @@ export function OnboardingIndexPage() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-xl font-semibold">Getting Started</h2>
+        <h2 className="font-semibold text-xl">Getting Started</h2>
         <p>Before using the app, you need to know a few things:</p>
 
         <StoragePersistenceNotice />
@@ -213,7 +213,7 @@ export function OnboardingIndexPage() {
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[var(--radix-popover-trigger-width)]">
+                      <PopoverContent className="w-(--radix-popover-trigger-width)">
                         <CurrencyList
                           value={field.value}
                           setOpen={setIsCurrencyOpen}
@@ -251,7 +251,7 @@ export function OnboardingIndexPage() {
               </CardHeader>
               <CardContent>
                 <p
-                  className="text-lg font-semibold"
+                  className="font-semibold text-lg"
                   data-testid="onboarding-sample-balance-preview"
                 >
                   {formatCurrency(Number(balancePreview ?? 0), {
@@ -267,7 +267,7 @@ export function OnboardingIndexPage() {
                 <CardDescription>Example of the formatted date</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-lg font-semibold" data-testid="onboarding-sample-date-preview">
+                <p className="font-semibold text-lg" data-testid="onboarding-sample-date-preview">
                   {formatDate(new Date(), { dateStyle: "full", timeStyle: "long" })}
                 </p>
               </CardContent>

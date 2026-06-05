@@ -1,25 +1,34 @@
 {
   "name": "@kaget/api",
+  "private": true,
+  "version": "0.1.0",
   "type": "module",
+  "types": "./src/app.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "lint": "eslint ."
+    "dev": "bun --watch src/index.ts",
+    "build": "tsc && bun build --compile --minify --bytecode ./src --outfile ./dist/kaget-api",
+    "preview": "./dist/kaget-api",
+    "check-types": "tsc --noEmit",
+    "auth:generate": "bunx --bun auth@latest generate --config ./src/index.ts --output ./src/db/schema/auth.ts",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
-  "types": "./src/index.ts",
   "dependencies": {
-    "@hono/node-server": "^1.19.6",
-    "@hono/zod-validator": "^0.7.4",
+    "@hono/zod-validator": "0.8.0",
+    "better-auth": "1.6.14",
+    "drizzle-orm": "0.45.2",
     "hono": "catalog:",
+    "postgres": "3.4.9",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
+    "@hono/cli": "^0.1.10",
+    "@types/bun": "1.3.3",
     "@types/node": "catalog:",
-    "eslint": "catalog:",
-    "tsx": "^4.7.1",
+    "drizzle-kit": "0.31.10",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "vitest": "catalog:"
   }
 }

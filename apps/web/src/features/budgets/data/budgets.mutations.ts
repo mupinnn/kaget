@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type CreateBudget, type UpdateBudgetBalance } from "./budgets.schemas";
 import { RECORDS_QUERY_KEY } from "@/features/records/data/records.queries";
 import { TRANSFERS_QUERY_KEY } from "@/features/transfers/data/transfers.queries";
+import { BUDGETS_QUERY_KEY } from "./budgets.queries";
+import type { CreateBudget, UpdateBudgetBalance } from "./budgets.schemas";
 import {
   activateBudget,
   createBudget,
   deleteBudget,
   updateBudgetBalanceDetail,
 } from "./budgets.services";
-import { BUDGETS_QUERY_KEY } from "./budgets.queries";
 
 export const useCreateBudgetMutation = () => {
   return useMutation({

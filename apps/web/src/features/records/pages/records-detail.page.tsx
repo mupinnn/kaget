@@ -1,17 +1,17 @@
-import { match, P } from "ts-pattern";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { Trash2Icon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { match, P } from "ts-pattern";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
-import { PageLayout } from "@/components/page-layout";
-import { formatDate } from "@/utils/date.util";
-import { cn } from "@/libs/utils.lib";
 import { HidableBalance } from "@/components/hidable-balance";
-import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
+import { PageLayout } from "@/components/page-layout";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/libs/utils.lib";
+import { formatDate } from "@/utils/date.util";
 import { useDeleteRecordMutation } from "../data/records.mutations";
+import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
 import { getRecordAmountValueAndClasses } from "../data/records.services";
 
-const route = getRouteApi("/_app/records/$recordId");
+const route = getRouteApi("/_app/(records)/records/$recordId");
 
 export function RecordsDetailPage() {
   const { recordId } = route.useParams();

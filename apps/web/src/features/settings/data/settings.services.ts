@@ -1,5 +1,5 @@
-import { successResponse } from "@/utils/service.util";
 import { db } from "@/libs/db.lib";
+import { successResponse } from "@/utils/service.util";
 import { type Settings, SettingsSchema } from "./settings.schemas";
 
 export async function getSettings() {

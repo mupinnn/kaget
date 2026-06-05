@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import { PageLayout } from "@/components/page-layout";
-import { useBudgetsQuery } from "../data/budgets.queries";
+import { Button } from "@/components/ui/button";
 import { BudgetList, BudgetListLoader } from "../components/budget-list";
+import { useBudgetsQuery } from "../data/budgets.queries";
 
 export function BudgetsIndexPage() {
   const budgetsQuery = useBudgetsQuery();

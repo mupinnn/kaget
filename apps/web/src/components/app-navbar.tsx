@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { SidebarTrigger } from "./ui/sidebar";
-import { Separator } from "./ui/separator";
-import { ThemeSelector } from "./theme-selector";
 import { ToggleHidableBalance } from "./hidable-balance";
+import { ThemeSelector } from "./theme-selector";
+import { Separator } from "./ui/separator";
+import { SidebarTrigger } from "./ui/sidebar";
 
 export function AppNavbar() {
   return (

@@ -1,0 +1,13 @@
+node_modules
+dist
+.turbo
+.git
+.devenv
+.direnv
+apps/web
+docs
+test-results
+playwright-report
+*.md
+.env
+.env.*

@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeftIcon } from "lucide-react";
 import { match, P } from "ts-pattern";
 import { cn } from "@/libs/utils.lib";
-import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 interface PageLayoutProps {
   title: React.ReactNode;
@@ -35,7 +35,7 @@ export function PageLayout({
           .with(P.string, () => <Badge variant="secondary">{badge}</Badge>)
           .otherwise(() => null)}
 
-        <h1 className={cn("text-3xl font-bold", titleClassName)}>{title}</h1>
+        <h1 className={cn("font-bold text-3xl", titleClassName)}>{title}</h1>
 
         {match(subtitle)
           .with(P.string, () => (

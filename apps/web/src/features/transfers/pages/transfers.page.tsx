@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import { PageLayout } from "@/components/page-layout";
-import { useTransfersQuery } from "../data/transfers.queries";
+import { Button } from "@/components/ui/button";
 import { TransferList, TransferListLoader } from "../components/transfer-list";
+import { useTransfersQuery } from "../data/transfers.queries";
 
 export function TransfersIndexPage() {
   const transfersQuery = useTransfersQuery();
