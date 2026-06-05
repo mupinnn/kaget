@@ -10,9 +10,9 @@ import { createMeRoutes } from './routes/me'
 export function createApp(env: Env, db: Database, auth: Auth) {
   return new Hono()
     .use('/api/*', createCorsMiddleware(env))
-    .route('/', createHealthRoutes(db))
-    .route('/', createHelloRoutes())
-    .route('/', createMeRoutes(auth))
+    .route('/api/health', createHealthRoutes(db))
+    .route('/api/hello', createHelloRoutes())
+    .route('/api/me', createMeRoutes(auth))
     .on(['POST', 'GET'], '/api/auth/*', c => auth.handler(c.req.raw))
 }
 

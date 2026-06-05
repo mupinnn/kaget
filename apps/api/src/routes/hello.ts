@@ -4,7 +4,7 @@ import * as z from 'zod'
 
 export function createHelloRoutes() {
   return new Hono().get(
-    '/api/hello',
+    '/',
     zValidator(
       'query',
       z.object({

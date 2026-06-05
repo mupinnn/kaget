@@ -213,7 +213,7 @@ export function OnboardingIndexPage() {
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[var(--radix-popover-trigger-width)]">
+                      <PopoverContent className="w-(--radix-popover-trigger-width)">
                         <CurrencyList
                           value={field.value}
                           setOpen={setIsCurrencyOpen}

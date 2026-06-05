@@ -73,7 +73,11 @@ export function AppSidebar() {
               {menuItems.map(menuItem => (
                 <SidebarMenuItem key={menuItem.title}>
                   <SidebarMenuButton asChild onClick={() => setOpenMobile(false)}>
-                    <Link to={menuItem.url} className="no-underline">
+                    <Link
+                      to={menuItem.url}
+                      className="no-underline"
+                      activeProps={{ "data-active": "true" }}
+                    >
                       <menuItem.icon />
                       <span>{menuItem.title}</span>
                     </Link>

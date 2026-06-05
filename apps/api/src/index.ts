@@ -5,14 +5,14 @@ import { createAuth } from './lib/auth'
 
 const env = loadEnv()
 const db = createDb(env.DATABASE_URL)
-const auth = createAuth(db, env)
+export const auth = createAuth(db, env)
 const app = createApp(env, db, auth)
 
 const server = Bun.serve({
-  port: env.PORT,
+  port: env.API_PORT,
   fetch: app.fetch,
 })
 
-console.log(`Server is running on http://localhost:${server.port}`)
+console.log(`Server is running on http://${server.hostname}:${server.port}`)
 
 export type { AppType } from './app'

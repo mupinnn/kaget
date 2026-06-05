@@ -7,7 +7,7 @@ export function ToggleHidableBalance() {
   const { hidden, toggleHidable } = useHidableBalance();
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleHidable}>
+    <Button variant="ghost" size="icon-sm" onClick={toggleHidable}>
       {hidden ? <EyeOffIcon /> : <EyeIcon />}
     </Button>
   );

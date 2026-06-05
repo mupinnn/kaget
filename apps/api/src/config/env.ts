@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().min(1),
+  API_PORT: z.coerce.number().int().positive().default(3000),
+  DATABASE_URL: z.url(),
   BETTER_AUTH_SECRET: z.string().min(32),
-  BETTER_AUTH_URL: z.string().url(),
-  PORT: z.coerce.number().int().positive().default(3000),
+  BETTER_AUTH_URL: z.url(),
   CORS_ORIGINS: z
     .string()
     .default('http://localhost:5173')
@@ -14,10 +14,10 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>
 
 export function loadEnv(): Env {
-  const result = envSchema.safeParse(process.env)
+  const result = envSchema.safeParse(Bun.env)
 
   if (!result.success) {
-    console.error('Invalid environment variables:', result.error.flatten().fieldErrors)
+    console.error('Invalid environment variables:', z.prettifyError(result.error))
     process.exit(1)
   }
 

@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import type { Auth } from '../lib/auth'
 
 export function createMeRoutes(auth: Auth) {
-  return new Hono().get('/api/me', async c => {
+  return new Hono().get('/', async c => {
     const session = await auth.api.getSession({
       headers: c.req.raw.headers,
     })

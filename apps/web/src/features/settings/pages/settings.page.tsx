@@ -1,11 +1,11 @@
 import { DownloadIcon, FileTextIcon, UploadIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
 import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/utils/date.util";
 import ImportExportWorker from "@/workers/import-export.worker?worker";
 import { preloadSettings } from "../data/settings.services";
@@ -45,8 +45,7 @@ export function SettingsIndexPage() {
 
         if (type === "import") {
           void preloadSettings();
-          toast({
-            title: "Successfully imported",
+          toast("Successfully imported", {
             description: "Your data successfully imported. Go around to see the results.",
           });
           setImportSelectedFile(undefined);
@@ -54,10 +53,8 @@ export function SettingsIndexPage() {
       }
 
       if (status === "error") {
-        toast({
-          title: "Error when importing",
+        toast.error("Error when importing", {
           description: event.data.message,
-          variant: "destructive",
         });
       }
     };
