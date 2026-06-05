@@ -11,9 +11,11 @@
     "includes": [
       "packages/**/*",
       "apps/web/**/*",
+      "apps/api/**/*",
       "!**/.vscode/**/*",
       "!**/*.node_modules/**/*",
       "!apps/web/dist",
+      "!apps/api/dist",
       "!**/.turbo",
       "!**/apps/web/src/__generated__",
       "!**/bun.lock",
