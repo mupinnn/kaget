@@ -21,7 +21,8 @@
 - [Hono](https://hono.dev) — API framework
 - [better-auth](https://www.better-auth.com) — authentication (email/password)
 - [Drizzle ORM](https://orm.drizzle.team) + [PostgreSQL](https://www.postgresql.org) — database layer
-- [Zod](https://zod.dev) 4 — env validation
+- [Pino](https://getpino.io) — structured wide-event logging
+- [Zod](https://zod.dev) 4 — env and request validation
 
 **Monorepo & Tooling**
 
@@ -106,8 +107,8 @@ cd apps/api && bun run dev   # http://localhost:3000 (or API_PORT from .env)
 |---------|-----|
 | Web (PWA) | http://localhost:5173 |
 | API | http://localhost:3000 (default `API_PORT`) |
-| API health | http://localhost:3000/api/health |
 | better-auth | http://localhost:3000/api/auth/* |
+| Wallets API | http://localhost:3000/api/wallets |
 
 Run API + database in Docker:
 
@@ -132,16 +133,17 @@ kaget/
 │       ├── src/
 │       │   ├── app.ts            # Hono app + AppType export for web RPC client
 │       │   ├── config/           # Zod-validated Bun.env
-│       │   ├── db/               # Drizzle client + schema (auth)
-│       │   ├── lib/              # better-auth setup
-│       │   ├── routes/           # health, hello, me
-│       │   └── middleware/       # CORS
+│       │   ├── db/               # Drizzle client + schema
+│       │   ├── lib/              # auth, error, error-codes, logger, validator
+│       │   ├── middleware/       # auth, cors, logger (wide events)
+│       │   ├── routes/           # me, wallets (factory per route group)
+│       │   └── __tests__/        # Vitest integration tests + helpers
 │       ├── migrations/           # Drizzle SQL migrations
 │       ├── drizzle.config.ts
 │       └── Dockerfile
 ├── docs/
 │   ├── user-guide/
-│   └── developer-guide/          # Feature docs + ADRs
+│   └── developer-guide/          # API guides, feature docs, ADRs
 ├── biome.json                    # Biome (web + packages)
 ├── lefthook.yml
 ├── commitlint.config.js
@@ -185,6 +187,7 @@ bun run ui:add           # Add shadcn/ui component (bunx shadcn)
 ```bash
 cd apps/api
 bun run dev              # Bun watch mode
+bun run test             # Vitest integration tests
 bun run build            # tsc + compiled binary → dist/kaget-api
 bun run start            # Run compiled binary (after build)
 bun run check-types      # tsc --noEmit
@@ -215,7 +218,9 @@ export const api = hc<AppType>(import.meta.env.VITE_API_URL);
 
 When you add or change API routes in [`apps/api/src/app.ts`](apps/api/src/app.ts), types flow to the web app via `"types": "./src/app.ts"` on `@kaget/api`. Run `bun run check-types` (or your IDE) after route changes.
 
-**Note:** Budgeting data (wallets, budgets, records, transfers) still lives in **Dexie (IndexedDB)** on the client. The API provides auth and health endpoints; server-side domain sync is a planned follow-up.
+**API conventions:** Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure. Handlers use `AppError`, `ERROR_CODES`, and `validator()` — see [API Route Handlers](docs/developer-guide/api-route-handlers.md).
+
+**Note:** Budgeting data (wallets, budgets, records, transfers) still lives primarily in **Dexie (IndexedDB)** on the client. The API provides auth and server-side wallet CRUD; broader domain sync is a planned follow-up.
 
 ## Database Migrations
 
@@ -261,6 +266,8 @@ Docker Compose loads `.env` via `env_file` for `db` and `api`. The API reads `Bu
 
 - [User guide](docs/user-guide/README.md) — wallets, budgets, records, transfers, settings
 - [Developer guide](docs/developer-guide/README.md) — feature technical docs and [ADRs](docs/developer-guide/adr/README.md)
+- [API Route Handlers](docs/developer-guide/api-route-handlers.md) — error handling, validation, wide-event logging
+- [API Testing](docs/developer-guide/testing.md) — PGlite, testClient, assertion helpers
 - [AGENTS.md](AGENTS.md) — conventions for AI-assisted development
 
 ### Product overview

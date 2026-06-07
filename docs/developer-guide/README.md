@@ -4,6 +4,11 @@ Technical documentation for engineers working on KaGet.
 
 ## Contents
 
+### API
+
+- [API Route Handlers](./api-route-handlers.md) — Error handling, validation, and wide-event logging conventions
+- [API Testing](./testing.md) — PGlite, testClient, and assertion helpers
+
 ### Features
 
 Technical flows and implementation details for each feature.

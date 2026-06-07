@@ -8,7 +8,7 @@ System prompt for LLM agents (Cursor, Copilot, Claude, etc.) working on **KaGet 
 
 **Frontend** (`apps/web`): React 19, TypeScript 6, Vite 8, TanStack Router/Query, Dexie (IndexedDB), Tailwind CSS v4, shadcn/ui (Radix unified `radix-ui` package), sonner, PWA
 
-**Backend** (`apps/api`): Bun, Hono, better-auth, Drizzle ORM, PostgreSQL, Zod 4
+**Backend** (`apps/api`): Bun, Hono, better-auth, Drizzle ORM, PostgreSQL, Pino (wide-event logging), Zod 4
 
 **Monorepo**: Bun workspaces + catalog, Turborepo, Biome 2.4 (root), Lefthook, commitlint 21
 
@@ -22,15 +22,24 @@ System prompt for LLM agents (Cursor, Copilot, Claude, etc.) working on **KaGet 
 
 ```
 apps/api/src/
-├── index.ts              # Bun.serve; export auth + AppType
-├── app.ts                # createApp(); mount routes; export type AppType
+├── index.ts              # Bun.serve; ContextVariableMap (requestId, wideEvent, user, session)
+├── app.ts                # createApp(); mount routes; .onError(onError); export type AppType
 ├── config/env.ts         # Zod-validated Bun.env (API_PORT, DATABASE_URL, …)
 ├── db/
 │   ├── client.ts
-│   └── schema/           # auth tables (regenerate via auth:generate)
-├── lib/auth.ts           # betterAuth + drizzleAdapter
-├── routes/               # health, hello, me (factory per route group)
-└── middleware/cors.ts
+│   └── schema/           # auth + domain tables (regenerate auth via auth:generate)
+├── lib/
+│   ├── auth.ts           # betterAuth + getSafeSession
+│   ├── error.ts          # AppError + onError handler
+│   ├── error-codes.ts    # ERROR_CODES constants
+│   ├── logger.ts         # Pino singleton
+│   └── validator.ts      # Zod validator wrapper (throws AppError)
+├── middleware/
+│   ├── auth.ts           # Session middleware
+│   ├── cors.ts
+│   └── logger.ts         # Wide-event logging (one log line per /api/* request)
+├── routes/               # me, wallets (factory per route group)
+└── __tests__/            # Vitest suites + helpers (assertions, auth, app, db, mock)
 
 apps/web/src/
 ├── components/ui/        # shadcn/ui primitives
@@ -70,11 +79,15 @@ There is **no** `packages/` directory yet. Web consumes `@kaget/api` as a worksp
 
 - **Runtime:** Bun only — `Bun.serve({ port: env.API_PORT, fetch: app.fetch })`. No `@hono/node-server`.
 - **Env:** Validate with Zod in `config/env.ts` from `Bun.env`. Update [`.env.example`](.env.example) for every new variable. Port is **`API_PORT`**, not `PORT`.
-- **App factory:** Register routes on explicit paths in `app.ts`, e.g. `.route('/api/health', createHealthRoutes(db))`. Sub-routers use `/` internally.
-- **Auth:** `better-auth` with `drizzleAdapter`; mount `auth.handler` on `/api/auth/*`. Regenerate schema with `auth:generate` (see **Root `.env` for API CLI** below).
+- **App factory:** Register routes on explicit paths in `app.ts`, e.g. `.route('/api/wallets', createWalletRoutes(db, auth))`. Sub-routers use `/` internally. Mount `.onError(onError)` from `lib/error.ts`.
+- **Auth:** `better-auth` with `drizzleAdapter`; mount `auth.handler` on `/api/auth/*`. Protected handlers use `getSafeSession(c)` — throws `AppError` with `ERROR_CODES.AUTH.UNAUTHORIZED` when unauthenticated.
+- **Errors:** Throw `AppError(status, ERROR_CODES.DOMAIN.CODE, message, details?)` — do not `return c.json({ error: ... }, status)`. Add codes in `lib/error-codes.ts`. Global `onError` returns `{ error: { code, message, details? } }` and enriches `wideEvent.error`.
+- **Validation:** Use `validator('json' | 'param' | 'query', schema)` from `lib/validator.ts` — not raw `zValidator`. Validation failures throw `AppError` with `VALIDATION_INVALID_INPUT` and field-level `details`.
+- **Responses:** Success `{ data: T }` (200/201). Errors handled by `onError` — see [API Route Handlers](docs/developer-guide/api-route-handlers.md).
+- **Logging:** Handlers annotate `c.get('wideEvent')` with nested domain keys on success only (e.g. `wideEvent.wallet = { id, count }`). Do not wrap handlers in try/catch for logging — `onError` sets `wideEvent.outcome` and `wideEvent.error`.
 - **DB:** Prefer `db:migrate` for committed changes; `db:push` for local dev only. Commit files under `migrations/`.
 - **Build:** `bun run build` compiles a standalone binary at `dist/kaget-api`; run with `bun run start`.
-- **Style:** Single quotes and no semicolons match current API source — follow existing files in `apps/api`.
+- **Style:** Double quotes and semicolons match current API source — follow existing files in `apps/api`.
 
 ### Root `.env` for API CLI (`auth:*`, `db:*`)
 
@@ -143,10 +156,17 @@ Same pattern for `auth:generate`, `db:push`, `db:generate`, `db:studio`. Full ta
 
 ### Adding an API route
 
-1. Add `apps/api/src/routes/{name}.ts` returning a `Hono` sub-app
-2. Register in `createApp()` with `.route('/api/...', createXRoutes(...))`
-3. Keep `export type AppType = ReturnType<typeof createApp>` in `app.ts`
-4. Update [`apps/api/README.md`](apps/api/README.md) if the public contract changes
+Reference: [`apps/api/src/routes/wallets.ts`](apps/api/src/routes/wallets.ts) and [API Route Handlers](docs/developer-guide/api-route-handlers.md).
+
+1. Add `apps/api/src/routes/{name}.ts` returning a `Hono` sub-app via `create{Name}Routes(deps)`
+2. Use `getSafeSession(c)` for authenticated handlers
+3. Use `validator('json', schema)` for validated inputs
+4. Throw `AppError` for domain errors; add codes to `lib/error-codes.ts` if needed
+5. Return `{ data: ... }` on success; annotate `wideEvent` with nested domain keys
+6. Register in `createApp()` with `.route('/api/...', createXRoutes(...))`
+7. Keep `export type AppType = ReturnType<typeof createApp>` in `app.ts`
+8. Add integration tests using `expectSuccess` / `expectError` — see [API Testing](docs/developer-guide/testing.md)
+9. Update [`apps/api/README.md`](apps/api/README.md) if the public contract changes
 
 ### Drizzle + better-auth
 
@@ -194,28 +214,32 @@ export const useWalletsQuery = (req = {}) => useQuery(walletsQueryOptions(req));
 
 ### Testing (`apps/api`)
 
-Integration tests use **PGlite** (in-process Postgres), **better-auth testUtils**, and **Hono testClient**:
+Integration tests use **PGlite** (in-process Postgres), **better-auth testUtils**, **Hono testClient**, and assertion helpers:
 
 - **Database**: `setupTestDatabase()` creates PGlite, runs migrations, cleans up in `afterAll()`
-- **Auth**: `createTestAuth(db)` returns test-only `betterAuth` instance with `testUtils` plugin; use `test.createUser()` + `test.saveUser()` + `test.getAuthHeaders({ userId })` for sessions
-- **Routes**: `createTestApp(db, auth)` wraps `createApp` with test env; pass to `testClient()` for typed RPC
-- **Requests**: Use `client.api.{route}.$method({ ... }, { headers: authHeaders })` pattern; pass headers per-request for auth
+- **Auth**: `createTestAuth(db)` returns test-only `betterAuth` with `testUtils`; use `getTestAuthHeaders(test, userId)` for plain header objects
+- **Routes**: `createTestApp(db, auth)` wraps `createApp`; pass to `testClient()` for typed RPC
+- **Assertions**: `expectSuccess(res, status)` and `expectError(res, ERROR_CODES.X, status)` — import codes from `lib/error-codes.ts`
+- **Requests**: `client.api.{route}.$method({ ... }, { headers: authHeaders })`
 
-Full details in [docs/developer-guide/testing.md](docs/developer-guide/testing.md). Example:
+Full details in [docs/developer-guide/testing.md](docs/developer-guide/testing.md). Reference: [`apps/api/src/__tests__/wallets.test.ts`](apps/api/src/__tests__/wallets.test.ts).
 
 ```ts
 const testDatabase = await setupTestDatabase()
 const { auth, test } = await createTestAuth(testDatabase.db)
 const user = test.createUser({ email: 'test@example.com' })
 await test.saveUser(user)
-const authHeaders = await test.getAuthHeaders({ userId: user.id })
+const authHeaders = await getTestAuthHeaders(test, user.id)
 const client = testClient(createTestApp(testDatabase.db, auth))
 
 const res = await client.api.wallets.$post(
   { json: { name: 'My Wallet', type: 'DIGITAL' } },
-  { headers: authHeaders }
+  { headers: authHeaders },
 )
-expect(res.status).toBe(201)
+const { data } = await expectSuccess(res, 201)
+expect(data).toMatchObject({ name: 'My Wallet', type: 'DIGITAL' })
+
+await expectError(res, ERROR_CODES.WALLET.NOT_FOUND, 404)
 ```
 
 ---
@@ -241,6 +265,7 @@ bun run build
 
 # API database (root .env via --env-file; see apps/api/README.md)
 cd apps/api
+bun run test
 bun --env-file=../../.env run auth:generate
 bun --env-file=../../.env run db:push          # dev only
 bun --env-file=../../.env run db:generate
@@ -281,6 +306,8 @@ Never commit `.env`.
 
 - [`docs/user-guide/`](docs/user-guide/)
 - [`docs/developer-guide/`](docs/developer-guide/) + [ADRs](docs/developer-guide/adr/README.md)
+- [API Route Handlers](docs/developer-guide/api-route-handlers.md) — error handling, validation, wide-event logging
+- [API Testing](docs/developer-guide/testing.md) — PGlite, testClient, assertion helpers
 - [ADR-004](docs/developer-guide/adr/004-tooling-stack-migration.md) — tooling migration and follow-up refinements
 
 ---
@@ -301,6 +328,9 @@ Never commit `.env`.
 12. Do not edit `apps/web/src/__generated__/routeTree.ts` manually.
 13. Do not add per-app Biome dependencies.
 14. Do not use old route file conventions (`~` prefixes) — use current `src/routes/**/*.route.tsx` layout.
+15. Do not return inline error JSON from API handlers — throw `AppError` with an `ERROR_CODES` entry.
+16. Do not use raw `zValidator` in API routes — use `validator()` from `lib/validator.ts`.
+17. Do not wrap API handlers in try/catch for logging — `onError` and logger middleware handle errors and wide events.
 
 ---
 

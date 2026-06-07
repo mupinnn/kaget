@@ -71,6 +71,8 @@ Plain `bun run db:migrate` from `apps/api` without `--env-file` only works if th
 | `db:generate` | Generate SQL migration from schema changes |
 | `db:migrate` | Apply pending migrations |
 | `db:studio` | Open Drizzle Studio |
+| `test` | Run Vitest integration tests |
+| `test:watch` | Vitest watch mode |
 
 Production-style local run:
 
@@ -103,20 +105,31 @@ Related root-only variables used by Docker Compose and the web app:
 ```
 apps/api/
 ├── src/
-│   ├── index.ts          # Entry: env → db → auth → Bun.serve
-│   ├── app.ts            # Hono app; export type AppType
-│   ├── config/env.ts     # Zod validation (Bun.env)
-│   ├── db/               # Drizzle client + schema
-│   ├── lib/auth.ts       # betterAuth + drizzleAdapter
-│   ├── routes/           # Route factories (health, hello, me)
-│   └── middleware/cors.ts
-├── migrations/           # Drizzle SQL (committed)
+│   ├── index.ts              # Entry: env → db → auth → Bun.serve
+│   ├── app.ts                # Hono app; export type AppType
+│   ├── config/env.ts         # Zod validation (Bun.env)
+│   ├── db/                   # Drizzle client + schema
+│   ├── lib/
+│   │   ├── auth.ts           # betterAuth + getSafeSession
+│   │   ├── error.ts          # AppError + onError handler
+│   │   ├── error-codes.ts    # ERROR_CODES constants
+│   │   ├── logger.ts         # Pino singleton
+│   │   └── validator.ts      # Zod validator wrapper
+│   ├── middleware/
+│   │   ├── auth.ts           # Session middleware
+│   │   ├── cors.ts
+│   │   └── logger.ts         # Wide-event logging
+│   ├── routes/
+│   │   ├── me.ts
+│   │   └── wallets.ts
+│   └── __tests__/            # Vitest suites + helpers
+├── migrations/               # Drizzle SQL (committed)
 ├── drizzle.config.ts
 ├── Dockerfile
-└── docker-entrypoint.sh  # db:migrate then exec CMD
+└── docker-entrypoint.sh      # db:migrate then exec CMD
 ```
 
-Routes are mounted in [`src/app.ts`](src/app.ts) on explicit paths (e.g. `.route('/api/health', createHealthRoutes(db))`).
+Routes are mounted in [`src/app.ts`](src/app.ts) on explicit paths (e.g. `.route('/api/wallets', createWalletRoutes(db, auth))`). See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md) for handler conventions.
 
 ## Database workflow
 
@@ -147,12 +160,17 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/health` | Health check with `SELECT 1` |
-| GET | `/api/hello?name=` | Smoke test |
-| GET | `/api/me` | Current session (`auth.api.getSession`) |
+| GET | `/api/me` | Current user (requires session) |
+| GET | `/api/wallets` | List wallets for authenticated user |
+| POST | `/api/wallets` | Create wallet (optional opening balance record) |
+| GET | `/api/wallets/:id` | Get wallet with recent records |
+| PATCH | `/api/wallets/:id` | Update wallet name |
+| DELETE | `/api/wallets/:id` | Delete wallet and cascade records |
 | GET, POST | `/api/auth/*` | better-auth handlers |
 
-CORS is applied under `/api/*` with credentials support for future cookie-based web auth.
+Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure. See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md).
+
+CORS is applied under `/api/*` with credentials support for cookie-based web auth.
 
 ## Workspace typing (`@kaget/web`)
 
@@ -192,4 +210,6 @@ The [`Dockerfile`](Dockerfile) is a multi-stage Bun build: install workspace dep
 
 - [Root README](../../README.md) — monorepo setup and tooling
 - [AGENTS.md](../../AGENTS.md) — conventions for API and full-stack work
+- [API Route Handlers](../../docs/developer-guide/api-route-handlers.md) — error handling, validation, logging
+- [API Testing](../../docs/developer-guide/testing.md) — PGlite, testClient, assertion helpers
 - [ADR-004](../../docs/developer-guide/adr/004-tooling-stack-migration.md) — Bun, Biome, Lefthook migration notes
