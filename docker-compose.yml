@@ -17,17 +17,31 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
+  migrate:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    restart: unless-stopped
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migrate
     env_file: .env
-    ports:
-      - "127.0.0.1:${API_PORT}:${API_PORT}"
     depends_on:
       db:
         condition: service_healthy
+    restart: no
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: runner
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:${API_PORT:-3000}:${API_PORT:-3000}"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:

@@ -1,7 +1,7 @@
 export default {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    'scope-enum': [2, 'always', ['deps', 'docs', 'components', 'libs', 'utils', 'e2e']],
+    'scope-enum': [2, 'always', ['deps', 'docs', 'e2e', 'web', 'api']],
     'type-enum': [
       2,
       'always',

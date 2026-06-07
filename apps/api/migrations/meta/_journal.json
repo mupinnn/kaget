@@ -8,6 +8,13 @@
       "when": 1780658960062,
       "tag": "0000_loud_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1717597020000,
+      "tag": "0001_wallets_and_records",
+      "breakpoints": true
     }
   ]
 }

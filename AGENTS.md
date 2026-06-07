@@ -192,6 +192,32 @@ export const walletsQueryOptions = (req = {}) =>
 export const useWalletsQuery = (req = {}) => useQuery(walletsQueryOptions(req));
 ```
 
+### Testing (`apps/api`)
+
+Integration tests use **PGlite** (in-process Postgres), **better-auth testUtils**, and **Hono testClient**:
+
+- **Database**: `setupTestDatabase()` creates PGlite, runs migrations, cleans up in `afterAll()`
+- **Auth**: `createTestAuth(db)` returns test-only `betterAuth` instance with `testUtils` plugin; use `test.createUser()` + `test.saveUser()` + `test.getAuthHeaders({ userId })` for sessions
+- **Routes**: `createTestApp(db, auth)` wraps `createApp` with test env; pass to `testClient()` for typed RPC
+- **Requests**: Use `client.api.{route}.$method({ ... }, { headers: authHeaders })` pattern; pass headers per-request for auth
+
+Full details in [docs/developer-guide/testing.md](docs/developer-guide/testing.md). Example:
+
+```ts
+const testDatabase = await setupTestDatabase()
+const { auth, test } = await createTestAuth(testDatabase.db)
+const user = test.createUser({ email: 'test@example.com' })
+await test.saveUser(user)
+const authHeaders = await test.getAuthHeaders({ userId: user.id })
+const client = testClient(createTestApp(testDatabase.db, auth))
+
+const res = await client.api.wallets.$post(
+  { json: { name: 'My Wallet', type: 'DIGITAL' } },
+  { headers: authHeaders }
+)
+expect(res.status).toBe(201)
+```
+
 ---
 
 ## Commands

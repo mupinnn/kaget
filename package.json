@@ -22,6 +22,7 @@
     "lint": "biome lint",
     "format": "biome check --write .",
     "prepare": "lefthook install",
+    "test": "turbo test",
     "release": "release-it"
   },
   "devDependencies": {
