@@ -7,6 +7,7 @@ import { createAuthMiddleware } from "./middleware/auth";
 import { createCorsMiddleware } from "./middleware/cors";
 import { createLoggerMiddleware } from "./middleware/logger";
 import { createMeRoutes } from "./routes/me";
+import { createRecordRoutes } from "./routes/records";
 import { createWalletRoutes } from "./routes/wallets";
 
 export function createApp(env: Env, db: Database, auth: Auth) {
@@ -17,6 +18,7 @@ export function createApp(env: Env, db: Database, auth: Auth) {
     .on(["POST", "GET"], "/api/auth/*", c => auth.handler(c.req.raw))
     .route("/api/me", createMeRoutes(auth))
     .route("/api/wallets", createWalletRoutes(db, auth))
+    .route("/api/records", createRecordRoutes(db, auth))
     .onError(onError);
 }
 

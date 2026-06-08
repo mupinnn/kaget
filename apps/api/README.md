@@ -121,6 +121,7 @@ apps/api/
 │   │   └── logger.ts         # Wide-event logging
 │   ├── routes/
 │   │   ├── me.ts
+│   │   ├── records.ts
 │   │   └── wallets.ts
 │   └── __tests__/            # Vitest suites + helpers
 ├── migrations/               # Drizzle SQL (committed)
@@ -166,6 +167,11 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | GET | `/api/wallets/:id` | Get wallet with recent records |
 | PATCH | `/api/wallets/:id` | Update wallet name |
 | DELETE | `/api/wallets/:id` | Delete wallet and cascade records |
+| GET | `/api/records` | List records (filter by `source_id`, `record_type`, dates; paginated) |
+| POST | `/api/records` | Create record with items; updates wallet balance |
+| GET | `/api/records/:id` | Get record with items and wallet source |
+| PATCH | `/api/records/:id` | Update record, sync items, recalculate balance |
+| DELETE | `/api/records/:id` | Delete record and reverse wallet balance |
 | GET, POST | `/api/auth/*` | better-auth handlers |
 
 Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure. See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md).

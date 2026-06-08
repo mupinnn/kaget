@@ -1,12 +1,13 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { nanoid } from "nanoid";
-import { z } from "zod";
+import * as z from "zod";
 import type { Database } from "../db/client";
-import { record, wallet } from "../db/schema";
+import { record, recordItem, wallet } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";
 import { AppError } from "../lib/error";
 import { ERROR_CODES } from "../lib/error-codes";
+import { applyWalletBalanceDelta, formatAmount, getBalanceDelta } from "../lib/records";
 import { validator } from "../lib/validator";
 
 const createWalletSchema = z.object({
@@ -62,20 +63,27 @@ export function createWalletRoutes(db: Database, _auth: Auth) {
           const recordId = nanoid();
           await tx.insert(record).values({
             id: recordId,
-            walletId,
-            type: "INCOME",
-            amount: initial_balance.toString(),
-            category: "Opening Balance",
-            note: "Initial balance",
-            date: now,
+            note: "Opening Balance",
+            amount: formatAmount(initial_balance),
+            sourceId: walletId,
+            sourceType: "WALLET",
+            recordType: "INCOME",
+            recordedAt: now,
             createdAt: now,
             updatedAt: now,
           });
 
-          await tx
-            .update(wallet)
-            .set({ balance: initial_balance.toString(), updatedAt: now })
-            .where(eq(wallet.id, walletId));
+          await tx.insert(recordItem).values({
+            id: nanoid(),
+            recordId,
+            note: "Opening Balance",
+            amount: formatAmount(initial_balance),
+            createdAt: now,
+            updatedAt: now,
+          });
+
+          const delta = getBalanceDelta("INCOME", initial_balance);
+          await applyWalletBalanceDelta(tx, walletId, delta, now);
         }
       });
 
@@ -95,21 +103,22 @@ export function createWalletRoutes(db: Database, _auth: Auth) {
 
       const walletData = await db.query.wallet.findFirst({
         where: and(eq(wallet.id, walletId), eq(wallet.userId, user.id)),
-        with: {
-          records: {
-            orderBy: (record, { desc }) => [desc(record.date)],
-            limit: 10,
-          },
-        },
       });
 
       if (!walletData) {
         throw new AppError(404, ERROR_CODES.WALLET.NOT_FOUND, "Wallet not found");
       }
 
-      wideEvent.wallet = { id: walletId, record_count: walletData.records.length };
+      const records = await db.query.record.findMany({
+        where: and(eq(record.sourceId, walletId), eq(record.sourceType, "WALLET")),
+        with: { items: true },
+        orderBy: [desc(record.recordedAt)],
+        limit: 10,
+      });
 
-      return c.json({ data: walletData });
+      wideEvent.wallet = { id: walletId, record_count: records.length };
+
+      return c.json({ data: { ...walletData, records } });
     })
 
     .patch("/:id", validator("json", updateWalletSchema), async c => {
@@ -145,22 +154,28 @@ export function createWalletRoutes(db: Database, _auth: Auth) {
 
       const walletData = await db.query.wallet.findFirst({
         where: and(eq(wallet.id, walletId), eq(wallet.userId, user.id)),
-        with: {
-          records: true,
-        },
       });
 
       if (!walletData) {
         throw new AppError(404, ERROR_CODES.WALLET.NOT_FOUND, "Wallet not found");
       }
 
+      const recordsToDelete = await db.query.record.findMany({
+        where: and(eq(record.sourceId, walletId), eq(record.sourceType, "WALLET")),
+        columns: { id: true },
+      });
+
       await db.transaction(async tx => {
-        await tx.delete(record).where(eq(record.walletId, walletId));
+        if (recordsToDelete.length > 0) {
+          await tx
+            .delete(record)
+            .where(and(eq(record.sourceId, walletId), eq(record.sourceType, "WALLET")));
+        }
 
         await tx.delete(wallet).where(eq(wallet.id, walletId));
       });
 
-      wideEvent.wallet = { id: walletId, deleted_record_count: walletData.records.length };
+      wideEvent.wallet = { id: walletId, deleted_record_count: recordsToDelete.length };
 
       return c.json({ data: walletData });
     });

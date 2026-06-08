@@ -15,6 +15,13 @@
       "when": 1717597020000,
       "tag": "0001_wallets_and_records",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1717597120000,
+      "tag": "0002_records_domain",
+      "breakpoints": true
     }
   ]
 }

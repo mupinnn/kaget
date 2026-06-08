@@ -75,13 +75,16 @@ describe("Wallets API", () => {
       const walletId = data?.id;
       const records = await testDatabase.db.query.record.findMany({
         where: rec => {
-          return eq(rec.walletId, walletId!);
+          return eq(rec.sourceId, walletId!);
         },
+        with: { items: true },
       });
       expect(records).toHaveLength(1);
-      expect(records[0].type).toBe("INCOME");
-      expect(records[0].category).toBe("Opening Balance");
+      expect(records[0].recordType).toBe("INCOME");
+      expect(records[0].note).toBe("Opening Balance");
       expect(records[0].amount).toBe("500.0000");
+      expect(records[0].items).toHaveLength(1);
+      expect(Number.parseFloat(records[0].items[0].amount)).toBe(500);
     });
 
     it("should reject invalid wallet name", async () => {
@@ -235,7 +238,7 @@ describe("Wallets API", () => {
 
       const records = await testDatabase.db.query.record.findMany({
         where: rec => {
-          return eq(rec.walletId, walletId!);
+          return eq(rec.sourceId, walletId!);
         },
       });
       expect(records).toHaveLength(0);
