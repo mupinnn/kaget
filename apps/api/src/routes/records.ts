@@ -6,6 +6,15 @@ import type { Database } from "../db/client";
 import { record, recordItem, wallet } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";
 import {
+  applyBudgetBalanceDelta,
+  archiveBudgetIfZero,
+  assertBudgetActive,
+  assertOwnedBudget,
+  validateGoalSpendable,
+} from "../lib/budgets";
+import { AppError } from "../lib/error";
+import { ERROR_CODES } from "../lib/error-codes";
+import {
   applyWalletBalanceDelta,
   assertOwnedWallet,
   formatAmount,
@@ -21,16 +30,26 @@ const recordItemInputSchema = z.object({
   amount: z.coerce.number().positive("Item amount must be positive"),
 });
 
-const createRecordSchema = z.object({
-  source_id: z.string().min(1),
-  source_type: z.literal("WALLET"),
-  record_type: z.enum(["INCOME", "EXPENSE"], {
-    message: "Record type must be INCOME or EXPENSE",
-  }),
-  recorded_at: z.coerce.date(),
-  note: z.string().max(500).trim().optional(),
-  items: z.array(recordItemInputSchema).min(1, "At least one item is required"),
-});
+const createRecordSchema = z
+  .object({
+    source_id: z.string().min(1),
+    source_type: z.enum(["WALLET", "BUDGET"]),
+    record_type: z.enum(["INCOME", "EXPENSE"], {
+      message: "Record type must be INCOME or EXPENSE",
+    }),
+    recorded_at: z.coerce.date(),
+    note: z.string().max(500).trim().optional(),
+    items: z.array(recordItemInputSchema).min(1, "At least one item is required"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.source_type === "BUDGET" && data.record_type !== "EXPENSE") {
+      ctx.addIssue({
+        code: "custom",
+        message: "Budget records must be EXPENSE",
+        path: ["record_type"],
+      });
+    }
+  });
 
 const updateRecordItemSchema = recordItemInputSchema.extend({
   id: z.string().min(1).optional(),
@@ -147,45 +166,90 @@ export function createRecordRoutes(db: Database, _auth: Auth) {
       const wideEvent = c.get("wideEvent");
       const body = c.req.valid("json");
 
-      await assertOwnedWallet(db, user.id, body.source_id);
-
       const recordId = nanoid();
       const now = new Date();
       const totalAmount = sumItemAmounts(body.items);
 
-      await db.transaction(async tx => {
-        await tx.insert(record).values({
-          id: recordId,
-          note: body.note ?? null,
-          amount: formatAmount(totalAmount),
-          sourceId: body.source_id,
-          sourceType: "WALLET",
-          recordType: body.record_type,
-          recordedAt: body.recorded_at,
-          createdAt: now,
-          updatedAt: now,
-        });
+      if (body.source_type === "WALLET") {
+        await assertOwnedWallet(db, user.id, body.source_id);
 
-        for (const item of body.items) {
-          await tx.insert(recordItem).values({
-            id: nanoid(),
-            recordId,
-            note: item.note ?? null,
-            amount: formatAmount(item.amount),
+        await db.transaction(async tx => {
+          await tx.insert(record).values({
+            id: recordId,
+            note: body.note ?? null,
+            amount: formatAmount(totalAmount),
+            sourceId: body.source_id,
+            sourceType: "WALLET",
+            recordType: body.record_type,
+            recordedAt: body.recorded_at,
             createdAt: now,
             updatedAt: now,
           });
+
+          for (const item of body.items) {
+            await tx.insert(recordItem).values({
+              id: nanoid(),
+              recordId,
+              note: item.note ?? null,
+              amount: formatAmount(item.amount),
+              createdAt: now,
+              updatedAt: now,
+            });
+          }
+
+          const delta = getBalanceDelta(body.record_type, totalAmount);
+          await applyWalletBalanceDelta(tx, body.source_id, delta, now);
+        });
+      } else {
+        const budgetData = await assertOwnedBudget(db, user.id, body.source_id);
+        assertBudgetActive(budgetData, "spend");
+        validateGoalSpendable(budgetData);
+
+        const budgetBalance = parseAmount(budgetData.balance);
+
+        if (totalAmount > budgetBalance) {
+          throw new AppError(
+            400,
+            ERROR_CODES.VALIDATION.INVALID_INPUT,
+            "Insufficient budget balance"
+          );
         }
 
-        const delta = getBalanceDelta(body.record_type, totalAmount);
-        await applyWalletBalanceDelta(tx, body.source_id, delta, now);
-      });
+        await db.transaction(async tx => {
+          await tx.insert(record).values({
+            id: recordId,
+            note: body.note ?? null,
+            amount: formatAmount(totalAmount),
+            sourceId: body.source_id,
+            sourceType: "BUDGET",
+            recordType: "EXPENSE",
+            recordedAt: body.recorded_at,
+            createdAt: now,
+            updatedAt: now,
+          });
+
+          for (const item of body.items) {
+            await tx.insert(recordItem).values({
+              id: nanoid(),
+              recordId,
+              note: item.note ?? null,
+              amount: formatAmount(item.amount),
+              createdAt: now,
+              updatedAt: now,
+            });
+          }
+
+          await applyBudgetBalanceDelta(tx, body.source_id, -totalAmount, now);
+          await archiveBudgetIfZero(tx, body.source_id, now);
+        });
+      }
 
       const createdRecord = await loadOwnedRecord(db, user.id, recordId);
 
       wideEvent.record = {
         id: recordId,
         source_id: body.source_id,
+        source_type: body.source_type,
         record_type: body.record_type,
       };
 
@@ -211,6 +275,11 @@ export function createRecordRoutes(db: Database, _auth: Auth) {
       const body = c.req.valid("json");
 
       const current = await loadOwnedRecord(db, user.id, recordId);
+
+      if (current.sourceType === "BUDGET") {
+        throw new AppError(404, ERROR_CODES.RECORD.NOT_FOUND, "Record does not exist");
+      }
+
       const now = new Date();
 
       const newSourceId = body.source_id ?? current.sourceId;
@@ -302,6 +371,11 @@ export function createRecordRoutes(db: Database, _auth: Auth) {
       const recordId = c.req.param("id");
 
       const current = await loadOwnedRecord(db, user.id, recordId);
+
+      if (current.sourceType === "BUDGET") {
+        throw new AppError(404, ERROR_CODES.RECORD.NOT_FOUND, "Record does not exist");
+      }
+
       const now = new Date();
       const amount = parseAmount(current.amount);
       const reversalDelta = -getBalanceDelta(current.recordType, amount);

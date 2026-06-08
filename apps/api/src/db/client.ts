@@ -14,3 +14,7 @@ export type Database = PgDatabase<
   typeof schema,
   ExtractTablesWithRelations<typeof schema>
 >;
+
+export type DbTransaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+export type DbExecutor = Database | DbTransaction;

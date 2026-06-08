@@ -3,8 +3,14 @@ import { testClient } from "hono/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ERROR_CODES } from "../lib/error-codes";
 import { createTestApp } from "./helpers/app";
-import { expectError, expectSuccess } from "./helpers/assertions";
+import {
+  assertBudgetRecord,
+  assertWalletRecord,
+  expectError,
+  expectSuccess,
+} from "./helpers/assertions";
 import { createTestAuth, getTestAuthHeaders } from "./helpers/auth";
+import { seedBudget } from "./helpers/budgets";
 import { setupTestDatabase } from "./helpers/db";
 
 describe("Records API", () => {
@@ -64,6 +70,7 @@ describe("Records API", () => {
       );
 
       const { data } = await expectSuccess(res, 201);
+      assertWalletRecord(data);
       expect(data.amount).toBe("500.0000");
       expect(data.items).toHaveLength(2);
       expect(Number.parseFloat(data.wallet.balance)).toBe(1500);
@@ -92,6 +99,7 @@ describe("Records API", () => {
       );
 
       const { data } = await expectSuccess(res, 201);
+      assertWalletRecord(data);
       expect(data.amount).toBe("150.0000");
       expect(Number.parseFloat(data.wallet.balance)).toBe(1350);
     });
@@ -189,6 +197,7 @@ describe("Records API", () => {
         { headers: authHeaders }
       );
       const { data: created } = await expectSuccess(createRes, 201);
+      assertWalletRecord(created);
 
       const getRes = await client.api.records[":id"].$get(
         { param: { id: created.id } },
@@ -196,6 +205,7 @@ describe("Records API", () => {
       );
 
       const { data } = await expectSuccess(getRes, 200);
+      assertWalletRecord(data);
       expect(data.id).toBe(created.id);
       expect(data.wallet.id).toBe(walletId);
       expect(data.items).toHaveLength(1);
@@ -226,6 +236,7 @@ describe("Records API", () => {
         { headers: authHeaders }
       );
       const { data: created } = await expectSuccess(createRes, 201);
+      assertWalletRecord(created);
       const balanceBefore = created.wallet.balance;
 
       const updateRes = await client.api.records[":id"].$patch(
@@ -237,6 +248,7 @@ describe("Records API", () => {
       );
 
       const { data } = await expectSuccess(updateRes, 200);
+      assertWalletRecord(data);
       expect(data.note).toBe("Updated note");
       expect(data.wallet.balance).toBe(balanceBefore);
     });
@@ -255,6 +267,7 @@ describe("Records API", () => {
         { headers: authHeaders }
       );
       const { data: created } = await expectSuccess(createRes, 201);
+      assertWalletRecord(created);
       const balanceBefore = Number.parseFloat(created.wallet.balance);
 
       const updateRes = await client.api.records[":id"].$patch(
@@ -268,6 +281,7 @@ describe("Records API", () => {
       );
 
       const { data } = await expectSuccess(updateRes, 200);
+      assertWalletRecord(data);
       expect(data.amount).toBe("60.0000");
       expect(Number.parseFloat(data.wallet.balance)).toBe(balanceBefore - 20);
     });
@@ -286,6 +300,7 @@ describe("Records API", () => {
         { headers: authHeaders }
       );
       const { data: created } = await expectSuccess(createRes, 201);
+      assertWalletRecord(created);
       const balanceBefore = Number.parseFloat(created.wallet.balance);
 
       const updateRes = await client.api.records[":id"].$patch(
@@ -297,6 +312,7 @@ describe("Records API", () => {
       );
 
       const { data } = await expectSuccess(updateRes, 200);
+      assertWalletRecord(data);
       expect(data.recordType).toBe("INCOME");
       expect(Number.parseFloat(data.wallet.balance)).toBe(balanceBefore + 60);
     });
@@ -327,6 +343,7 @@ describe("Records API", () => {
         { headers: authHeaders }
       );
       const { data: created } = await expectSuccess(createRes, 201);
+      assertWalletRecord(created);
 
       const sourceWalletBefore = Number.parseFloat(created.wallet.balance);
       const destWalletBefore = Number.parseFloat(otherWallet!.balance);
@@ -340,6 +357,7 @@ describe("Records API", () => {
       );
 
       const { data } = await expectSuccess(updateRes, 200);
+      assertWalletRecord(data);
       expect(data.sourceId).toBe(otherWallet!.id);
       expect(Number.parseFloat(data.wallet.balance)).toBe(destWalletBefore + 75);
 
@@ -405,6 +423,7 @@ describe("Records API", () => {
         { headers: authHeaders }
       );
       const { data: created } = await expectSuccess(createRes, 201);
+      assertWalletRecord(created);
       const balanceBefore = Number.parseFloat(created.wallet.balance);
 
       const deleteRes = await client.api.records[":id"].$delete(
@@ -434,6 +453,163 @@ describe("Records API", () => {
       );
 
       await expectError(res, ERROR_CODES.RECORD.NOT_FOUND, 404);
+    });
+  });
+
+  describe("POST /records (BUDGET)", () => {
+    it("should create an expense from budget and decrease balance", async () => {
+      const budgetData = await seedBudget(testDatabase.db, {
+        walletId,
+        name: "Spend Budget",
+        balance: 100,
+        totalBalance: 100,
+      });
+
+      const res = await client.api.records.$post(
+        {
+          json: {
+            source_id: budgetData.id,
+            source_type: "BUDGET",
+            record_type: "EXPENSE",
+            recorded_at: "2026-05-01T12:00:00.000Z",
+            note: "Lunch",
+            items: [{ note: "Meal", amount: 25 }],
+          },
+        },
+        { headers: authHeaders }
+      );
+
+      const { data } = await expectSuccess(res, 201);
+      assertBudgetRecord(data);
+      expect(data.sourceType).toBe("BUDGET");
+      expect(data.amount).toBe("25.0000");
+      expect(data.budget.balance).toBe("75.0000");
+    });
+
+    it("should auto-archive budget when spend depletes balance to zero", async () => {
+      const budgetData = await seedBudget(testDatabase.db, {
+        walletId,
+        name: "Deplete Budget",
+        balance: 30,
+        totalBalance: 30,
+      });
+
+      await client.api.records.$post(
+        {
+          json: {
+            source_id: budgetData.id,
+            source_type: "BUDGET",
+            record_type: "EXPENSE",
+            recorded_at: "2026-05-02T12:00:00.000Z",
+            items: [{ amount: 30 }],
+          },
+        },
+        { headers: authHeaders }
+      );
+
+      const updated = await testDatabase.db.query.budget.findFirst({
+        where: (b, { eq: eqFn }) => eqFn(b.id, budgetData.id),
+      });
+      expect(Number.parseFloat(updated!.balance)).toBe(0);
+      expect(updated!.archivedAt).not.toBeNull();
+    });
+
+    it("should reject spend from unreached GOAL", async () => {
+      const goal = await seedBudget(testDatabase.db, {
+        walletId,
+        name: "Unreached Goal",
+        balance: 50,
+        totalBalance: 200,
+        budgetType: "GOAL",
+      });
+
+      const res = await client.api.records.$post(
+        {
+          json: {
+            source_id: goal.id,
+            source_type: "BUDGET",
+            record_type: "EXPENSE",
+            recorded_at: "2026-05-03T12:00:00.000Z",
+            items: [{ amount: 10 }],
+          },
+        },
+        { headers: authHeaders }
+      );
+
+      await expectError(res, ERROR_CODES.VALIDATION.INVALID_INPUT, 400);
+    });
+
+    it("should reject spend from archived budget", async () => {
+      const archived = await seedBudget(testDatabase.db, {
+        walletId,
+        name: "Archived Spend",
+        balance: 0,
+        totalBalance: 100,
+        archivedAt: new Date(),
+      });
+
+      const res = await client.api.records.$post(
+        {
+          json: {
+            source_id: archived.id,
+            source_type: "BUDGET",
+            record_type: "EXPENSE",
+            recorded_at: "2026-05-04T12:00:00.000Z",
+            items: [{ amount: 10 }],
+          },
+        },
+        { headers: authHeaders }
+      );
+
+      await expectError(res, ERROR_CODES.VALIDATION.INVALID_INPUT, 400);
+    });
+
+    it("should reject spend exceeding budget balance", async () => {
+      const budgetData = await seedBudget(testDatabase.db, {
+        walletId,
+        name: "Low Balance",
+        balance: 10,
+        totalBalance: 100,
+      });
+
+      const res = await client.api.records.$post(
+        {
+          json: {
+            source_id: budgetData.id,
+            source_type: "BUDGET",
+            record_type: "EXPENSE",
+            recorded_at: "2026-05-05T12:00:00.000Z",
+            items: [{ amount: 20 }],
+          },
+        },
+        { headers: authHeaders }
+      );
+
+      await expectError(res, ERROR_CODES.VALIDATION.INVALID_INPUT, 400);
+    });
+
+    it("should reject non-expense record type for BUDGET source", async () => {
+      const budgetData = await seedBudget(testDatabase.db, {
+        walletId,
+        name: "Income Attempt",
+        balance: 100,
+        totalBalance: 100,
+      });
+
+      const res = await client.api.records.$post(
+        {
+          json: {
+            source_id: budgetData.id,
+            source_type: "BUDGET",
+            record_type: "INCOME",
+            recorded_at: "2026-05-06T12:00:00.000Z",
+            items: [{ amount: 10 }],
+          },
+        },
+        { headers: authHeaders }
+      );
+
+      await expectError(res, ERROR_CODES.VALIDATION.INVALID_INPUT, 400);
     });
   });
 

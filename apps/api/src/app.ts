@@ -6,6 +6,7 @@ import { onError } from "./lib/error";
 import { createAuthMiddleware } from "./middleware/auth";
 import { createCorsMiddleware } from "./middleware/cors";
 import { createLoggerMiddleware } from "./middleware/logger";
+import { createBudgetRoutes } from "./routes/budgets";
 import { createMeRoutes } from "./routes/me";
 import { createRecordRoutes } from "./routes/records";
 import { createTransferRoutes } from "./routes/transfers";
@@ -19,6 +20,7 @@ export function createApp(env: Env, db: Database, auth: Auth) {
     .on(["POST", "GET"], "/api/auth/*", c => auth.handler(c.req.raw))
     .route("/api/me", createMeRoutes(auth))
     .route("/api/wallets", createWalletRoutes(db, auth))
+    .route("/api/budgets", createBudgetRoutes(db, auth))
     .route("/api/records", createRecordRoutes(db, auth))
     .route("/api/transfers", createTransferRoutes(db, auth))
     .onError(onError);

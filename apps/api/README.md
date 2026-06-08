@@ -168,12 +168,20 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | GET | `/api/wallets/:id` | Get wallet with recent records |
 | PATCH | `/api/wallets/:id` | Update wallet name |
 | DELETE | `/api/wallets/:id` | Delete wallet; cascade owned records and transfers |
+| GET | `/api/budgets` | List budgets (filter by `wallet_id`, `budget_type`, `archived`) |
+| POST | `/api/budgets` | Create budget (BUDGET or GOAL); funds via transfer pair |
+| POST | `/api/budgets/bulk` | Bulk create budgets (grouped wallet deduction) |
+| GET | `/api/budgets/:id` | Get budget with computed fields (`usedAmount`, `isReached`, …) |
+| GET | `/api/budgets/:id/records` | List expense records for a budget (paginated) |
+| POST | `/api/budgets/:id/add-funds` | Add funds / contribute (wallet → budget transfer) |
+| POST | `/api/budgets/:id/refund` | Refund / release (budget → wallet transfer; auto-archive at zero) |
+| POST | `/api/budgets/:id/reactivate` | Reactivate archived budget (`use_same_amount` or new `amount`) |
 | GET | `/api/transfers` | List transfers (filter by `account_id`, `account_type`, `type`, dates; paginated) |
 | POST | `/api/transfers` | Create transfer pair (wallet/budget); updates balances atomically |
 | GET | `/api/transfers/:id` | Get transfer with paired leg (`ref_id`) |
 | GET | `/api/records` | List records (filter by `source_id`, `record_type`, dates; paginated) |
-| POST | `/api/records` | Create record with items; updates wallet balance |
-| GET | `/api/records/:id` | Get record with items and wallet source |
+| POST | `/api/records` | Create record with items; updates wallet or budget balance (`source_type`: `WALLET` or `BUDGET`; budget = EXPENSE only) |
+| GET | `/api/records/:id` | Get record with items and source (`wallet` or `budget`) |
 | PATCH | `/api/records/:id` | Update record, sync items, recalculate balance |
 | DELETE | `/api/records/:id` | Delete record and reverse wallet balance |
 | GET, POST | `/api/auth/*` | better-auth handlers |

@@ -1,6 +1,6 @@
 import { and, eq, ne } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import type { Database } from "../db/client";
+import type { Database, DbExecutor } from "../db/client";
 import { record, recordItem, type sourceTypeEnum, transfer, wallet } from "../db/schema";
 import {
   applyBudgetBalanceDelta,
@@ -26,7 +26,7 @@ export type ResolvedAccount = {
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 
 export async function resolveAccount(
-  db: Database,
+  db: DbExecutor,
   userId: string,
   id: string,
   type: SourceType
