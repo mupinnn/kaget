@@ -38,8 +38,8 @@ When you delete a wallet, **all associated data is permanently removed**:
 | Data                  | What Happens                                               |
 | --------------------- | ---------------------------------------------------------- |
 | **Records**           | All income and expense records for this wallet are deleted |
-| **Transfers**         | All transfers involving this wallet are deleted            |
-| **Budget references** | Any budgets linked to this wallet are updated              |
+| **Transfers**         | Transfers from this wallet's perspective are deleted; the other party may still see their side (with this wallet's name preserved) |
+| **Budgets**           | All budgets linked to this wallet are deleted              |
 
 > **⚠️ Warning:** This action cannot be undone. Consider exporting your data before deleting a wallet.
 

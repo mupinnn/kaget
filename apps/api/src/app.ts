@@ -8,6 +8,7 @@ import { createCorsMiddleware } from "./middleware/cors";
 import { createLoggerMiddleware } from "./middleware/logger";
 import { createMeRoutes } from "./routes/me";
 import { createRecordRoutes } from "./routes/records";
+import { createTransferRoutes } from "./routes/transfers";
 import { createWalletRoutes } from "./routes/wallets";
 
 export function createApp(env: Env, db: Database, auth: Auth) {
@@ -19,6 +20,7 @@ export function createApp(env: Env, db: Database, auth: Auth) {
     .route("/api/me", createMeRoutes(auth))
     .route("/api/wallets", createWalletRoutes(db, auth))
     .route("/api/records", createRecordRoutes(db, auth))
+    .route("/api/transfers", createTransferRoutes(db, auth))
     .onError(onError);
 }
 

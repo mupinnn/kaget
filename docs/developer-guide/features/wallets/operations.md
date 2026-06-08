@@ -8,7 +8,7 @@ Wallet operations follow these principles:
 
 - Balance is updated atomically with transactions, never directly
 - Initial balance is stored as an "Opening Balance" record
-- Deletion cascades to all related records and transfers
+- Deletion cascades to owned records and transfers (`source_id` = wallet)
 
 ## Create Wallet
 
@@ -213,25 +213,26 @@ Returns all wallets for the authenticated user.
 
 All operations happen in a single transaction:
 
-| Step | Action                                                 | Rationale                                  |
-| ---- | ------------------------------------------------------ | ------------------------------------------ |
-| 1    | Delete transfers where wallet is source or destination | Transfers require both wallets to exist    |
-| 2    | Delete all records for this wallet                     | Records belong to wallet                   |
-| 3    | Remove wallet references from budgets                  | Budgets can exist without wallet reference |
-| 4    | Delete wallet                                          | Main entity                                |
+| Step | Action                                                              | Rationale                                       |
+| ---- | ------------------------------------------------------------------- | ----------------------------------------------- |
+| 1    | Delete transfers where `source_id = wallet.id` and `source_type = WALLET` | Owner-leg model — counterparty legs preserved |
+| 2    | Delete all records for this wallet                                  | Records belong to wallet as `source_id`         |
+| 3    | Delete budgets where `wallet_id = wallet.id`                        | Budgets cascade with parent wallet              |
+| 4    | Delete wallet                                                       | Main entity                                     |
 
-### Impact on Other Wallets
+### Impact on Counterparties
 
 When deleting a wallet involved in transfers:
 
-- The transfer is deleted entirely
-- The **other wallet's balance is recalculated** (transfer amount restored)
+- Only this wallet's **owned** transfer legs are deleted
+- Counterparty legs (e.g. receiver's INCOMING) are **preserved** with name snapshots
+- Counterparty balances are **not** recalculated
 
 Example:
 
 - Wallet A has $100, Wallet B has $50
 - Transfer $20 from A to B → A=$80, B=$70
-- Delete Wallet A → Transfer deleted → B recalculates → B=$50
+- Delete Wallet A → A's OUTGOING deleted → B's INCOMING preserved → B stays at $70
 
 ### Error Cases
 
@@ -246,19 +247,30 @@ For data integrity verification or recovery, balance can be recalculated from re
 
 ```sql
 SELECT
-  COALESCE(SUM(
-    CASE
-      WHEN type = 'INCOME' THEN amount
-      WHEN type = 'EXPENSE' THEN -amount
-    END
+  COALESCE((
+    SELECT SUM(
+      CASE
+        WHEN record_type = 'INCOME' THEN amount
+        WHEN record_type = 'EXPENSE' THEN -amount
+        ELSE 0
+      END
+    )
+    FROM record
+    WHERE source_id = w.id AND source_type = 'WALLET'
   ), 0) +
   COALESCE((
-    SELECT SUM(CASE WHEN to_wallet_id = w.id THEN amount ELSE -amount END)
-    FROM transfers
-    WHERE from_wallet_id = w.id OR to_wallet_id = w.id
-  ), 0) as calculated_balance
-FROM records r
-WHERE r.wallet_id = w.id
+    SELECT SUM(
+      CASE
+        WHEN type = 'OUTGOING' THEN -amount - fee
+        WHEN type = 'INCOMING' THEN amount
+        ELSE 0
+      END
+    )
+    FROM transfer
+    WHERE source_id = w.id AND source_type = 'WALLET'
+  ), 0) AS calculated_balance
+FROM wallet w
+WHERE w.id = :wallet_id
 ```
 
 This should match `wallet.balance`. If not, trigger investigation or repair.

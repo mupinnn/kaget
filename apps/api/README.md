@@ -122,6 +122,7 @@ apps/api/
 │   ├── routes/
 │   │   ├── me.ts
 │   │   ├── records.ts
+│   │   ├── transfers.ts
 │   │   └── wallets.ts
 │   └── __tests__/            # Vitest suites + helpers
 ├── migrations/               # Drizzle SQL (committed)
@@ -166,7 +167,10 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | POST | `/api/wallets` | Create wallet (optional opening balance record) |
 | GET | `/api/wallets/:id` | Get wallet with recent records |
 | PATCH | `/api/wallets/:id` | Update wallet name |
-| DELETE | `/api/wallets/:id` | Delete wallet and cascade records |
+| DELETE | `/api/wallets/:id` | Delete wallet; cascade owned records and transfers |
+| GET | `/api/transfers` | List transfers (filter by `account_id`, `account_type`, `type`, dates; paginated) |
+| POST | `/api/transfers` | Create transfer pair (wallet/budget); updates balances atomically |
+| GET | `/api/transfers/:id` | Get transfer with paired leg (`ref_id`) |
 | GET | `/api/records` | List records (filter by `source_id`, `record_type`, dates; paginated) |
 | POST | `/api/records` | Create record with items; updates wallet balance |
 | GET | `/api/records/:id` | Get record with items and wallet source |

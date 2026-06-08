@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { nanoid } from "nanoid";
 import * as z from "zod";
 import type { Database } from "../db/client";
-import { record, recordItem, wallet } from "../db/schema";
+import { record, recordItem, transfer, wallet } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";
 import { AppError } from "../lib/error";
 import { ERROR_CODES } from "../lib/error-codes";
@@ -165,6 +165,11 @@ export function createWalletRoutes(db: Database, _auth: Auth) {
         columns: { id: true },
       });
 
+      const transfersToDelete = await db.query.transfer.findMany({
+        where: and(eq(transfer.sourceId, walletId), eq(transfer.sourceType, "WALLET")),
+        columns: { id: true },
+      });
+
       await db.transaction(async tx => {
         if (recordsToDelete.length > 0) {
           await tx
@@ -172,10 +177,20 @@ export function createWalletRoutes(db: Database, _auth: Auth) {
             .where(and(eq(record.sourceId, walletId), eq(record.sourceType, "WALLET")));
         }
 
+        if (transfersToDelete.length > 0) {
+          await tx
+            .delete(transfer)
+            .where(and(eq(transfer.sourceId, walletId), eq(transfer.sourceType, "WALLET")));
+        }
+
         await tx.delete(wallet).where(eq(wallet.id, walletId));
       });
 
-      wideEvent.wallet = { id: walletId, deleted_record_count: recordsToDelete.length };
+      wideEvent.wallet = {
+        id: walletId,
+        deleted_record_count: recordsToDelete.length,
+        deleted_transfer_count: transfersToDelete.length,
+      };
 
       return c.json({ data: walletData });
     });
