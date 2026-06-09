@@ -10,6 +10,7 @@ import { createBudgetRoutes } from "./routes/budgets";
 import { createDebtLoanRoutes } from "./routes/debt-loans";
 import { createMeRoutes } from "./routes/me";
 import { createRecordRoutes } from "./routes/records";
+import { createSettingsRoutes } from "./routes/settings";
 import { createTransferRoutes } from "./routes/transfers";
 import { createWalletRoutes } from "./routes/wallets";
 
@@ -25,6 +26,7 @@ export function createApp(env: Env, db: Database, auth: Auth) {
     .route("/api/records", createRecordRoutes(db, auth))
     .route("/api/transfers", createTransferRoutes(db, auth))
     .route("/api/debts-loans", createDebtLoanRoutes(db, auth))
+    .route("/api/settings", createSettingsRoutes(db, auth))
     .onError(onError);
 }
 

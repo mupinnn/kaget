@@ -36,6 +36,13 @@
       "when": 1717597320000,
       "tag": "0004_debt_loans",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1717597420000,
+      "tag": "0005_settings",
+      "breakpoints": true
     }
   ]
 }

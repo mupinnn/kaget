@@ -123,6 +123,7 @@ apps/api/
 │   │   ├── me.ts
 │   │   ├── records.ts
 │   │   ├── debt-loans.ts
+│   │   ├── settings.ts
 │   │   ├── transfers.ts
 │   │   └── wallets.ts
 │   └── __tests__/            # Vitest suites + helpers
@@ -191,6 +192,9 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | PATCH | `/api/debts-loans/:id` | Update pending debt/loan (`note`, `other_party`, `amount`, `occurred_at`) |
 | POST | `/api/debts-loans/:id/resolve` | Mark debt as paid or loan as collected |
 | DELETE | `/api/debts-loans/:id` | Delete debt/loan and reverse balances |
+| GET | `/api/settings` | Get app settings (currency preference) |
+| POST | `/api/settings` | Create app settings (`409` if already exists) |
+| PATCH | `/api/settings` | Update `currencyCode` |
 | GET, POST | `/api/auth/*` | better-auth handlers |
 
 Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure. See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md).
