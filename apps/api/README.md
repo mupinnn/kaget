@@ -122,6 +122,7 @@ apps/api/
 │   ├── routes/
 │   │   ├── me.ts
 │   │   ├── records.ts
+│   │   ├── debt-loans.ts
 │   │   ├── transfers.ts
 │   │   └── wallets.ts
 │   └── __tests__/            # Vitest suites + helpers
@@ -167,7 +168,7 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | POST | `/api/wallets` | Create wallet (optional opening balance record) |
 | GET | `/api/wallets/:id` | Get wallet with recent records |
 | PATCH | `/api/wallets/:id` | Update wallet name |
-| DELETE | `/api/wallets/:id` | Delete wallet; cascade owned records and transfers |
+| DELETE | `/api/wallets/:id` | Delete wallet; cascade owned records, transfers, and debt/loans |
 | GET | `/api/budgets` | List budgets (filter by `wallet_id`, `budget_type`, `archived`) |
 | POST | `/api/budgets` | Create budget (BUDGET or GOAL); funds via transfer pair |
 | POST | `/api/budgets/bulk` | Bulk create budgets (grouped wallet deduction) |
@@ -184,6 +185,12 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | GET | `/api/records/:id` | Get record with items and source (`wallet` or `budget`) |
 | PATCH | `/api/records/:id` | Update record, sync items, recalculate balance |
 | DELETE | `/api/records/:id` | Delete record and reverse wallet balance |
+| GET | `/api/debts-loans` | List debts/loans (filter by `type`, `status`, `wallet_id`; paginated) |
+| POST | `/api/debts-loans` | Create debt or loan (`type`: `DEBT` or `LOAN`) |
+| GET | `/api/debts-loans/:id` | Get debt/loan with linked records and wallet |
+| PATCH | `/api/debts-loans/:id` | Update pending debt/loan (`note`, `other_party`, `amount`, `occurred_at`) |
+| POST | `/api/debts-loans/:id/resolve` | Mark debt as paid or loan as collected |
+| DELETE | `/api/debts-loans/:id` | Delete debt/loan and reverse balances |
 | GET, POST | `/api/auth/*` | better-auth handlers |
 
 Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure. See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md).

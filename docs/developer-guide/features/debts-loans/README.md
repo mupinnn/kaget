@@ -14,7 +14,7 @@ Each debt/loan creates records that affect wallet balances.
 ## Contents
 
 - [Data Model](./data-model.md) — Schema and relationships
-- [Operations](./operations.md) — CRUD operations and business logic
+- [Operations](./operations.md) — CRUD operations, business logic, and REST API
 
 ## Key Concepts
 
@@ -48,6 +48,10 @@ Each DebtLoan links to:
 
 1. `initial_record_id` — Created when debt/loan is created
 2. `resolved_record_id` — Created when marked as done
+
+### Edit Behavior
+
+Pending debts and loans can be updated (`note`, `other_party`, `amount`, `occurred_at`). Amount changes recalculate wallet balance and sync the initial record. Resolved debts and loans are immutable.
 
 ### Delete Behavior
 

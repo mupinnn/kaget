@@ -55,6 +55,20 @@ Each loan shows:
 - Date lent
 - Status (pending/resolved)
 
+## Editing a Loan
+
+You can edit a pending loan before marking it as collected:
+
+1. Find the loan in your list
+2. Tap the loan to open details
+3. Tap **Edit**
+4. Update amount, who you lent to, date, or note
+5. Tap **Save**
+
+> **Note:** Resolved loans cannot be edited. To change a resolved loan, delete it and create a new one.
+
+Increasing the loan amount requires sufficient wallet balance.
+
 ## Collecting a Loan
 
 When someone pays you back:

@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { nanoid } from "nanoid";
 import * as z from "zod";
 import type { Database } from "../db/client";
-import { record, recordItem, transfer, wallet } from "../db/schema";
+import { debtLoan, record, recordItem, transfer, wallet } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";
 import { AppError } from "../lib/error";
 import { ERROR_CODES } from "../lib/error-codes";
@@ -170,7 +170,18 @@ export function createWalletRoutes(db: Database, _auth: Auth) {
         columns: { id: true },
       });
 
+      const debtLoansToDelete = await db.query.debtLoan.findMany({
+        where: and(eq(debtLoan.sourceId, walletId), eq(debtLoan.sourceType, "WALLET")),
+        columns: { id: true },
+      });
+
       await db.transaction(async tx => {
+        if (debtLoansToDelete.length > 0) {
+          await tx
+            .delete(debtLoan)
+            .where(and(eq(debtLoan.sourceId, walletId), eq(debtLoan.sourceType, "WALLET")));
+        }
+
         if (recordsToDelete.length > 0) {
           await tx
             .delete(record)
@@ -190,6 +201,7 @@ export function createWalletRoutes(db: Database, _auth: Auth) {
         id: walletId,
         deleted_record_count: recordsToDelete.length,
         deleted_transfer_count: transfersToDelete.length,
+        deleted_debt_loan_count: debtLoansToDelete.length,
       };
 
       return c.json({ data: walletData });

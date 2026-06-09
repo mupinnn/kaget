@@ -55,6 +55,20 @@ Each debt shows:
 - Date borrowed
 - Status (pending/resolved)
 
+## Editing a Debt
+
+You can edit a pending debt before marking it as paid:
+
+1. Find the debt in your list
+2. Tap the debt to open details
+3. Tap **Edit**
+4. Update amount, who you borrowed from, date, or note
+5. Tap **Save**
+
+> **Note:** Resolved debts cannot be edited. To change a resolved debt, delete it and create a new one.
+
+Changing the amount updates your wallet balance to reflect the difference.
+
 ## Marking a Debt as Paid
 
 When you repay someone:
