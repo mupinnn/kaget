@@ -5,6 +5,11 @@ import { ERROR_CODES } from "../lib/error-codes";
 
 export function createAuthMiddleware(auth: Auth) {
   return createMiddleware(async (c, next) => {
+    if (c.req.path.startsWith("/api/auth")) {
+      await next();
+      return;
+    }
+
     const session = await auth.api.getSession({
       headers: c.req.raw.headers,
     });
