@@ -23,6 +23,7 @@
     "format": "biome check --write .",
     "prepare": "lefthook install",
     "test": "turbo test",
+    "test:e2e": "turbo test:e2e --filter @kaget/web",
     "release": "release-it"
   },
   "devDependencies": {

@@ -1,8 +1,10 @@
 # API Testing Conventions
 
-Testing best practices and setup for the KaGet API (`apps/api`). For route handler patterns (errors, validation, logging), see [API Route Handlers](./api-route-handlers.md).
+Testing best practices and setup for the KaGet API (`apps/api`) and web E2E tests (`apps/web`). For route handler patterns (errors, validation, logging), see [API Route Handlers](./api-route-handlers.md).
 
 ## Overview
+
+### API (`apps/api`)
 
 The API test suite uses:
 
@@ -14,7 +16,74 @@ The API test suite uses:
 
 The reference test suite is [`apps/api/src/__tests__/wallets.test.ts`](../../apps/api/src/__tests__/wallets.test.ts).
 
-## Setup
+### Web E2E (`apps/web`)
+
+End-to-end tests use:
+
+- **Playwright** — browser automation (Chromium only in v1)
+- **Page Object Model** — locators and user actions live under `e2e/pages/`; specs orchestrate flows only
+- **Custom fixtures** — inject page objects via `e2e/fixtures/test.ts`
+- **Auth setup project** — onboarding-complete user saved to `e2e/.auth/user.json` for authenticated smoke tests
+
+Layout:
+
+```
+apps/web/e2e/
+├── auth.setup.ts          # Playwright setup project (storageState)
+├── fixtures/test.ts       # Extended test with page object fixtures
+├── helpers/               # test-user factory, env constants
+├── pages/                 # Page Object Models
+└── specs/                 # Test specs (auth, onboarding, navigation)
+```
+
+#### Prerequisites
+
+E2E tests exercise the full stack (Postgres + API + web):
+
+1. Start Postgres: `docker compose up -d db`
+2. Migrate: `bun run --env-file=.env --filter @kaget/api db:migrate`
+3. Start API: `bun run --env-file=.env --filter @kaget/api dev`
+
+Playwright starts the Vite dev server automatically via `webServer` in [`playwright.config.ts`](../../apps/web/playwright.config.ts).
+
+#### Running E2E locally
+
+From `apps/web`:
+
+```bash
+bunx playwright install chromium   # first run only; use --with-deps on Ubuntu/CI
+
+bun run test:e2e
+bun run test:e2e:ui                # interactive UI mode
+bun run test:e2e:headed          # visible browser
+bun run test:e2e:report          # open HTML report
+```
+
+From the repository root:
+
+```bash
+bun run test:e2e
+```
+
+**Nix dev shell:** The flake sets `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` and related env vars. Run E2E inside `nix develop` (or `direnv`) so Playwright uses the Nix-provided Chromium binary.
+
+#### POM conventions
+
+- Add a new `*.page.ts` under `e2e/pages/` for each screen or layout region
+- Extend `e2e/fixtures/test.ts` to inject new page objects into specs
+- Prefer `getByRole` / `getByLabel` selectors; reuse existing `data-testid`s where present (onboarding, list pages)
+- Add `data-testid` only when role/label selectors are unstable — do not scatter them across the app preemptively
+
+#### CI re-enable checklist
+
+Before removing `if: false` from [`.github/workflows/e2e.yml`](../../.github/workflows/e2e.yml):
+
+- [ ] Smoke suite passes locally 3+ consecutive runs
+- [ ] Postgres service + API startup steps wired in the workflow
+- [ ] `bunx playwright install --with-deps chromium` runs in CI
+- [ ] Playwright report artifact uploads on failure
+
+## API setup
 
 ### Database (`setupTestDatabase`)
 

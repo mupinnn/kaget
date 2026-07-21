@@ -10,7 +10,11 @@
     "check-types": "tsc --noEmit",
     "gen:routes": "tsr generate",
     "gen:pwa-assets": "pwa-assets-generator --preset minimal-2023 public/kaget-logo.svg",
-    "ui:add": "bunx shadcn@latest add"
+    "ui:add": "bunx shadcn@latest add",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.1.0",
@@ -43,6 +47,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.3.0",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/router-cli": "^1.167.13",

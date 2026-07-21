@@ -35,3 +35,6 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+apps/web/e2e/.auth/
+apps/web/test-results/
+apps/web/playwright-report/
