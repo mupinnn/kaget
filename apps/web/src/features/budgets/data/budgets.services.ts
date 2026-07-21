@@ -1,274 +1,94 @@
-import { nanoid } from "nanoid";
-import { match } from "ts-pattern";
-import { getSourceOrDestinationById } from "@/features/records/data/records.services";
-import { commitTransfer } from "@/features/transfers/data/transfers.services";
-import type { Wallet } from "@/features/wallets/data/wallets.schemas";
-import { getWalletById } from "@/features/wallets/data/wallets.services";
-import { db } from "@/libs/db.lib";
-import { formatCurrency } from "@/utils/common.util";
-import { successResponse } from "@/utils/service.util";
-import {
-  type Budget,
-  BudgetSchema,
-  type BudgetsRequestQuery,
-  BudgetsRequestQuerySchema,
-  type CreateBudget,
-  CreateBudgetSchema,
-  type TransformedBudgetWithRelations,
-  TransformedBudgetWithRelationsSchema,
-  type UpdateBudgetBalance,
-  UpdateBudgetBalanceSchema,
+import { getWalletList } from "@/features/wallets/data/wallets.services";
+import { api } from "@/libs/api.lib";
+import { unwrap } from "@/utils/api.util";
+import type {
+  BudgetsRequestQuery,
+  BudgetWithWallet,
+  CreateBudget,
+  UpdateBudgetBalance,
 } from "./budgets.schemas";
 
-export async function getBudgetById(budgetId: string) {
-  const storedBudgetById = await db.budget.get(budgetId);
+async function attachWallets<T extends { walletId: string }>(
+  budgets: T[],
+  wallets?: Awaited<ReturnType<typeof getWalletList>>
+): Promise<Array<T & { wallet: Awaited<ReturnType<typeof getWalletList>>[number] }>> {
+  const resolvedWallets = wallets ?? (await getWalletList());
+  const walletMap = new Map(resolvedWallets.map(wallet => [wallet.id, wallet]));
 
-  if (!storedBudgetById) throw new Error("Budget not found");
+  return budgets.map(budget => {
+    const wallet = walletMap.get(budget.walletId);
 
-  return storedBudgetById;
-}
+    if (!wallet) {
+      throw new Error("Wallet not found for budget");
+    }
 
-export async function getBudgetItemById(budgetItemId: string) {
-  const storedBudgetItemById = await db.budget_item.get(budgetItemId);
-
-  if (!storedBudgetItemById) throw new Error("Budget item not found");
-
-  return storedBudgetItemById;
-}
-
-export async function updateBudgetById(budgetId: string, modifyCallback: (budget: Budget) => void) {
-  await db.budget
-    .where("id")
-    .equals(budgetId)
-    .modify(budget => {
-      budget.updated_at = new Date().toISOString();
-      modifyCallback(budget);
-    });
-}
-
-export async function addBudgetBalance(budgetId: string, amountToAdd: number) {
-  await updateBudgetById(budgetId, budget => {
-    budget.balance += amountToAdd;
+    return { ...budget, wallet };
   });
-}
-
-export async function deductBudgetBalance(budgetId: string, amountToDeduct: number) {
-  await updateBudgetById(budgetId, budget => {
-    budget.balance -= amountToDeduct;
-  });
-}
-
-const MAX_PERCENTAGE = 100;
-
-async function transformBudgetWithRelationsResponse(
-  budget: Budget
-): Promise<TransformedBudgetWithRelations> {
-  const usedBalance = Math.abs(budget.total_balance - budget.balance);
-  const remainingBalance = budget.balance;
-  const remainingBalancePercentage = (budget.balance / budget.total_balance) * MAX_PERCENTAGE;
-  const usedBalancePercentage = Math.abs(MAX_PERCENTAGE - remainingBalancePercentage);
-  const storedWalletById = await getWalletById(budget.wallet_id);
-
-  return {
-    id: budget.id,
-    name: budget.name,
-    wallet_id: budget.wallet_id,
-    created_at: budget.created_at,
-    updated_at: budget.updated_at,
-    archived_at: budget.archived_at,
-    used_balance: usedBalance,
-    used_balance_percentage: usedBalancePercentage,
-    remaining_balance: remainingBalance,
-    remaining_balance_percentage: remainingBalancePercentage,
-    total_balance: budget.total_balance,
-    wallet: storedWalletById,
-  };
 }
 
 export async function getBudgetList(query: BudgetsRequestQuery = {}) {
-  const parsedFilters = BudgetsRequestQuerySchema.parse(query);
-  const budgetsCollection = db.budget.orderBy("updated_at").reverse();
-  const storedBudgets = parsedFilters.limit
-    ? await budgetsCollection.limit(parsedFilters.limit).toArray()
-    : await budgetsCollection.toArray();
-  const storedBudgetWithRelations = await Promise.all(
-    storedBudgets.map(transformBudgetWithRelationsResponse)
+  const budgets = await unwrap(
+    api.api.budgets.$get({
+      query:
+        query.archived === undefined
+          ? {}
+          : { archived: query.archived ? ("true" as const) : ("false" as const) },
+    })
   );
 
-  return successResponse({
-    data: TransformedBudgetWithRelationsSchema.array().parse(storedBudgetWithRelations),
-    message: "Successfully retrieved budgets",
-  });
+  const withWallets = await attachWallets(budgets);
+
+  if (query.limit) {
+    return withWallets.slice(0, query.limit);
+  }
+
+  return withWallets;
 }
 
-export async function getBudgetDetail(budgetId: string) {
-  const storedBudget = await getBudgetById(budgetId);
-  const transformedBudget = await transformBudgetWithRelationsResponse(storedBudget);
-
-  return successResponse({
-    data: TransformedBudgetWithRelationsSchema.parse(transformedBudget),
-    message: "Successfully retrieved a budget",
-  });
+export async function getBudgetDetail(budgetId: string): Promise<BudgetWithWallet> {
+  const budget = await unwrap(api.api.budgets[":id"].$get({ param: { id: budgetId } }));
+  const [withWallet] = await attachWallets([budget]);
+  return withWallet;
 }
 
 export async function createBudget(payload: CreateBudget) {
-  const data = CreateBudgetSchema.parse(payload);
-  const newBudgets = data.budgets.map<Budget>(budget => ({
-    id: nanoid(),
-    name: budget.name,
-    balance: budget.balance,
-    total_balance: budget.balance,
-    wallet_id: budget.wallet.id,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    archived_at: null,
-  }));
-  const newEmptyBudgets = newBudgets.map<Budget>(budget => ({
-    ...budget,
-    balance: 0,
-  }));
-
-  await db.transaction("rw", db.wallet, db.budget, db.transfer, db.record, async () => {
-    const createdBudgetsId = await db.budget.bulkAdd(newEmptyBudgets, { allKeys: true });
-
-    for (const budgetId of createdBudgetsId) {
-      const createdBudget = (await getSourceOrDestinationById(budgetId, "BUDGET")) as Budget;
-      const relatedWallet = (await getSourceOrDestinationById(
-        createdBudget.wallet_id,
-        "WALLET"
-      )) as Wallet;
-
-      await commitTransfer({
-        amount: newBudgets.find(budget => budget.id === budgetId)?.balance ?? 0,
-        fee: 0,
-        note: `Budgeting for ${createdBudget.name}`,
-        source: relatedWallet,
-        destination: createdBudget,
-      });
-    }
-  });
-
-  return successResponse({
-    data: BudgetSchema.parse(newBudgets[newBudgets.length - 1]),
-    message: "Successfully create a budget",
-  });
-}
-
-export async function deleteBudget(budgetId: string) {
-  const budgetRecords = await db.record.where("source_id").equals(budgetId).toArray();
-  const storedBudgetById = await getBudgetById(budgetId);
-
-  if (budgetRecords.length > 0) {
-    throw new Error("Unable to delete budget. The budget is already in use.");
-  }
-
-  await db.transaction("rw", db.budget, db.wallet, db.transfer, db.record, async () => {
-    const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
-
-    await commitTransfer({
-      amount: storedBudgetById.total_balance,
-      fee: 0,
-      note: `Budget deletion and refund from ${storedBudgetById.name} budget`,
-      source: storedBudgetById,
-      destination: storedWalletById,
-    });
-
-    await db.budget.delete(budgetId);
-  });
-
-  return successResponse({
-    data: BudgetSchema.parse(storedBudgetById),
-    message: "Successfully delete the budget",
-  });
+  return unwrap(
+    api.api.budgets.bulk.$post({
+      json: {
+        budgets: payload.budgets.map(budget => ({
+          name: budget.name,
+          wallet_id: budget.wallet.id,
+          amount: budget.balance,
+          budget_type: "BUDGET" as const,
+        })),
+      },
+    })
+  );
 }
 
 export async function updateBudgetBalanceDetail(budgetId: string, payload: UpdateBudgetBalance) {
-  const data = UpdateBudgetBalanceSchema.parse(payload);
-  const storedBudgetById = await getBudgetById(budgetId);
-
-  await db.transaction("rw", db.budget, db.wallet, db.transfer, db.record, async () => {
-    const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
-
-    await match(data.type)
-      .with("REFUND", async () => {
-        if (data.balance > storedBudgetById.balance) {
-          throw new Error(
-            "Unable to refund. The refunded balance exceeds the remaining budget balance."
-          );
-        }
-
-        await commitTransfer({
-          amount: data.balance,
-          fee: 0,
-          note: `Refund from ${storedBudgetById.name} budget`,
-          source: storedBudgetById,
-          destination: storedWalletById,
-        });
-
-        await updateBudgetById(budgetId, budget => {
-          if (budget.balance <= 0) {
-            budget.archived_at = new Date().toISOString();
-          }
-        });
+  if (payload.type === "ADD") {
+    return unwrap(
+      api.api.budgets[":id"]["add-funds"].$post({
+        param: { id: budgetId },
+        json: { amount: payload.balance },
       })
-      .with("ADD", async () => {
-        if (data.balance > storedWalletById.balance) {
-          throw new Error("Unable to add balance. The added balance exceeds the wallet balance.");
-        }
-
-        const balanceAfterAdding = data.balance + storedBudgetById.balance;
-        if (balanceAfterAdding > storedBudgetById.total_balance) {
-          throw new Error(
-            `Unable to add balance. The remaining balance after adding (${formatCurrency(balanceAfterAdding)}) exceed the total budget balance (${formatCurrency(storedBudgetById.total_balance)})`
-          );
-        }
-
-        await commitTransfer({
-          amount: data.balance,
-          fee: 0,
-          note: `Add ${storedBudgetById.name} budget balance`,
-          source: storedWalletById,
-          destination: storedBudgetById,
-        });
-      })
-      .exhaustive();
-  });
-
-  return successResponse({
-    data: BudgetSchema.parse(storedBudgetById),
-    message: "Successfully update the budget balance",
-  });
-}
-
-export async function activateBudget(budgetId: string) {
-  const storedBudgetById = await getBudgetById(budgetId);
-  const storedWalletById = await getWalletById(storedBudgetById.wallet_id);
-
-  if (!storedBudgetById.archived_at) {
-    throw new Error("Unable to activate currently running budget");
-  }
-
-  if (storedWalletById.balance < storedBudgetById.total_balance) {
-    throw new Error(
-      `Unable to activate budget due to insufficient balance of ${storedWalletById.name} wallet`
     );
   }
 
-  await db.transaction("rw", db.budget, db.wallet, db.transfer, db.record, async () => {
-    await updateBudgetById(budgetId, budget => {
-      budget.archived_at = null;
-    });
-    await commitTransfer({
-      amount: storedBudgetById.total_balance,
-      fee: 0,
-      note: `Add ${storedBudgetById.name} budget balance`,
-      source: storedWalletById,
-      destination: storedBudgetById,
-    });
-  });
+  return unwrap(
+    api.api.budgets[":id"].refund.$post({
+      param: { id: budgetId },
+      json: { amount: payload.balance },
+    })
+  );
+}
 
-  return successResponse({
-    data: BudgetSchema.parse(storedBudgetById),
-    message: "Successfully reactivate the budget",
-  });
+export async function activateBudget(budgetId: string) {
+  return unwrap(
+    api.api.budgets[":id"].reactivate.$post({
+      param: { id: budgetId },
+      json: { use_same_amount: true },
+    })
+  );
 }

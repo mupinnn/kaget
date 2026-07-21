@@ -15,7 +15,7 @@ export const HomeWalletsSection = () => {
             .with({ isPending: true }, () => <WalletListLoader />)
             .with({ isError: true }, () => <p>An error occured</p>)
             .otherwise(walletsQuery => (
-              <WalletList data={walletsQuery.data.data} />
+              <WalletList data={walletsQuery.data} />
             ))}
         </div>
         <ScrollBar orientation="horizontal" />

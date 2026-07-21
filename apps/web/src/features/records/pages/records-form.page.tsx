@@ -38,16 +38,16 @@ import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { useCreateRecordMutation } from "../data/records.mutations";
-import { type CreateRecord, CreateRecordSchema } from "../data/records.schemas";
+import { type CreateRecordForm, CreateRecordFormSchema } from "../data/records.schemas";
 
 export function TotalRecordsAmount({
   control,
   errors,
   setValue,
 }: {
-  control: Control<CreateRecord>;
-  errors: FieldErrors<CreateRecord>;
-  setValue: UseFormSetValue<CreateRecord>;
+  control: Control<CreateRecordForm>;
+  errors: FieldErrors<CreateRecordForm>;
+  setValue: UseFormSetValue<CreateRecordForm>;
 }) {
   const recordItems = useWatch({ control, name: "items" });
   const totalAmount = recordItems.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
@@ -71,8 +71,8 @@ export function TotalRecordsAmount({
 
 export function RecordsFormPage() {
   const navigate = useNavigate();
-  const form = useForm<CreateRecord>({
-    resolver: zodResolver(CreateRecordSchema),
+  const form = useForm<CreateRecordForm>({
+    resolver: zodResolver(CreateRecordFormSchema),
     defaultValues: {
       note: "",
       dor: new Date(),
@@ -83,11 +83,11 @@ export function RecordsFormPage() {
   const walletsQuery = useWalletsQuery();
   const createRecordMutation = useCreateRecordMutation();
 
-  const hasNoWallets = walletsQuery.data?.data.length === 0;
+  const hasNoWallets = (walletsQuery.data?.length ?? 0) === 0;
   const watchDor = form.watch("dor");
   const dorTimeValue = `${new Date(watchDor).getHours()}:${new Date(watchDor).getMinutes()}`;
 
-  function onSubmit(values: CreateRecord) {
+  function onSubmit(values: CreateRecordForm) {
     createRecordMutation.mutate(values, {
       async onSuccess() {
         await navigate({ to: "/records" });
@@ -135,7 +135,7 @@ export function RecordsFormPage() {
                 <FormLabel>Wallet</FormLabel>
                 <Select
                   onValueChange={value =>
-                    field.onChange(walletsQuery.data?.data.find(w => w.id === value))
+                    field.onChange(walletsQuery.data?.find(w => w.id === value))
                   }
                   defaultValue={field.value?.id}
                   disabled={walletsQuery.isPending || hasNoWallets}
@@ -152,7 +152,7 @@ export function RecordsFormPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {walletsQuery.data?.data.map(wallet => (
+                    {walletsQuery.data?.map(wallet => (
                       <SelectItem key={wallet.id} value={wallet.id}>
                         {wallet.name} - {formatCurrency(wallet.balance)}
                       </SelectItem>

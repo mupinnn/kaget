@@ -1,5 +1,6 @@
 import { and, count, desc, eq, gte, inArray, lte, or } from "drizzle-orm";
 import { Hono } from "hono";
+import * as z from "zod";
 import type { Database } from "../db/client";
 import { transfer } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";

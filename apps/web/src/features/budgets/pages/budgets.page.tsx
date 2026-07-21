@@ -11,7 +11,7 @@ export function BudgetsIndexPage() {
 
   return (
     <PageLayout title="Budgets" subtitle="Plan and maintain your budget with ease">
-      {budgetsQuery.data?.data && budgetsQuery.data.data.length > 0 ? (
+      {budgetsQuery.data && budgetsQuery.data.length > 0 ? (
         <Button asChild className="no-underline">
           <Link to="/budgets/create">
             <PlusIcon />
@@ -25,7 +25,7 @@ export function BudgetsIndexPage() {
           .with({ isPending: true }, () => <BudgetListLoader />)
           .with({ isError: true }, () => <p>An error occured</p>)
           .otherwise(budgetsQuery => (
-            <BudgetList data={budgetsQuery.data.data} />
+            <BudgetList data={budgetsQuery.data} />
           ))}
       </div>
     </PageLayout>

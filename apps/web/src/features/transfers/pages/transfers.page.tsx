@@ -16,7 +16,7 @@ export function TransfersIndexPage() {
         .with({ isError: true }, () => <p>An error occured</p>)
         .otherwise(transfersQuery => (
           <>
-            {transfersQuery.data.data.length > 0 ? (
+            {transfersQuery.data && transfersQuery.data.length > 0 ? (
               <Button asChild className="no-underline">
                 <Link to="/transfers/create">
                   <PlusIcon />
@@ -25,7 +25,7 @@ export function TransfersIndexPage() {
               </Button>
             ) : null}
 
-            <TransferList data={transfersQuery.data.data} />
+            <TransferList data={transfersQuery.data} />
           </>
         ))}
     </PageLayout>

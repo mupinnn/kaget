@@ -26,17 +26,17 @@ import { useCreateWalletMutation, useUpdateWalletMutation } from "../data/wallet
 import { useWalletDetailQuery } from "../data/wallets.queries";
 import {
   type CreateWallet,
-  CreateWalletSchema,
-  UpdateWalletSchema,
-  type Wallet,
+  createWalletSchema,
+  type UpdateWallet,
+  updateWalletSchema,
 } from "../data/wallets.schemas";
 
 export function WalletsFormPage() {
   const { walletId } = useParams({ strict: false });
   const walletDetailQuery = useWalletDetailQuery(walletId);
-  const form = useForm<CreateWallet | Wallet>({
-    resolver: walletId ? zodResolver(UpdateWalletSchema) : zodResolver(CreateWalletSchema),
-    values: walletDetailQuery.data?.data,
+  const form = useForm<CreateWallet | UpdateWallet>({
+    resolver: walletId ? zodResolver(updateWalletSchema) : zodResolver(createWalletSchema),
+    values: walletId ? { name: walletDetailQuery.data?.name ?? "" } : undefined,
     defaultValues: {
       name: "",
       initial_balance: 0,
@@ -46,10 +46,10 @@ export function WalletsFormPage() {
   const createWalletMutation = useCreateWalletMutation();
   const updateWalletMutation = useUpdateWalletMutation();
 
-  function onSubmit(values: CreateWallet | Wallet) {
+  function onSubmit(values: CreateWallet | UpdateWallet) {
     if (walletId) {
       updateWalletMutation.mutate(
-        { walletId, data: values },
+        { walletId, data: { name: values.name } },
         {
           async onSuccess() {
             await navigate({ to: "/wallets/$walletId", params: { walletId } });
@@ -68,7 +68,7 @@ export function WalletsFormPage() {
   return (
     <PageLayout
       title={match(walletId)
-        .with(P.string, () => `Update ${walletDetailQuery.data?.data.name} wallet`)
+        .with(P.string, () => `Update ${walletDetailQuery.data?.name} wallet`)
         .otherwise(() => "Create wallet")}
     >
       <Form {...form}>

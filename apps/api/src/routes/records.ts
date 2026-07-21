@@ -1,6 +1,7 @@
 import { and, count, desc, eq, gte, inArray, lte, notInArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { nanoid } from "nanoid";
+import * as z from "zod";
 import type { Database } from "../db/client";
 import { record, recordItem, wallet } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";
@@ -23,11 +24,7 @@ import {
   sumItemAmounts,
 } from "../lib/records";
 import { validator } from "../lib/validator";
-import {
-  createRecordSchema,
-  listRecordsQuerySchema,
-  updateRecordSchema,
-} from "./records.schemas";
+import { createRecordSchema, listRecordsQuerySchema, updateRecordSchema } from "./records.schemas";
 
 async function getUserWalletIds(db: Database, userId: string) {
   const wallets = await db.query.wallet.findMany({

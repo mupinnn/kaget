@@ -24,14 +24,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { useUpdateBudgetBalanceMutation } from "../data/budgets.mutations";
 import {
-  type TransformedBudgetWithRelations,
+  type BudgetWithWallet,
   type UpdateBudgetBalance,
   UpdateBudgetBalanceSchema,
 } from "../data/budgets.schemas";
 
 interface BudgetBalanceUpdateDialogProps {
   trigger: React.ReactNode;
-  budgetDetail: TransformedBudgetWithRelations;
+  budgetDetail: BudgetWithWallet;
   type: UpdateBudgetBalance["type"];
 }
 

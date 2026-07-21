@@ -19,7 +19,7 @@ export function RecordsIndexPage() {
         .with({ isError: true }, () => <p>An error occured</p>)
         .otherwise(recordsQuery => (
           <>
-            {recordsQuery.data.data.length > 0 ? (
+            {recordsQuery.data && recordsQuery.data.length > 0 ? (
               <Button asChild className="no-underline">
                 <Link to="/records/create">
                   <PlusIcon />
@@ -28,7 +28,7 @@ export function RecordsIndexPage() {
               </Button>
             ) : null}
 
-            <RecordList data={recordsQuery.data.data} />
+            <RecordList data={recordsQuery.data} />
           </>
         ))}
     </PageLayout>

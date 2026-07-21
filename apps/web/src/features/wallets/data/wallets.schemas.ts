@@ -1,35 +1,16 @@
-import { z } from "zod";
+import { createWalletSchema, updateWalletSchema } from "@kaget/api/schemas";
+import type { InferResponseType } from "hono/client";
+import type { z } from "zod";
+import { api } from "@/libs/api.lib";
 
-export const WalletTypeSchema = z.enum(["CASH", "DIGITAL"], { message: "Wallet type is required" });
+export { createWalletSchema, updateWalletSchema };
 
-export type WalletType = z.infer<typeof WalletTypeSchema>;
+export type CreateWallet = z.infer<typeof createWalletSchema>;
+export type UpdateWallet = z.infer<typeof updateWalletSchema>;
+export type Wallet = InferResponseType<typeof api.api.wallets.$get, 200>["data"][number];
+export type WalletDetail = InferResponseType<(typeof api.api.wallets)[":id"]["$get"], 200>["data"];
 
-export const WalletSchema = z.object({
-  id: z.string().nanoid(),
-  name: z.string().min(1, "Wallet name is required").trim(),
-  balance: z.coerce.number().nonnegative(),
-  type: WalletTypeSchema,
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
-});
-
-export type Wallet = z.infer<typeof WalletSchema>;
-
-export const WalletsRequestQuerySchema = z.object({
-  type: WalletSchema.shape.type.optional().catch(undefined),
-  limit: z.coerce.number().positive().optional().catch(undefined),
-});
-
-export type WalletsRequestQuery = z.infer<typeof WalletsRequestQuerySchema>;
-
-export const CreateWalletSchema = z
-  .object({
-    initial_balance: z.coerce.number().min(0, "Initial balance must be greater than or equal to 0"),
-  })
-  .merge(WalletSchema.pick({ name: true, type: true }));
-
-export type CreateWallet = z.infer<typeof CreateWalletSchema>;
-
-export const UpdateWalletSchema = WalletSchema.pick({ name: true });
-
-export type UpdateWallet = z.infer<typeof UpdateWalletSchema>;
+export type WalletsRequestQuery = {
+  type?: Wallet["type"];
+  limit?: number;
+};

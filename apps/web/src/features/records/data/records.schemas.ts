@@ -1,80 +1,47 @@
+import { createRecordSchema } from "@kaget/api/schemas";
+import type { InferResponseType } from "hono/client";
 import { z } from "zod";
-import { BudgetItemSchema, BudgetSchema } from "@/features/budgets/data/budgets.schemas";
-import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
+import type { Wallet } from "@/features/wallets/data/wallets.schemas";
+import { api } from "@/libs/api.lib";
 
-export const SourceTypeSchema = z.enum(["WALLET", "BUDGET", "BUDGET_ITEM"]);
+export type ApiRecord = InferResponseType<
+  typeof api.api.records.$get,
+  200
+>["data"]["records"][number];
 
-export type SourceType = z.infer<typeof SourceTypeSchema>;
+export type OwnedRecord = InferResponseType<(typeof api.api.records)[":id"]["$get"], 200>["data"];
 
-export const SourceOrDestinationSchema = z.union([WalletSchema, BudgetSchema, BudgetItemSchema]);
-
-export type SourceOrDestination = z.infer<typeof SourceOrDestinationSchema>;
-
-export const RecordTypeSchema = z.enum(
-  ["INCOME", "EXPENSE", "LOAN", "DEBT", "DEBT_REPAYMENT", "DEBT_COLLECTION"],
-  { message: "Type is required" }
-);
-
-export type RecordType = z.infer<typeof RecordTypeSchema>;
-
-export const RecordSchema = z.object({
-  id: z.string().nanoid(),
-  note: z.string().min(1, "Note is required").trim(),
-  amount: z.coerce.number({ invalid_type_error: "Amount is required" }).positive(),
-  source_id: z.string().nanoid(),
-  source_type: SourceTypeSchema.refine(v => v, { message: "Source is required" }),
-  record_type: RecordTypeSchema,
-  recorded_at: z.string().datetime(),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
-});
-
-export type Record = z.infer<typeof RecordSchema>;
-
-export const RecordWithRelationsSchema = RecordSchema.extend({
-  source: SourceOrDestinationSchema,
-});
-
-export type RecordWithRelations = z.infer<typeof RecordWithRelationsSchema>;
+export type RecordListItem = ApiRecord & {
+  sourceName: string;
+};
 
 export const RecordsRequestQuerySchema = z.object({
-  start: z.string().date().optional().catch(undefined),
-  end: z.string().date().optional().catch(undefined),
-  source_id: z.string().nanoid().optional().catch(undefined),
+  start: z.coerce.date().optional(),
+  end: z.coerce.date().optional(),
+  source_id: z.string().optional(),
+  source_type: z.enum(["WALLET", "BUDGET"]).optional(),
 });
 
 export type RecordsRequestQuery = z.infer<typeof RecordsRequestQuerySchema>;
 
-export const RecordItemSchema = RecordSchema.pick({
-  id: true,
-  note: true,
-  amount: true,
-  created_at: true,
-  updated_at: true,
-}).extend({ record_id: RecordSchema.shape.id });
+export const CreateRecordFormSchema = z.object({
+  note: z.string().trim().optional(),
+  amount: z.coerce.number().positive().optional(),
+  record_type: z.enum(["INCOME", "EXPENSE"]),
+  source: z.custom<Wallet | { id: string; name: string; balance: string | number }>(),
+  dor: z.union([z.date(), z.string()]),
+  items: z
+    .array(
+      z.object({
+        note: z.string().trim().optional(),
+        amount: z.coerce.number().positive(),
+      })
+    )
+    .default([]),
+});
 
-export type RecordItem = z.infer<typeof RecordItemSchema>;
+export type CreateRecordForm = z.infer<typeof CreateRecordFormSchema>;
 
-export const CreateRecordSchema = RecordSchema.pick({
-  note: true,
-  amount: true,
-  record_type: true,
-})
-  .extend({
-    source: SourceOrDestinationSchema,
-    dor: z.union([z.date(), z.string().datetime()], {
-      required_error: "A date of record is required",
-    }),
-    items: RecordItemSchema.pick({ note: true, amount: true }).array().optional().default([]),
-  })
-  .superRefine((data, ctx) => {
-    if (data.record_type === "EXPENSE" && data.source && data.source.balance < data.amount) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["amount"],
-        message: "Amount should not greater than the selected source balance",
-      });
-    }
-  });
+export { createRecordSchema };
 
-export type CreateRecord = z.infer<typeof CreateRecordSchema>;
+export type CreateRecordInput = z.infer<typeof createRecordSchema>;

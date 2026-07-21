@@ -9,7 +9,7 @@ import { cn } from "@/libs/utils.lib";
 import { formatDate } from "@/utils/date.util";
 import { useDeleteRecordMutation } from "../data/records.mutations";
 import { useRecordDetailQuery, useRecordItemsQuery } from "../data/records.queries";
-import { getRecordAmountValueAndClasses } from "../data/records.services";
+import { getRecordAmountValueAndClasses, getRecordSourceName } from "../data/records.services";
 
 const route = getRouteApi("/_app/(records)/records/$recordId");
 
@@ -28,8 +28,8 @@ export function RecordsDetailPage() {
       </p>
     );
 
-  const recordDetail = recordDetailQuery.data.data;
-  const recordItems = recordItemsQuery.data.data;
+  const recordDetail = recordDetailQuery.data;
+  const recordItems = recordItemsQuery.data ?? [];
   const { className, value, operator } = getRecordAmountValueAndClasses(recordDetail);
 
   const handleDeleteRecord = () => {
@@ -42,23 +42,23 @@ export function RecordsDetailPage() {
 
   return (
     <PageLayout
-      title={recordDetail.note}
+      title={recordDetail.note ?? "Record"}
       subtitle={
         <>
           <p className="text-xl">
             <span className={cn("font-medium", className)}>
               <HidableBalance value={value} />
             </span>{" "}
-            - {recordDetail.source.name}
+            - {getRecordSourceName(recordDetail)}
           </p>
           <p className="text-muted-foreground text-sm">
-            {formatDate(recordDetail.recorded_at, { dateStyle: "full", timeStyle: "long" })}
+            {formatDate(recordDetail.recordedAt, { dateStyle: "full", timeStyle: "long" })}
           </p>
         </>
       }
-      badge={recordDetail.record_type}
+      badge={recordDetail.recordType}
     >
-      {recordDetail.source_type === "WALLET" && (
+      {recordDetail.sourceType === "WALLET" && (
         <div className="flex items-center gap-2">
           <ConfirmationDialog
             title="Are you sure?"

@@ -29,7 +29,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCreateSettingsMutation } from "@/features/settings/data/settings.mutations";
-import { type Settings, SettingsSchema } from "@/features/settings/data/settings.schemas";
+import {
+  type CreateSettings,
+  currencyCodeBodySchema,
+} from "@/features/settings/data/settings.schemas";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
@@ -97,15 +100,15 @@ export function OnboardingIndexPage() {
 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const form = useForm<Settings>({
-    resolver: zodResolver(SettingsSchema),
+  const form = useForm<CreateSettings>({
+    resolver: zodResolver(currencyCodeBodySchema),
     defaultValues: {
-      currency: "IDR",
+      currencyCode: "IDR",
     },
   });
   const createSettingsMutation = useCreateSettingsMutation();
 
-  function onSubmit(values: Settings) {
+  function onSubmit(values: CreateSettings) {
     createSettingsMutation.mutate(values, {
       async onSuccess() {
         await navigate({ to: "/" });
@@ -162,7 +165,7 @@ export function OnboardingIndexPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="currency"
+              name="currencyCode"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Currency</FormLabel>
@@ -190,7 +193,7 @@ export function OnboardingIndexPage() {
                             value={field.value}
                             setOpen={setIsCurrencyOpen}
                             setSelectedCurrency={value => {
-                              form.setValue("currency", value);
+                              form.setValue("currencyCode", value);
                             }}
                           />
                         </div>
@@ -218,7 +221,7 @@ export function OnboardingIndexPage() {
                           value={field.value}
                           setOpen={setIsCurrencyOpen}
                           setSelectedCurrency={value => {
-                            form.setValue("currency", value);
+                            form.setValue("currencyCode", value);
                           }}
                         />
                       </PopoverContent>
@@ -255,7 +258,7 @@ export function OnboardingIndexPage() {
                   data-testid="onboarding-sample-balance-preview"
                 >
                   {formatCurrency(Number(balancePreview ?? 0), {
-                    currency: form.watch("currency"),
+                    currency: form.watch("currencyCode"),
                   })}
                 </p>
               </CardContent>

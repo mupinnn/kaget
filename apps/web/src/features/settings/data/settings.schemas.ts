@@ -1,26 +1,11 @@
-import { z } from "zod";
-import { BudgetItemSchema, BudgetSchema } from "@/features/budgets/data/budgets.schemas";
-import { RecordItemSchema, RecordSchema } from "@/features/records/data/records.schemas";
-import { TransferSchema } from "@/features/transfers/data/transfers.schemas";
-import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
+import { currencyCodeBodySchema } from "@kaget/api/schemas";
+import type { InferResponseType } from "hono/client";
+import type { z } from "zod";
+import { api } from "@/libs/api.lib";
 
-export const SettingsSchema = z.object({
-  currency: z.string({ required_error: "Currency is required" }),
-});
+export type Settings = InferResponseType<typeof api.api.settings.$get, 200>["data"];
 
-export type Settings = z.infer<typeof SettingsSchema>;
+export { currencyCodeBodySchema };
 
-export const ImportSchema = z.array(
-  z.object({
-    table: z.string(),
-    rows: z.union([
-      WalletSchema.array(),
-      BudgetSchema.array(),
-      BudgetItemSchema.array(),
-      RecordSchema.array(),
-      RecordItemSchema.array(),
-      TransferSchema.array(),
-      SettingsSchema.array(),
-    ]),
-  })
-);
+export type CreateSettings = z.infer<typeof currencyCodeBodySchema>;
+export type UpdateSettings = z.infer<typeof currencyCodeBodySchema>;

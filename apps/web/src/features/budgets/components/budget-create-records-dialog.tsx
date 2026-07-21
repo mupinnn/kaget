@@ -29,15 +29,18 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateRecordMutation } from "@/features/records/data/records.mutations";
-import { type CreateRecord, CreateRecordSchema } from "@/features/records/data/records.schemas";
+import {
+  type CreateRecordForm,
+  CreateRecordFormSchema,
+} from "@/features/records/data/records.schemas";
 import { TotalRecordsAmount } from "@/features/records/pages/records-form.page";
 import { cn } from "@/libs/utils.lib";
 import { formatDate } from "@/utils/date.util";
-import type { TransformedBudgetWithRelations } from "../data/budgets.schemas";
+import type { BudgetWithWallet } from "../data/budgets.schemas";
 
 interface BudgetCreateRecordsDialogProps {
   trigger: React.ReactNode;
-  budgetDetail: TransformedBudgetWithRelations;
+  budgetDetail: BudgetWithWallet;
 }
 
 export function BudgetCreateRecordsDialog({
@@ -46,8 +49,8 @@ export function BudgetCreateRecordsDialog({
 }: BudgetCreateRecordsDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const form = useForm<CreateRecord>({
-    resolver: zodResolver(CreateRecordSchema),
+  const form = useForm<CreateRecordForm>({
+    resolver: zodResolver(CreateRecordFormSchema),
     defaultValues: {
       note: "",
       items: [],
@@ -58,9 +61,9 @@ export function BudgetCreateRecordsDialog({
   const createRecordMutation = useCreateRecordMutation();
 
   const watchDor = form.watch("dor");
-  const dorTimeValue = `${new Date(watchDor).getHours()}:${new Date(watchDor).getMinutes()}`;
+  const dorTimeValue = `${new Date(watchDor ?? new Date()).getHours()}:${new Date(watchDor ?? new Date()).getMinutes()}`;
 
-  function onSubmit(values: CreateRecord) {
+  function onSubmit(values: CreateRecordForm) {
     createRecordMutation.mutate(values, {
       onSuccess() {
         setIsOpen(false);
@@ -71,7 +74,7 @@ export function BudgetCreateRecordsDialog({
   const handleDorTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
     const time = event.target.value;
     const [hours, minutes] = time.split(":").map(Number);
-    const newSelectedDor = new Date(form.getValues("dor"));
+    const newSelectedDor = new Date(form.getValues("dor") ?? new Date());
     newSelectedDor.setHours(hours);
     newSelectedDor.setMinutes(minutes);
 
@@ -99,18 +102,11 @@ export function BudgetCreateRecordsDialog({
   function onOpenChange(open: boolean) {
     setIsOpen(open);
     form.reset({
-      ...form.formState.defaultValues,
+      note: "",
+      items: [],
+      record_type: "EXPENSE",
       dor: new Date(),
-      source: {
-        id: budgetDetail.id,
-        name: budgetDetail.name,
-        balance: budgetDetail.remaining_balance,
-        total_balance: Math.abs(budgetDetail.used_balance + budgetDetail.remaining_balance),
-        wallet_id: budgetDetail.wallet_id,
-        created_at: budgetDetail.created_at,
-        updated_at: budgetDetail.updated_at,
-        archived_at: budgetDetail.archived_at,
-      },
+      source: budgetDetail,
     });
   }
 

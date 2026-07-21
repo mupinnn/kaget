@@ -1,5 +1,5 @@
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { PlusIcon, ReceiptTextIcon, RefreshCwIcon, Trash2Icon, Undo2Icon } from "lucide-react";
+import { getRouteApi } from "@tanstack/react-router";
+import { PlusIcon, ReceiptTextIcon, RefreshCwIcon, Undo2Icon } from "lucide-react";
 import { match } from "ts-pattern";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { HidableBalance } from "@/components/hidable-balance";
@@ -13,57 +13,47 @@ import { TransferList, TransferListLoader } from "@/features/transfers/component
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { BudgetBalanceUpdateDialog } from "../components/budget-balance-update-dialog";
 import { BudgetCreateRecordsDialog } from "../components/budget-create-records-dialog";
-import { useActivateBudgetMutation, useDeleteBudgetMutation } from "../data/budgets.mutations";
+import { useActivateBudgetMutation } from "../data/budgets.mutations";
 import { useBudgetDetailQuery } from "../data/budgets.queries";
+import { getRemainingBalancePercentage } from "../data/budgets.schemas";
 
 const route = getRouteApi("/_app/(budgets)/budgets/$budgetId");
 
 export function BudgetsDetailPage() {
   const { budgetId } = route.useParams();
-  const navigate = useNavigate();
   const budgetDetailQuery = useBudgetDetailQuery(budgetId);
-  const recordsQuery = useRecordsQuery({ source_id: budgetId });
-  const transfersQuery = useTransfersQuery({ source_id: budgetId });
-  const deleteBudgetMutation = useDeleteBudgetMutation();
+  const recordsQuery = useRecordsQuery({ source_id: budgetId, source_type: "BUDGET" });
+  const transfersQuery = useTransfersQuery({ source_id: budgetId, source_type: "BUDGET" });
   const activateBudgetMutation = useActivateBudgetMutation();
 
   if (budgetDetailQuery.isPending) return <p>Loading . . .</p>;
   if (budgetDetailQuery.isError) return <p>An error occured: {budgetDetailQuery.error.message}</p>;
 
-  const budgetDetail = budgetDetailQuery.data.data;
-  const budgetHasRecords = (recordsQuery.data?.data?.length ?? 0) > 0;
-
-  const handleDeleteBudget = () => {
-    deleteBudgetMutation.mutate(budgetId, {
-      async onSuccess() {
-        await navigate({ to: "/budgets" });
-      },
-    });
-  };
+  const budgetDetail = budgetDetailQuery.data;
 
   return (
     <PageLayout
       title={budgetDetail.name}
       subtitle={
         <p className="text-lg text-muted-foreground">
-          <HidableBalance value={budgetDetail.remaining_balance} />
+          <HidableBalance value={budgetDetail.balance} />
         </p>
       }
       badge={`BUDGET - ${budgetDetail.wallet.name}`}
     >
       <div className="flex flex-col gap-2 sm:w-96">
-        <Progress value={budgetDetail.remaining_balance_percentage} />
+        <Progress value={getRemainingBalancePercentage(budgetDetail)} />
         <div className="inline-flex items-center gap-1 text-xs">
           <span className="inline-flex items-center gap-2">
             <div className="h-3 w-3 bg-primary/20" />
-            <HidableBalance value={budgetDetail.used_balance} />
+            <HidableBalance value={budgetDetail.usedAmount} />
           </span>
           <span>out of</span>
-          <HidableBalance value={budgetDetail.total_balance} />
+          <HidableBalance value={budgetDetail.totalBalance} />
         </div>
       </div>
 
-      {!budgetDetail.archived_at ? (
+      {!budgetDetail.archivedAt ? (
         <div className="flex flex-wrap items-center gap-2">
           <BudgetCreateRecordsDialog
             budgetDetail={budgetDetail}
@@ -94,20 +84,6 @@ export function BudgetsDetailPage() {
               </Button>
             }
           />
-          {!budgetHasRecords && (
-            <ConfirmationDialog
-              title={<>Are you sure want to delete &quot;{budgetDetail.name}&quot; budget?</>}
-              description="This action cannot be undone. This will permanently delete your budget and will rollback the balance into the respective source (wallet)."
-              trigger={
-                <Button variant="destructive" size="sm">
-                  <Trash2Icon />
-                  Delete
-                </Button>
-              }
-              actionLabel="Yes, delete"
-              onClickAction={handleDeleteBudget}
-            />
-          )}
         </div>
       ) : (
         <ConfirmationDialog
@@ -135,7 +111,7 @@ export function BudgetsDetailPage() {
             .with({ isError: true }, () => <p>An error occured</p>)
             .otherwise(recordsQuery => (
               <RecordList
-                data={recordsQuery.data.data}
+                data={recordsQuery.data}
                 emptyMessageDescription="You have not record any transactions for this budget"
                 withActions={false}
                 actionLinkProps={{
@@ -154,7 +130,7 @@ export function BudgetsDetailPage() {
             .with({ isError: true }, () => <p>An error occured</p>)
             .otherwise(transfersQuery => (
               <TransferList
-                data={transfersQuery.data.data}
+                data={transfersQuery.data}
                 emptyMessageDescription="You have no transfers for this budget"
                 withActions={false}
               />

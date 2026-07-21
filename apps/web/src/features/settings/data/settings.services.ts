@@ -1,31 +1,20 @@
-import { db } from "@/libs/db.lib";
-import { successResponse } from "@/utils/service.util";
-import { type Settings, SettingsSchema } from "./settings.schemas";
+import { api } from "@/libs/api.lib";
+import { hydrateSettings } from "@/libs/session.lib";
+import { unwrap } from "@/utils/api.util";
+import type { CreateSettings, UpdateSettings } from "./settings.schemas";
 
-export async function getSettings() {
-  const storedSettings = await db.settings.limit(1).last();
+export const getSettings = () => unwrap(api.api.settings.$get());
 
-  return successResponse({
-    data: SettingsSchema.optional().parse(storedSettings),
-    message: "Successfully retrieved settings",
-  });
+export const preloadSettings = () => hydrateSettings();
+
+export async function createSettings(payload: CreateSettings) {
+  const settings = await unwrap(api.api.settings.$post({ json: payload }));
+  window.settings = settings;
+  return settings;
 }
 
-export async function preloadSettings() {
-  const settings = await getSettings();
-  window.settings = settings.data;
-}
-
-export async function createSettings(payload: Settings) {
-  const data = SettingsSchema.parse(payload);
-  const newSettings: Settings = {
-    currency: data.currency,
-  };
-
-  await db.settings.add(newSettings);
-
-  return successResponse({
-    data: SettingsSchema.parse(newSettings),
-    message: "Successfully save new settings",
-  });
+export async function updateSettings(payload: UpdateSettings) {
+  const settings = await unwrap(api.api.settings.$patch({ json: payload }));
+  window.settings = settings;
+  return settings;
 }

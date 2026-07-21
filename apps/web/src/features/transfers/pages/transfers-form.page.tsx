@@ -24,20 +24,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import { formatCurrency } from "@/utils/common.util";
 import { useCreateTransferMutation } from "../data/transfers.mutations";
-import { type CreateTransfer, CreateTransferSchema } from "../data/transfers.schemas";
+import { type CreateTransferForm, CreateTransferFormSchema } from "../data/transfers.schemas";
 
 export function TransfersFormPage() {
   const navigate = useNavigate();
-  const form = useForm<CreateTransfer>({
-    resolver: zodResolver(CreateTransferSchema),
+  const form = useForm<CreateTransferForm>({
+    resolver: zodResolver(CreateTransferFormSchema),
   });
   const walletsQuery = useWalletsQuery();
   const createTransferMutation = useCreateTransferMutation();
 
-  const hasNoWallets = walletsQuery.data?.data.length === 0;
+  const hasNoWallets = (walletsQuery.data?.length ?? 0) === 0;
   const selectedSourceWallet = form.watch("source");
 
-  const onSubmit = (values: CreateTransfer) => {
+  const onSubmit = (values: CreateTransferForm) => {
     createTransferMutation.mutate(values, {
       async onSuccess() {
         await navigate({ to: "/transfers" });
@@ -59,7 +59,7 @@ export function TransfersFormPage() {
                   value={field.value?.id}
                   disabled={walletsQuery.isPending || hasNoWallets}
                   onValueChange={value => {
-                    field.onChange(walletsQuery.data?.data.find(w => w.id === value));
+                    field.onChange(walletsQuery.data?.find(w => w.id === value));
                     form.resetField("destination");
                   }}
                 >
@@ -75,7 +75,7 @@ export function TransfersFormPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {walletsQuery.data?.data.map(wallet => (
+                    {walletsQuery.data?.map(wallet => (
                       <SelectItem key={wallet.id} value={wallet.id}>
                         {wallet.name} - {formatCurrency(wallet.balance)}
                       </SelectItem>
@@ -113,7 +113,7 @@ export function TransfersFormPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {walletsQuery.data?.data
+                    {walletsQuery.data
                       .filter(wallet => wallet.id !== selectedSourceWallet?.id)
                       .map(wallet => (
                         <SelectItem key={wallet.id} value={wallet.id}>
