@@ -1,7 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app";
-import { preloadSettings } from "./features/settings/data/settings.services";
 
 import "./index.css";
 
@@ -10,14 +9,4 @@ Sentry.init({
   integrations: [],
 });
 
-async function boot() {
-  await preloadSettings();
-}
-
-boot()
-  .then(() => {
-    createRoot(document.getElementById("root")!).render(<App />);
-  })
-  .catch(error => {
-    console.error("Error while booting the app: ", error);
-  });
+createRoot(document.getElementById("root")!).render(<App />);
