@@ -59,20 +59,11 @@ const queryClient = new QueryClient({
 });
 
 export function App() {
-  const {
-    offlineReady: [, setOfflineReady],
-    updateServiceWorker,
-  } = useRegisterSW({
+  const { updateServiceWorker } = useRegisterSW({
     onNeedRefresh() {
       toast("New version available", {
         description: "Click on reload button to update",
         action: <Button onClick={() => updateServiceWorker(true)}>Reload</Button>,
-      });
-    },
-    onOfflineReady() {
-      toast("App ready to work offline", {
-        description: "Now you can use KaGet without internet connection",
-        action: <Button onClick={() => setOfflineReady(false)}>Close</Button>,
       });
     },
   });
