@@ -6,7 +6,8 @@ import { settings } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";
 import { AppError } from "../lib/error";
 import { ERROR_CODES } from "../lib/error-codes";
-import { currencyCodeBodySchema, toSettingsResponse } from "../lib/settings";
+import { toSettingsResponse } from "../lib/settings";
+import { currencyCodeBodySchema } from "./settings.schemas";
 import { validator } from "../lib/validator";
 
 export function createSettingsRoutes(db: Database, _auth: Auth) {

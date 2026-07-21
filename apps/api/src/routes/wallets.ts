@@ -1,7 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { nanoid } from "nanoid";
-import * as z from "zod";
 import type { Database } from "../db/client";
 import { debtLoan, record, recordItem, transfer, wallet } from "../db/schema";
 import { type Auth, getSafeSession } from "../lib/auth";
@@ -9,20 +8,7 @@ import { AppError } from "../lib/error";
 import { ERROR_CODES } from "../lib/error-codes";
 import { applyWalletBalanceDelta, formatAmount, getBalanceDelta } from "../lib/records";
 import { validator } from "../lib/validator";
-
-const createWalletSchema = z.object({
-  name: z.string().min(1, "Wallet name is required").max(255).trim(),
-  type: z.enum(["CASH", "DIGITAL"]),
-  initial_balance: z.coerce
-    .number()
-    .min(0, "Initial balance must be non-negative")
-    .optional()
-    .default(0),
-});
-
-const updateWalletSchema = z.object({
-  name: z.string().min(1, "Wallet name is required").max(255).trim(),
-});
+import { createWalletSchema, updateWalletSchema } from "./wallets.schemas";
 
 export function createWalletRoutes(db: Database, _auth: Auth) {
   return new Hono()

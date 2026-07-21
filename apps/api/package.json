@@ -4,6 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "types": "./src/app.ts",
+  "exports": {
+    ".": {
+      "types": "./src/app.ts"
+    },
+    "./schemas": {
+      "types": "./src/routes/schemas.ts",
+      "default": "./src/routes/schemas.ts"
+    }
+  },
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "build": "tsc && bun build ./src/index.ts --target=bun --minify --outfile=./dist/index.js --external=better-auth --external=@better-auth/* --external=drizzle-orm",
