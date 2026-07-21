@@ -1,5 +1,5 @@
+import type { ServicePaginationMeta } from "@/schemas/service.schema";
 import type { ApiPagination } from "@/utils/api.util";
-import type { ServicePaginationMeta, ServiceResponse } from "@/schemas/service.schema";
 
 type GeneratePaginationMetaParams = {
   total: number;
@@ -33,12 +33,4 @@ export function mapApiPagination(pagination: ApiPagination): ServicePaginationMe
     currentPage,
     perPage: pagination.limit,
   });
-}
-
-export function successResponse<TData>({
-  data,
-  message = "Success",
-  meta,
-}: ServiceResponse<TData>) {
-  return { data, message, meta };
 }
