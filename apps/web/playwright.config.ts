@@ -27,6 +27,16 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
+      name: "seed",
+      testDir: "./e2e",
+      testMatch: /seed\.setup\.ts/,
+      dependencies: ["setup"],
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: authFile,
+      },
+    },
+    {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
@@ -34,6 +44,15 @@ export default defineConfig({
       },
       dependencies: ["setup"],
       testMatch: /navigation\.spec\.ts/,
+    },
+    {
+      name: "chromium-features",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: authFile,
+      },
+      dependencies: ["seed"],
+      testMatch: /(wallets|budgets|records|transfers|debts-loans|settings)\.spec\.ts/,
     },
     {
       name: "chromium-unauth",

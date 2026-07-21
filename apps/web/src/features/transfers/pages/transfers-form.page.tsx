@@ -98,7 +98,7 @@ export function TransfersFormPage() {
                   key={field.value?.id}
                   disabled={walletsQuery.isPending || hasNoWallets || !selectedSourceWallet}
                   onValueChange={value =>
-                    field.onChange(walletsQuery.data?.data.find(w => w.id === value))
+                    field.onChange(walletsQuery.data?.find(w => w.id === value))
                   }
                 >
                   <FormControl>
@@ -113,7 +113,7 @@ export function TransfersFormPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {walletsQuery.data
+                    {(walletsQuery.data ?? [])
                       .filter(wallet => wallet.id !== selectedSourceWallet?.id)
                       .map(wallet => (
                         <SelectItem key={wallet.id} value={wallet.id}>

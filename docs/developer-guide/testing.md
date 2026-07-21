@@ -33,8 +33,29 @@ apps/web/e2e/
 ├── fixtures/test.ts       # Extended test with page object fixtures
 ├── helpers/               # test-user factory, env constants
 ├── pages/                 # Page Object Models
-└── specs/                 # Test specs (auth, onboarding, navigation)
+    └── specs/                 # Test specs (auth, onboarding, navigation, features)
 ```
+
+#### Test projects
+
+| Project | Specs | Auth state |
+|---------|-------|------------|
+| `setup` | `auth.setup.ts` | Creates onboarding-complete user |
+| `seed` | `seed.setup.ts` | Seeds baseline wallets for feature tests |
+| `chromium-unauth` | `auth`, `onboarding` | None (UI sign-up flows) |
+| `chromium` | `navigation` | Authenticated |
+| `chromium-features` | `wallets`, `budgets`, `records`, `transfers`, `debts-loans`, `settings` | Authenticated + seeded wallets |
+
+#### Feature coverage
+
+| Feature | Spec file | Flows covered |
+|---------|-----------|---------------|
+| Wallets | `wallets.spec.ts` | Create, edit, delete, detail tabs |
+| Budgets | `budgets.spec.ts` | Allocate, use budget expense |
+| Records | `records.spec.ts` | Create income/expense, delete |
+| Transfers | `transfers.spec.ts` | Transfer between wallets, with fee |
+| Debts & Loans | `debts-loans.spec.ts` | Create debt/loan, resolve, delete |
+| Settings | `settings.spec.ts` | Read-only currency display |
 
 #### Prerequisites
 
