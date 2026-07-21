@@ -11,7 +11,6 @@ import { HidableBalanceProvider } from "./components/providers/hidable-balance-p
 import { ThemeProvider } from "./components/providers/theme-provider";
 import { Button } from "./components/ui/button";
 import { Toaster } from "./components/ui/sonner";
-import { BaseServiceResponseSchema } from "./schemas/service.schema";
 
 const router = createRouter({ routeTree });
 
@@ -46,9 +45,11 @@ const queryClient = new QueryClient({
     },
   },
   mutationCache: new MutationCache({
-    onSuccess: response => {
-      const parsedResponse = BaseServiceResponseSchema.parse(response);
-      toast(parsedResponse.message);
+    onSuccess: (_data, _variables, _context, mutation) => {
+      const message = mutation.meta?.successMessage;
+      if (typeof message === "string") {
+        toast(message);
+      }
     },
     onError: queryAndMutationErrorHandler,
   }),
