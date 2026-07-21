@@ -12,16 +12,21 @@ import { Route as rootRouteImport } from "./../routes/__root";
 import { Route as AppRouteImport } from "./../routes/_app";
 import { Route as OnboardingRouteRouteImport } from "./../routes/onboarding.route";
 import { Route as AppIndexRouteImport } from "./../routes/_app/index";
+import { Route as authSignUpRouteRouteImport } from "./../routes/(auth)/sign-up.route";
+import { Route as authSignInRouteRouteImport } from "./../routes/(auth)/sign-in.route";
 import { Route as AppwalletsWalletsIndexRouteRouteImport } from "./../routes/_app/(wallets)/wallets.index.route";
 import { Route as ApptransfersTransfersIndexRouteRouteImport } from "./../routes/_app/(transfers)/transfers.index.route";
 import { Route as AppsettingsSettingsIndexRouteRouteImport } from "./../routes/_app/(settings)/settings.index.route";
 import { Route as ApprecordsRecordsIndexRouteRouteImport } from "./../routes/_app/(records)/records.index.route";
+import { Route as AppdebtLoansDebtsLoansIndexRouteRouteImport } from "./../routes/_app/(debt-loans)/debts-loans.index.route";
 import { Route as AppbudgetsBudgetsIndexRouteRouteImport } from "./../routes/_app/(budgets)/budgets.index.route";
 import { Route as AppwalletsWalletsCreateRouteRouteImport } from "./../routes/_app/(wallets)/wallets.create.route";
 import { Route as AppwalletsWalletsWalletIdRouteRouteImport } from "./../routes/_app/(wallets)/wallets.$walletId.route";
 import { Route as ApptransfersTransfersCreateRouteRouteImport } from "./../routes/_app/(transfers)/transfers.create.route";
 import { Route as ApprecordsRecordsCreateRouteRouteImport } from "./../routes/_app/(records)/records.create.route";
 import { Route as ApprecordsRecordsRecordIdRouteRouteImport } from "./../routes/_app/(records)/records.$recordId.route";
+import { Route as AppdebtLoansDebtsLoansCreateRouteRouteImport } from "./../routes/_app/(debt-loans)/debts-loans.create.route";
+import { Route as AppdebtLoansDebtsLoansDebtLoanIdRouteRouteImport } from "./../routes/_app/(debt-loans)/debts-loans.$debtLoanId.route";
 import { Route as AppbudgetsBudgetsCreateRouteRouteImport } from "./../routes/_app/(budgets)/budgets.create.route";
 import { Route as AppbudgetsBudgetsBudgetIdRouteRouteImport } from "./../routes/_app/(budgets)/budgets.$budgetId.route";
 import { Route as AppwalletsWalletsWalletIdEditRouteRouteImport } from "./../routes/_app/(wallets)/wallets_.$walletId.edit.route";
@@ -39,6 +44,16 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: "/",
   path: "/",
   getParentRoute: () => AppRoute,
+} as any);
+const authSignUpRouteRoute = authSignUpRouteRouteImport.update({
+  id: "/(auth)/sign-up",
+  path: "/sign-up",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const authSignInRouteRoute = authSignInRouteRouteImport.update({
+  id: "/(auth)/sign-in",
+  path: "/sign-in",
+  getParentRoute: () => rootRouteImport,
 } as any);
 const AppwalletsWalletsIndexRouteRoute =
   AppwalletsWalletsIndexRouteRouteImport.update({
@@ -62,6 +77,12 @@ const ApprecordsRecordsIndexRouteRoute =
   ApprecordsRecordsIndexRouteRouteImport.update({
     id: "/(records)/records/",
     path: "/records",
+    getParentRoute: () => AppRoute,
+  } as any);
+const AppdebtLoansDebtsLoansIndexRouteRoute =
+  AppdebtLoansDebtsLoansIndexRouteRouteImport.update({
+    id: "/(debt-loans)/debts-loans/",
+    path: "/debts-loans",
     getParentRoute: () => AppRoute,
   } as any);
 const AppbudgetsBudgetsIndexRouteRoute =
@@ -100,6 +121,18 @@ const ApprecordsRecordsRecordIdRouteRoute =
     path: "/records/$recordId",
     getParentRoute: () => AppRoute,
   } as any);
+const AppdebtLoansDebtsLoansCreateRouteRoute =
+  AppdebtLoansDebtsLoansCreateRouteRouteImport.update({
+    id: "/(debt-loans)/debts-loans/create",
+    path: "/debts-loans/create",
+    getParentRoute: () => AppRoute,
+  } as any);
+const AppdebtLoansDebtsLoansDebtLoanIdRouteRoute =
+  AppdebtLoansDebtsLoansDebtLoanIdRouteRouteImport.update({
+    id: "/(debt-loans)/debts-loans/$debtLoanId",
+    path: "/debts-loans/$debtLoanId",
+    getParentRoute: () => AppRoute,
+  } as any);
 const AppbudgetsBudgetsCreateRouteRoute =
   AppbudgetsBudgetsCreateRouteRouteImport.update({
     id: "/(budgets)/budgets/create",
@@ -122,14 +155,19 @@ const AppwalletsWalletsWalletIdEditRouteRoute =
 export interface FileRoutesByFullPath {
   "/onboarding": typeof OnboardingRouteRoute;
   "/": typeof AppIndexRoute;
+  "/sign-in": typeof authSignInRouteRoute;
+  "/sign-up": typeof authSignUpRouteRoute;
   "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
+  "/debts-loans/$debtLoanId": typeof AppdebtLoansDebtsLoansDebtLoanIdRouteRoute;
+  "/debts-loans/create": typeof AppdebtLoansDebtsLoansCreateRouteRoute;
   "/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
   "/records/create": typeof ApprecordsRecordsCreateRouteRoute;
   "/transfers/create": typeof ApptransfersTransfersCreateRouteRoute;
   "/wallets/$walletId": typeof AppwalletsWalletsWalletIdRouteRoute;
   "/wallets/create": typeof AppwalletsWalletsCreateRouteRoute;
   "/budgets/": typeof AppbudgetsBudgetsIndexRouteRoute;
+  "/debts-loans/": typeof AppdebtLoansDebtsLoansIndexRouteRoute;
   "/records/": typeof ApprecordsRecordsIndexRouteRoute;
   "/settings/": typeof AppsettingsSettingsIndexRouteRoute;
   "/transfers/": typeof ApptransfersTransfersIndexRouteRoute;
@@ -138,15 +176,20 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   "/onboarding": typeof OnboardingRouteRoute;
+  "/sign-in": typeof authSignInRouteRoute;
+  "/sign-up": typeof authSignUpRouteRoute;
   "/": typeof AppIndexRoute;
   "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
+  "/debts-loans/$debtLoanId": typeof AppdebtLoansDebtsLoansDebtLoanIdRouteRoute;
+  "/debts-loans/create": typeof AppdebtLoansDebtsLoansCreateRouteRoute;
   "/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
   "/records/create": typeof ApprecordsRecordsCreateRouteRoute;
   "/transfers/create": typeof ApptransfersTransfersCreateRouteRoute;
   "/wallets/$walletId": typeof AppwalletsWalletsWalletIdRouteRoute;
   "/wallets/create": typeof AppwalletsWalletsCreateRouteRoute;
   "/budgets": typeof AppbudgetsBudgetsIndexRouteRoute;
+  "/debts-loans": typeof AppdebtLoansDebtsLoansIndexRouteRoute;
   "/records": typeof ApprecordsRecordsIndexRouteRoute;
   "/settings": typeof AppsettingsSettingsIndexRouteRoute;
   "/transfers": typeof ApptransfersTransfersIndexRouteRoute;
@@ -157,15 +200,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/onboarding": typeof OnboardingRouteRoute;
   "/_app": typeof AppRouteWithChildren;
+  "/(auth)/sign-in": typeof authSignInRouteRoute;
+  "/(auth)/sign-up": typeof authSignUpRouteRoute;
   "/_app/": typeof AppIndexRoute;
   "/_app/(budgets)/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/_app/(budgets)/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
+  "/_app/(debt-loans)/debts-loans/$debtLoanId": typeof AppdebtLoansDebtsLoansDebtLoanIdRouteRoute;
+  "/_app/(debt-loans)/debts-loans/create": typeof AppdebtLoansDebtsLoansCreateRouteRoute;
   "/_app/(records)/records/$recordId": typeof ApprecordsRecordsRecordIdRouteRoute;
   "/_app/(records)/records/create": typeof ApprecordsRecordsCreateRouteRoute;
   "/_app/(transfers)/transfers/create": typeof ApptransfersTransfersCreateRouteRoute;
   "/_app/(wallets)/wallets/$walletId": typeof AppwalletsWalletsWalletIdRouteRoute;
   "/_app/(wallets)/wallets/create": typeof AppwalletsWalletsCreateRouteRoute;
   "/_app/(budgets)/budgets/": typeof AppbudgetsBudgetsIndexRouteRoute;
+  "/_app/(debt-loans)/debts-loans/": typeof AppdebtLoansDebtsLoansIndexRouteRoute;
   "/_app/(records)/records/": typeof ApprecordsRecordsIndexRouteRoute;
   "/_app/(settings)/settings/": typeof AppsettingsSettingsIndexRouteRoute;
   "/_app/(transfers)/transfers/": typeof ApptransfersTransfersIndexRouteRoute;
@@ -177,14 +225,19 @@ export interface FileRouteTypes {
   fullPaths:
     | "/onboarding"
     | "/"
+    | "/sign-in"
+    | "/sign-up"
     | "/budgets/$budgetId"
     | "/budgets/create"
+    | "/debts-loans/$debtLoanId"
+    | "/debts-loans/create"
     | "/records/$recordId"
     | "/records/create"
     | "/transfers/create"
     | "/wallets/$walletId"
     | "/wallets/create"
     | "/budgets/"
+    | "/debts-loans/"
     | "/records/"
     | "/settings/"
     | "/transfers/"
@@ -193,15 +246,20 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/onboarding"
+    | "/sign-in"
+    | "/sign-up"
     | "/"
     | "/budgets/$budgetId"
     | "/budgets/create"
+    | "/debts-loans/$debtLoanId"
+    | "/debts-loans/create"
     | "/records/$recordId"
     | "/records/create"
     | "/transfers/create"
     | "/wallets/$walletId"
     | "/wallets/create"
     | "/budgets"
+    | "/debts-loans"
     | "/records"
     | "/settings"
     | "/transfers"
@@ -211,15 +269,20 @@ export interface FileRouteTypes {
     | "__root__"
     | "/onboarding"
     | "/_app"
+    | "/(auth)/sign-in"
+    | "/(auth)/sign-up"
     | "/_app/"
     | "/_app/(budgets)/budgets/$budgetId"
     | "/_app/(budgets)/budgets/create"
+    | "/_app/(debt-loans)/debts-loans/$debtLoanId"
+    | "/_app/(debt-loans)/debts-loans/create"
     | "/_app/(records)/records/$recordId"
     | "/_app/(records)/records/create"
     | "/_app/(transfers)/transfers/create"
     | "/_app/(wallets)/wallets/$walletId"
     | "/_app/(wallets)/wallets/create"
     | "/_app/(budgets)/budgets/"
+    | "/_app/(debt-loans)/debts-loans/"
     | "/_app/(records)/records/"
     | "/_app/(settings)/settings/"
     | "/_app/(transfers)/transfers/"
@@ -230,6 +293,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   OnboardingRouteRoute: typeof OnboardingRouteRoute;
   AppRoute: typeof AppRouteWithChildren;
+  authSignInRouteRoute: typeof authSignInRouteRoute;
+  authSignUpRouteRoute: typeof authSignUpRouteRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -254,6 +319,20 @@ declare module "@tanstack/react-router" {
       fullPath: "/";
       preLoaderRoute: typeof AppIndexRouteImport;
       parentRoute: typeof AppRoute;
+    };
+    "/(auth)/sign-up": {
+      id: "/(auth)/sign-up";
+      path: "/sign-up";
+      fullPath: "/sign-up";
+      preLoaderRoute: typeof authSignUpRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/(auth)/sign-in": {
+      id: "/(auth)/sign-in";
+      path: "/sign-in";
+      fullPath: "/sign-in";
+      preLoaderRoute: typeof authSignInRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
     };
     "/_app/(wallets)/wallets/": {
       id: "/_app/(wallets)/wallets/";
@@ -281,6 +360,13 @@ declare module "@tanstack/react-router" {
       path: "/records";
       fullPath: "/records/";
       preLoaderRoute: typeof ApprecordsRecordsIndexRouteRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    "/_app/(debt-loans)/debts-loans/": {
+      id: "/_app/(debt-loans)/debts-loans/";
+      path: "/debts-loans";
+      fullPath: "/debts-loans/";
+      preLoaderRoute: typeof AppdebtLoansDebtsLoansIndexRouteRouteImport;
       parentRoute: typeof AppRoute;
     };
     "/_app/(budgets)/budgets/": {
@@ -325,6 +411,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ApprecordsRecordsRecordIdRouteRouteImport;
       parentRoute: typeof AppRoute;
     };
+    "/_app/(debt-loans)/debts-loans/create": {
+      id: "/_app/(debt-loans)/debts-loans/create";
+      path: "/debts-loans/create";
+      fullPath: "/debts-loans/create";
+      preLoaderRoute: typeof AppdebtLoansDebtsLoansCreateRouteRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    "/_app/(debt-loans)/debts-loans/$debtLoanId": {
+      id: "/_app/(debt-loans)/debts-loans/$debtLoanId";
+      path: "/debts-loans/$debtLoanId";
+      fullPath: "/debts-loans/$debtLoanId";
+      preLoaderRoute: typeof AppdebtLoansDebtsLoansDebtLoanIdRouteRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     "/_app/(budgets)/budgets/create": {
       id: "/_app/(budgets)/budgets/create";
       path: "/budgets/create";
@@ -353,12 +453,15 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute;
   AppbudgetsBudgetsBudgetIdRouteRoute: typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   AppbudgetsBudgetsCreateRouteRoute: typeof AppbudgetsBudgetsCreateRouteRoute;
+  AppdebtLoansDebtsLoansDebtLoanIdRouteRoute: typeof AppdebtLoansDebtsLoansDebtLoanIdRouteRoute;
+  AppdebtLoansDebtsLoansCreateRouteRoute: typeof AppdebtLoansDebtsLoansCreateRouteRoute;
   ApprecordsRecordsRecordIdRouteRoute: typeof ApprecordsRecordsRecordIdRouteRoute;
   ApprecordsRecordsCreateRouteRoute: typeof ApprecordsRecordsCreateRouteRoute;
   ApptransfersTransfersCreateRouteRoute: typeof ApptransfersTransfersCreateRouteRoute;
   AppwalletsWalletsWalletIdRouteRoute: typeof AppwalletsWalletsWalletIdRouteRoute;
   AppwalletsWalletsCreateRouteRoute: typeof AppwalletsWalletsCreateRouteRoute;
   AppbudgetsBudgetsIndexRouteRoute: typeof AppbudgetsBudgetsIndexRouteRoute;
+  AppdebtLoansDebtsLoansIndexRouteRoute: typeof AppdebtLoansDebtsLoansIndexRouteRoute;
   ApprecordsRecordsIndexRouteRoute: typeof ApprecordsRecordsIndexRouteRoute;
   AppsettingsSettingsIndexRouteRoute: typeof AppsettingsSettingsIndexRouteRoute;
   ApptransfersTransfersIndexRouteRoute: typeof ApptransfersTransfersIndexRouteRoute;
@@ -370,12 +473,17 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppbudgetsBudgetsBudgetIdRouteRoute: AppbudgetsBudgetsBudgetIdRouteRoute,
   AppbudgetsBudgetsCreateRouteRoute: AppbudgetsBudgetsCreateRouteRoute,
+  AppdebtLoansDebtsLoansDebtLoanIdRouteRoute:
+    AppdebtLoansDebtsLoansDebtLoanIdRouteRoute,
+  AppdebtLoansDebtsLoansCreateRouteRoute:
+    AppdebtLoansDebtsLoansCreateRouteRoute,
   ApprecordsRecordsRecordIdRouteRoute: ApprecordsRecordsRecordIdRouteRoute,
   ApprecordsRecordsCreateRouteRoute: ApprecordsRecordsCreateRouteRoute,
   ApptransfersTransfersCreateRouteRoute: ApptransfersTransfersCreateRouteRoute,
   AppwalletsWalletsWalletIdRouteRoute: AppwalletsWalletsWalletIdRouteRoute,
   AppwalletsWalletsCreateRouteRoute: AppwalletsWalletsCreateRouteRoute,
   AppbudgetsBudgetsIndexRouteRoute: AppbudgetsBudgetsIndexRouteRoute,
+  AppdebtLoansDebtsLoansIndexRouteRoute: AppdebtLoansDebtsLoansIndexRouteRoute,
   ApprecordsRecordsIndexRouteRoute: ApprecordsRecordsIndexRouteRoute,
   AppsettingsSettingsIndexRouteRoute: AppsettingsSettingsIndexRouteRoute,
   ApptransfersTransfersIndexRouteRoute: ApptransfersTransfersIndexRouteRoute,
@@ -389,6 +497,8 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
 const rootRouteChildren: RootRouteChildren = {
   OnboardingRouteRoute: OnboardingRouteRoute,
   AppRoute: AppRouteWithChildren,
+  authSignInRouteRoute: authSignInRouteRoute,
+  authSignUpRouteRoute: authSignUpRouteRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

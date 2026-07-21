@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import {
   ArrowRightLeftIcon,
   BanknoteIcon,
+  HandCoinsIcon,
   HomeIcon,
   ReceiptTextIcon,
   SettingsIcon,
@@ -21,7 +22,7 @@ import {
 
 type MenuItem = {
   title: string;
-  url: "/" | "/wallets" | "/records" | "/budgets" | "/transfers" | "/settings";
+  url: "/" | "/wallets" | "/records" | "/budgets" | "/transfers" | "/debts-loans" | "/settings";
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
@@ -50,6 +51,11 @@ const menuItems: MenuItem[] = [
     title: "Transfers",
     url: "/transfers",
     icon: ArrowRightLeftIcon,
+  },
+  {
+    title: "Debts & Loans",
+    url: "/debts-loans",
+    icon: HandCoinsIcon,
   },
   {
     title: "Settings",
