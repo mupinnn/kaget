@@ -1,6 +1,10 @@
 import type { settings } from "../db/schema";
 
-export { currencyCodeBodySchema, currencyCodeSchema, getSupportedCurrencies } from "../routes/settings.schemas";
+export {
+  currencyCodeBodySchema,
+  currencyCodeSchema,
+  getSupportedCurrencies,
+} from "../routes/settings.schemas";
 
 export type SettingsRow = typeof settings.$inferSelect;
 

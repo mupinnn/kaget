@@ -42,7 +42,9 @@ async function parseErrorMessage(res: Response): Promise<string> {
   }
 }
 
-export async function unwrap<T>(response: ClientResponse<T> | Promise<ClientResponse<T>>): Promise<T> {
+export async function unwrap<T>(
+  response: ClientResponse<T> | Promise<ClientResponse<T>>
+): Promise<T> {
   const res = await response;
 
   if (res.ok) {
@@ -60,7 +62,9 @@ export type ApiPagination = {
 };
 
 export async function unwrapPaginated<T>(
-  response: ClientResponse<{ data: T; pagination: ApiPagination }> | Promise<ClientResponse<{ data: T; pagination: ApiPagination }>>,
+  response:
+    | ClientResponse<{ data: T; pagination: ApiPagination }>
+    | Promise<ClientResponse<{ data: T; pagination: ApiPagination }>>
 ): Promise<{ data: T; pagination: ApiPagination }> {
   const res = await response;
 
@@ -72,7 +76,7 @@ export async function unwrapPaginated<T>(
 }
 
 export async function unwrapRaw<T>(
-  response: ClientResponse<T> | Promise<ClientResponse<T>>,
+  response: ClientResponse<T> | Promise<ClientResponse<T>>
 ): Promise<T> {
   const res = await response;
 

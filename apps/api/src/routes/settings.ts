@@ -7,8 +7,8 @@ import { type Auth, getSafeSession } from "../lib/auth";
 import { AppError } from "../lib/error";
 import { ERROR_CODES } from "../lib/error-codes";
 import { toSettingsResponse } from "../lib/settings";
-import { currencyCodeBodySchema } from "./settings.schemas";
 import { validator } from "../lib/validator";
+import { currencyCodeBodySchema } from "./settings.schemas";
 
 export function createSettingsRoutes(db: Database, _auth: Auth) {
   return new Hono()
