@@ -2,10 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { HidableBalance } from "@/components/hidable-balance";
 import { cn } from "@/libs/utils.lib";
 import { formatDate } from "@/utils/date.util";
-import type { RecordWithRelations } from "../data/records.schemas";
+import type { RecordListItem as RecordListItemType } from "../data/records.schemas";
 import { getRecordAmountValueAndClasses } from "../data/records.services";
 
-export type RecordListItemProps = RecordWithRelations;
+export type RecordListItemProps = RecordListItemType;
 
 export const RecordListItem = (props: RecordListItemProps) => {
   const { className, value } = getRecordAmountValueAndClasses(props);
@@ -19,14 +19,14 @@ export const RecordListItem = (props: RecordListItemProps) => {
       <div className="space-y-1">
         <p>{props.note}</p>
         <p className="text-xs">
-          {props.source.name} - {props.source_type}
+          {props.sourceName} - {props.sourceType}
         </p>
       </div>
       <div className="space-y-1 text-right">
         <p className={cn(className)}>
           <HidableBalance value={value} />
         </p>
-        <p className="text-xs">{formatDate(props.recorded_at, { timeStyle: "short" })}</p>
+        <p className="text-xs">{formatDate(props.recordedAt, { timeStyle: "short" })}</p>
       </div>
     </Link>
   );

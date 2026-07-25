@@ -1,0 +1,33 @@
+# Local development overrides (auto-merged by `docker compose up`).
+# Not used by parachute CI, which runs `docker compose -f docker-compose.yml …`.
+
+services:
+  db:
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kaget}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kaget}
+      POSTGRES_DB: ${POSTGRES_DB:-kaget}
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-kaget} -d ${POSTGRES_DB:-kaget}",
+        ]
+
+  migrate:
+    env_file: .env
+
+  api:
+    env_file: .env
+    environment:
+      BETTER_AUTH_URL: http://localhost:${API_PORT:-3000}
+      CORS_ORIGINS: http://localhost:5173
+    ports:
+      - "127.0.0.1:${API_PORT:-3000}:3000"
+
+  # Local frontend uses Vite (`bun run --filter @kaget/web dev`), not this image.
+  web:
+    profiles: ["full-stack"]

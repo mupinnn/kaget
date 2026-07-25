@@ -1,56 +1,59 @@
+import { createTransferSchema } from "@kaget/api/schemas";
+import type { InferResponseType } from "hono/client";
 import { z } from "zod";
-import {
-  SourceOrDestinationSchema,
-  SourceTypeSchema,
-} from "@/features/records/data/records.schemas";
+import type { BudgetWithWallet } from "@/features/budgets/data/budgets.schemas";
+import type { Wallet } from "@/features/wallets/data/wallets.schemas";
+import { api } from "@/libs/api.lib";
+import { parseAmount } from "@/utils/amount.util";
 
-export const TransferTypeSchema = z.enum(["INCOMING", "OUTGOING"]);
-
-export type TransferType = z.infer<typeof TransferTypeSchema>;
-
-/**
- * Snapshot the `source` and `destination` to prevent error and to preserve the history
- * if one of the `source` or `destination` is deleted.
- */
-export const TransferSchema = z.object({
-  id: z.string().nanoid(),
-  ref_id: z.string().nanoid(),
-  note: z.string().optional(),
-  amount: z.coerce.number({ invalid_type_error: "Amount is required" }).positive(),
-  fee: z.coerce.number().nonnegative().optional().default(0),
-  source_id: z.string().nanoid(),
-  source_type: SourceTypeSchema.refine(v => v, { message: "Source is required" }),
-  source: SourceOrDestinationSchema,
-  destination_id: z.string().nanoid(),
-  destination_type: SourceTypeSchema.refine(v => v, { message: "Destination is required" }),
-  destination: SourceOrDestinationSchema,
-  type: TransferTypeSchema,
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
-});
-
-export type Transfer = z.infer<typeof TransferSchema>;
+export type Transfer = InferResponseType<
+  typeof api.api.transfers.$get,
+  200
+>["data"]["transfers"][number];
 
 export const TransfersRequestQuerySchema = z.object({
-  source_id: z.string().nanoid().optional().catch(undefined),
+  source_id: z.string().optional(),
+  source_type: z.enum(["WALLET", "BUDGET"]).optional(),
 });
 
 export type TransfersRequestQuery = z.infer<typeof TransfersRequestQuerySchema>;
 
-export const CreateTransferSchema = TransferSchema.pick({
-  note: true,
-  amount: true,
-  fee: true,
-  source: true,
-  destination: true,
-}).superRefine((data, ctx) => {
-  if (data.source && data.source.balance < data.amount) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["amount"],
-      message: "Amount should not greater than the source balance",
-    });
-  }
-});
+export const CreateTransferFormSchema = z
+  .object({
+    note: z.string().trim().optional(),
+    amount: z.coerce.number().positive("Amount must be positive"),
+    fee: z.coerce.number().min(0).optional().default(0),
+    source: z.custom<Wallet | BudgetWithWallet>(),
+    destination: z.custom<Wallet | BudgetWithWallet>(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.source && parseAmount(data.source.balance) < data.amount) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["amount"],
+        message: "Amount should not be greater than the selected source balance",
+      });
+    }
+  });
 
-export type CreateTransfer = z.infer<typeof CreateTransferSchema>;
+export type CreateTransferForm = z.infer<typeof CreateTransferFormSchema>;
+
+export { createTransferSchema };
+
+export type CreateTransferInput = z.infer<typeof createTransferSchema>;
+
+function getAccountType(account: Wallet | BudgetWithWallet): "WALLET" | "BUDGET" {
+  return "walletId" in account ? "BUDGET" : "WALLET";
+}
+
+export function toCreateTransferInput(form: CreateTransferForm): CreateTransferInput {
+  return {
+    sender_id: form.source.id,
+    sender_type: getAccountType(form.source),
+    receiver_id: form.destination.id,
+    receiver_type: getAccountType(form.destination),
+    amount: form.amount,
+    fee: form.fee,
+    note: form.note,
+  };
+}

@@ -3,9 +3,9 @@ import { HidableBalance } from "@/components/hidable-balance";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { TransformedBudgetWithRelations } from "../data/budgets.schemas";
+import { type BudgetWithWallet, getRemainingBalancePercentage } from "../data/budgets.schemas";
 
-export type BudgetListItemProps = TransformedBudgetWithRelations;
+export type BudgetListItemProps = BudgetWithWallet;
 
 export const BudgetListItem = (props: BudgetListItemProps) => {
   return (
@@ -13,7 +13,7 @@ export const BudgetListItem = (props: BudgetListItemProps) => {
       <Card>
         <CardHeader className="pb-2">
           <div className="inline-flex items-center gap-1">
-            {props.archived_at && (
+            {props.archivedAt && (
               <Badge variant="destructive" className="mr-1">
                 Archived
               </Badge>
@@ -25,10 +25,10 @@ export const BudgetListItem = (props: BudgetListItemProps) => {
           <CardTitle>{props.name}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-nowrap">
-          <Progress value={props.remaining_balance_percentage} />
+          <Progress value={getRemainingBalancePercentage(props)} />
           <div className="inline-flex items-center gap-2 text-xs">
             <div className="h-3 w-3 bg-primary" />
-            <HidableBalance value={props.remaining_balance} />
+            <HidableBalance value={props.balance} />
           </div>
         </CardContent>
       </Card>

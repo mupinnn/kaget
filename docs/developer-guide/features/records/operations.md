@@ -8,7 +8,8 @@ Record operations follow these principles:
 
 - Every record has at least one item
 - `Record.amount` always equals the sum of item amounts
-- Wallet balance is updated atomically with record mutations
+- Wallet balance is updated atomically with wallet-sourced record mutations
+- Budget balance is updated atomically when `source_type` is `BUDGET` (EXPENSE only)
 - Balance updates use delta calculation: `balance += (new - old)`
 
 ## Create Record
@@ -78,11 +79,25 @@ wallet.balance += delta;
 | Field            | Rules                                               |
 | ---------------- | --------------------------------------------------- |
 | `source_id`      | Required, must exist, must be valid for source_type |
-| `source_type`    | Required, must be `WALLET` (for now)                |
-| `record_type`    | Required, must be `INCOME` or `EXPENSE`             |
+| `source_type`    | Required, `WALLET` or `BUDGET`                      |
+| `record_type`    | Required; `INCOME` or `EXPENSE` for wallet; **EXPENSE only** for budget |
 | `recorded_at`    | Required, valid timestamp                           |
 | `items`          | At least one item required                          |
 | `items[].amount` | Required, must be > 0                               |
+
+### Budget source (`source_type: BUDGET`)
+
+Spending from a budget is implemented as record creation (`POST /api/records`). See [Budget Operations — Spend](../budgets/operations.md#spend-create-record-from-budget).
+
+| Check | Rule |
+| ----- | ---- |
+| Record type | Must be `EXPENSE` |
+| Budget state | Must be active (not archived) |
+| Balance | `amount` ≤ budget `balance` |
+| GOAL | `balance` must equal `total_balance` (goal reached) |
+| Side effects | Decrement budget balance; auto-archive when balance reaches 0 |
+
+Budget expense history is listed via `GET /api/budgets/:id/records` (not `GET /api/records` in the current API).
 
 ### Error Cases
 
@@ -90,8 +105,13 @@ wallet.balance += delta;
 | ------------------- | --------------------------------------------------------- |
 | No items provided   | `VALIDATION_ERROR: At least one item is required`         |
 | Item amount ≤ 0     | `VALIDATION_ERROR: Item amount must be positive`          |
-| Invalid source      | `NOT_FOUND: Wallet does not exist`                        |
+| Invalid wallet      | `NOT_FOUND: Wallet does not exist`                        |
+| Invalid budget      | `NOT_FOUND: Budget does not exist`                        |
 | Invalid record_type | `VALIDATION_ERROR: Record type must be INCOME or EXPENSE` |
+| Budget not EXPENSE  | `VALIDATION_ERROR: Budget records must be EXPENSE`        |
+| Archived budget     | `VALIDATION_ERROR: Cannot spend from archived budget`     |
+| Goal not reached    | `VALIDATION_ERROR: Goal must be reached before spending`  |
+| Insufficient budget | `VALIDATION_ERROR: Insufficient budget balance`           |
 
 ## Read Record
 
@@ -102,7 +122,7 @@ Returns record with all items.
 **Response includes:**
 
 - Record metadata (id, type, amount, note, dates)
-- Source reference (wallet info)
+- Source reference (`wallet` or `budget` depending on `source_type`)
 - All record items
 
 ### List Records

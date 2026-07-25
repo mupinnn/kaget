@@ -15,7 +15,7 @@ export const HomeBudgetsSection = () => {
             .with({ isPending: true }, () => <BudgetListLoader />)
             .with({ isError: true }, () => <p>An error occured</p>)
             .otherwise(budgetsQuery => (
-              <BudgetList data={budgetsQuery.data.data} />
+              <BudgetList data={budgetsQuery.data} />
             ))}
         </div>
         <ScrollBar orientation="horizontal" />

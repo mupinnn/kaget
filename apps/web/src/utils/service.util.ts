@@ -1,4 +1,5 @@
-import type { ServicePaginationMeta, ServiceResponse } from "@/schemas/service.schema";
+import type { ServicePaginationMeta } from "@/schemas/service.schema";
+import type { ApiPagination } from "@/utils/api.util";
 
 type GeneratePaginationMetaParams = {
   total: number;
@@ -24,10 +25,12 @@ export function generatePaginationMeta({
   };
 }
 
-export function successResponse<TData>({
-  data,
-  message = "Success",
-  meta,
-}: ServiceResponse<TData>) {
-  return { data, message, meta };
+export function mapApiPagination(pagination: ApiPagination): ServicePaginationMeta {
+  const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
+
+  return generatePaginationMeta({
+    total: pagination.total,
+    currentPage,
+    perPage: pagination.limit,
+  });
 }

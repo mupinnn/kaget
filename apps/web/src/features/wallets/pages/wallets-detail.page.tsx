@@ -19,8 +19,8 @@ export function WalletsDetailPage() {
   const { walletId } = route.useParams();
   const navigate = useNavigate();
   const walletDetailQuery = useWalletDetailQuery(walletId);
-  const recordsQuery = useRecordsQuery({ source_id: walletId });
-  const transfersQuery = useTransfersQuery({ source_id: walletId });
+  const recordsQuery = useRecordsQuery({ source_id: walletId, source_type: "WALLET" });
+  const transfersQuery = useTransfersQuery({ source_id: walletId, source_type: "WALLET" });
   const deleteWalletMutation = useDeleteWalletMutation();
 
   if (walletDetailQuery.isPending) return <p>Loading . . .</p>;
@@ -34,12 +34,14 @@ export function WalletsDetailPage() {
     });
   };
 
+  const wallet = walletDetailQuery.data;
+
   return (
     <PageLayout
-      title={walletDetailQuery.data.data.name}
+      title={wallet.name}
       subtitle={
         <p className="text-lg text-muted-foreground">
-          <HidableBalance value={walletDetailQuery.data.data.balance} />
+          <HidableBalance value={wallet.balance} />
         </p>
       }
     >
@@ -51,7 +53,7 @@ export function WalletsDetailPage() {
           </Link>
         </Button>
         <ConfirmationDialog
-          title={<>Are you sure want to delete {walletDetailQuery.data.data.name} wallet?</>}
+          title={<>Are you sure want to delete {wallet.name} wallet?</>}
           description="This action cannot be undone. This will permanently delete your wallet and remove others associated data (records, budget, etc)"
           trigger={
             <Button variant="destructive" size="sm">
@@ -75,7 +77,7 @@ export function WalletsDetailPage() {
             .with({ isError: true }, () => <p>An error occured</p>)
             .otherwise(recordsQuery => (
               <RecordList
-                data={recordsQuery.data.data}
+                data={recordsQuery.data}
                 emptyMessageDescription="You have not record any transactions for this wallet"
               />
             ))}
@@ -86,7 +88,7 @@ export function WalletsDetailPage() {
             .with({ isError: true }, () => <p>An error occured</p>)
             .otherwise(transfersQuery => (
               <TransferList
-                data={transfersQuery.data.data}
+                data={transfersQuery.data}
                 emptyMessageDescription="You have no transfers for this wallet"
               />
             ))}

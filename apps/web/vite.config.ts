@@ -3,37 +3,8 @@ import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-
-/** @see https://github.com/vitejs/vite/issues/16719#issuecomment-2308170706 */
-function workerChunkPlugin(): Plugin {
-  return {
-    name: workerChunkPlugin.name,
-    apply: "build",
-    enforce: "pre",
-    async resolveId(source, importer) {
-      if (source.endsWith("?worker")) {
-        const resolved = await this.resolve(source.split("?")[0], importer);
-        return `\0${resolved?.id}?worker-chunk`;
-      }
-    },
-    load(id) {
-      if (id.startsWith("\0") && id.endsWith("?worker-chunk")) {
-        const referenceId = this.emitFile({
-          type: "chunk",
-          id: id.slice(1).split("?")[0],
-        });
-
-        return `
-          export default function WorkerWrapper() {
-            return new Worker(import.meta.ROLLUP_FILE_URL_${referenceId}, { type: "module" })
-          }
-        `;
-      }
-    },
-  };
-}
 
 // to test the workflow variables. will be removed.
 const isProduction =
@@ -52,11 +23,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["**/*"],
+      includeAssets: ["pwa-64x64.png", "pwa-192x192.png", "pwa-512x512.png", "kaget-logo.svg"],
       manifest: {
         name: "KaGet: Kawan Budget",
         short_name: "KaGet",
-        description: "A fully offline web-based budgeting app that meets your needs",
+        description: "A web-based budgeting app synced with your KaGet account",
         theme_color: "#facc15",
         icons: [
           {
@@ -77,10 +48,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,icon,png,svg,woff,woff2,ttf,otf}"],
+        globPatterns: ["index.html", "pwa-*.png", "kaget-logo.svg"],
       },
     }),
-    workerChunkPlugin(),
   ],
 
   resolve: {
@@ -91,10 +61,6 @@ export default defineConfig({
 
   build: {
     target: "es2022",
-  },
-
-  worker: {
-    format: "es",
   },
 
   define: {

@@ -314,6 +314,8 @@ if (budget.balance === 0) {
 
 ## Spend (Create Record from Budget)
 
+On the API, spending is **`POST /api/records`** with `source_type: BUDGET` and `record_type: EXPENSE` — see [Record Operations](../records/operations.md#create-record). Expense history for a budget is **`GET /api/budgets/:id/records`** (see [`apps/api/README.md`](../../../../apps/api/README.md#api-routes)).
+
 Create an expense record that reduces budget balance.
 
 ### Flow
@@ -554,7 +556,11 @@ Rationale:
 
 ## Transaction Safety
 
-All budget operations that affect balance must be atomic:
+All budget operations that affect balance must be atomic. Create, add funds, refund, and reactivate run inside a database transaction and persist wallet ↔ budget moves as **transfer pairs** (double-entry rows in the `transfer` table via `createTransferPair`), not only raw balance updates.
+
+Spend and auto-archive on zero balance update the budget inside the same transaction as record creation (see [Record Operations](../records/operations.md#create-record)).
+
+The diagram below shows the logical balance effect; the API implementation uses transfers for funding operations:
 
 ```sql
 BEGIN TRANSACTION;
@@ -578,6 +584,18 @@ WHERE id = :budget_id AND balance = 0;
 
 COMMIT;
 ```
+
+## HTTP API
+
+Domain rules above map to `/api/budgets*` routes. Full method/path/request tables are in [`apps/api/README.md`](../../../../apps/api/README.md#api-routes) — not duplicated here.
+
+| Domain operation | API surface |
+| ---------------- | ----------- |
+| Create / bulk create | `POST /api/budgets`, `POST /api/budgets/bulk` |
+| List / get | `GET /api/budgets`, `GET /api/budgets/:id` |
+| Add / refund / reactivate | `POST /api/budgets/:id/add-funds`, `…/refund`, `…/reactivate` |
+| Spend | `POST /api/records` (`source_type: BUDGET`) |
+| Budget expense history | `GET /api/budgets/:id/records` |
 
 ## Related
 

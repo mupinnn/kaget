@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/react" />
 
-import { Settings } from "./features/settings/data/settings.schemas";
+import type { Settings } from "@/libs/session.lib";
 
 declare global {
   interface Window {

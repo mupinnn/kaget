@@ -11,7 +11,6 @@ import { HidableBalanceProvider } from "./components/providers/hidable-balance-p
 import { ThemeProvider } from "./components/providers/theme-provider";
 import { Button } from "./components/ui/button";
 import { Toaster } from "./components/ui/sonner";
-import { BaseServiceResponseSchema } from "./schemas/service.schema";
 
 const router = createRouter({ routeTree });
 
@@ -46,9 +45,11 @@ const queryClient = new QueryClient({
     },
   },
   mutationCache: new MutationCache({
-    onSuccess: response => {
-      const parsedResponse = BaseServiceResponseSchema.parse(response);
-      toast(parsedResponse.message);
+    onSuccess: (_data, _variables, _context, mutation) => {
+      const message = mutation.meta?.successMessage;
+      if (typeof message === "string") {
+        toast(message);
+      }
     },
     onError: queryAndMutationErrorHandler,
   }),
@@ -58,20 +59,11 @@ const queryClient = new QueryClient({
 });
 
 export function App() {
-  const {
-    offlineReady: [, setOfflineReady],
-    updateServiceWorker,
-  } = useRegisterSW({
+  const { updateServiceWorker } = useRegisterSW({
     onNeedRefresh() {
       toast("New version available", {
         description: "Click on reload button to update",
         action: <Button onClick={() => updateServiceWorker(true)}>Reload</Button>,
-      });
-    },
-    onOfflineReady() {
-      toast("App ready to work offline", {
-        description: "Now you can use KaGet without internet connection",
-        action: <Button onClick={() => setOfflineReady(false)}>Close</Button>,
       });
     },
   });

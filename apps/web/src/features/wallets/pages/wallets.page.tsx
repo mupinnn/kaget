@@ -11,7 +11,7 @@ export function WalletsIndexPage() {
 
   return (
     <PageLayout title="Wallets" subtitle="Manage your wallets. Hassle-free">
-      {walletsQuery.data?.data && walletsQuery.data.data.length > 0 ? (
+      {walletsQuery.data && walletsQuery.data.length > 0 ? (
         <Button asChild className="no-underline">
           <Link to="/wallets/create">
             <PlusIcon />
@@ -25,7 +25,7 @@ export function WalletsIndexPage() {
           .with({ isPending: true }, () => <WalletListLoader />)
           .with({ isError: true }, () => <p>An error occured</p>)
           .otherwise(walletsQuery => (
-            <WalletList data={walletsQuery.data.data} />
+            <WalletList data={walletsQuery.data} />
           ))}
       </div>
     </PageLayout>

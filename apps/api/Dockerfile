@@ -1,31 +1,27 @@
-FROM oven/bun:1.3 AS base
+FROM oven/bun:1.3.3-alpine AS base
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-FROM base AS deps
-COPY package.json bun.lock ./
-COPY apps/api/package.json ./apps/api/
-COPY apps/web/package.json ./apps/web/
-RUN bun install --frozen-lockfile
-
-FROM base AS build
-COPY --from=deps /app/node_modules ./node_modules
+FROM base AS prepare
+RUN bun add -g turbo@^2
 COPY . .
-WORKDIR /app/apps/api
-RUN bun run build
+RUN turbo prune "@kaget/api" --docker
 
-FROM base AS run
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/apps/api/dist ./apps/api/dist
-COPY --from=build /app/apps/api/package.json ./apps/api/package.json
-COPY --from=build /app/apps/api/migrations ./apps/api/migrations
-COPY --from=build /app/apps/api/drizzle.config.ts ./apps/api/drizzle.config.ts
-COPY --from=build /app/apps/api/src/db ./apps/api/src/db
-COPY --from=build /app/package.json ./package.json
-COPY apps/api/docker-entrypoint.sh ./apps/api/docker-entrypoint.sh
-RUN chmod +x ./apps/api/docker-entrypoint.sh
+FROM base AS builder
+COPY --from=prepare /app/out/json ./
+COPY --from=prepare /app/out/bun.lock ./bun.lock
+RUN bun ci --ignore-scripts
+COPY --from=prepare /app/out/full .
+RUN bun turbo build --filter=@kaget/api
 
+FROM builder AS migrate
+CMD ["bun", "turbo", "--filter=@kaget/api", "db:migrate"]
+
+FROM base AS runner
 WORKDIR /app/apps/api
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/package.json ./package.json
+COPY --from=builder /app/node_modules /app/node_modules
+ENV NODE_PATH=/app/node_modules
 EXPOSE 3000
-ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", "./dist/index.js"]

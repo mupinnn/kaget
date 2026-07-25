@@ -3,7 +3,7 @@ import { BanknoteIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { TransformedBudgetWithRelations } from "../data/budgets.schemas";
+import type { BudgetWithWallet } from "../data/budgets.schemas";
 import { BudgetListItem } from "./budget-list-item";
 
 export const BudgetListLoader = () => {
@@ -13,7 +13,7 @@ export const BudgetListLoader = () => {
 };
 
 export interface BudgetListProps {
-  data: TransformedBudgetWithRelations[];
+  data: BudgetWithWallet[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
 }

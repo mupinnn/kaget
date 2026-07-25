@@ -1,125 +1,31 @@
-import { nanoid } from "nanoid";
-import { db } from "@/libs/db.lib";
-import { successResponse } from "@/utils/service.util";
-import {
-  type CreateWallet,
-  CreateWalletSchema,
-  type UpdateWallet,
-  UpdateWalletSchema,
-  type Wallet,
-  WalletSchema,
-  type WalletsRequestQuery,
-  WalletsRequestQuerySchema,
-} from "./wallets.schemas";
-
-export async function getWalletById(walletId: string) {
-  const storedWalletById = await db.wallet.get(walletId);
-
-  if (!storedWalletById) throw new Error("Wallet not found");
-
-  return storedWalletById;
-}
-
-export async function updateWalletById(walletId: string, modifyCallback: (wallet: Wallet) => void) {
-  return await db.wallet
-    .where("id")
-    .equals(walletId)
-    .modify(wallet => {
-      wallet.updated_at = new Date().toISOString();
-      modifyCallback(wallet);
-    });
-}
-
-export async function addWalletBalance(walletId: string, amountToAdd: number) {
-  await updateWalletById(walletId, wallet => {
-    wallet.balance += amountToAdd;
-  });
-}
-
-export async function deductWalletBalance(walletId: string, amountToDeduct: number) {
-  await updateWalletById(walletId, wallet => {
-    wallet.balance -= amountToDeduct;
-  });
-}
+import { api } from "@/libs/api.lib";
+import { unwrap } from "@/utils/api.util";
+import type { CreateWallet, UpdateWallet, WalletsRequestQuery } from "./wallets.schemas";
 
 export async function getWalletList(query: WalletsRequestQuery = {}) {
-  const filterQueries = WalletsRequestQuerySchema.parse(query);
-  const walletsCollection = db.wallet.orderBy("updated_at").reverse();
-  const storedWallets = filterQueries.limit
-    ? await walletsCollection.limit(filterQueries.limit).toArray()
-    : await walletsCollection.toArray();
+  const wallets = await unwrap(api.api.wallets.$get());
 
-  const filteredWallets = storedWallets.filter(wallet => {
-    if (filterQueries.type && wallet.type !== filterQueries.type) return false;
-    return true;
-  });
+  let filtered = wallets;
 
-  return successResponse({
-    data: WalletSchema.array().parse(filteredWallets),
-    message: "Successfully retrieved wallets",
-  });
-}
-
-export async function getWalletDetail(walletId: string) {
-  const storedWallet = await getWalletById(walletId);
-
-  return successResponse({
-    data: WalletSchema.parse(storedWallet),
-    message: "Successfully retrieved wallet detail",
-  });
-}
-
-export async function createWallet(payload: CreateWallet) {
-  const parsedPayload = CreateWalletSchema.parse(payload);
-  const newWallet: Wallet = {
-    id: nanoid(),
-    name: parsedPayload.name,
-    balance: parsedPayload.initial_balance,
-    type: parsedPayload.type,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  await db.wallet.add(newWallet);
-
-  return successResponse({
-    data: WalletSchema.parse(newWallet),
-    message: "Successfully create a new wallet",
-  });
-}
-
-export async function updateWalletDetail(walletId: string, payload: UpdateWallet) {
-  const parsedPayload = UpdateWalletSchema.parse(payload);
-  const updatedWalletRecordsCount = await updateWalletById(walletId, wallet => {
-    wallet.name = parsedPayload.name;
-  });
-
-  if (updatedWalletRecordsCount === 0) {
-    throw new Error("Wallet not found");
+  if (query.type) {
+    filtered = filtered.filter(wallet => wallet.type === query.type);
   }
 
-  const updatedWallet = await getWalletById(walletId);
-
-  return successResponse({
-    data: WalletSchema.parse(updatedWallet),
-    message: "Successfully update the wallet",
-  });
-}
-
-export async function deleteWallet(walletId: string) {
-  const walletToBeDeleted = await getWalletById(walletId);
-
-  await db.wallet.delete(walletId);
-
-  const walletRecord = await db.record.where("source_id").equals(walletId).first();
-
-  if (walletRecord) {
-    await db.record.where("source_id").equals(walletId).delete();
-    await db.record_item.where("record_id").equals(walletRecord.id).delete();
+  if (query.limit) {
+    filtered = filtered.slice(0, query.limit);
   }
 
-  return successResponse({
-    data: WalletSchema.parse(walletToBeDeleted),
-    message: "Successfully delete the wallet",
-  });
+  return filtered;
 }
+
+export const getWalletDetail = (walletId: string) =>
+  unwrap(api.api.wallets[":id"].$get({ param: { id: walletId } }));
+
+export const createWallet = (payload: CreateWallet) =>
+  unwrap(api.api.wallets.$post({ json: payload }));
+
+export const updateWalletDetail = (walletId: string, payload: UpdateWallet) =>
+  unwrap(api.api.wallets[":id"].$patch({ param: { id: walletId }, json: payload }));
+
+export const deleteWallet = (walletId: string) =>
+  unwrap(api.api.wallets[":id"].$delete({ param: { id: walletId } }));

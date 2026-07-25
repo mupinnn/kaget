@@ -76,27 +76,27 @@ The `balance` column must be updated **atomically** with every transaction:
 └─────────────┘       └─────────────┘
        │
        │              ┌─────────────┐
-       └───────1:N────│  Transfer   │ (as source or destination)
+       └───────1:N────│  Transfer   │ (as owner via source_id)
                       └─────────────┘
 ```
 
 ### Related Entities
 
-| Entity   | Relationship | Description                                      |
-| -------- | ------------ | ------------------------------------------------ |
-| Record   | 1:N          | Wallet has many records (income/expense)         |
-| Transfer | 1:N          | Wallet can be source or destination of transfers |
-| Budget   | N:M          | Budgets may reference specific wallets           |
+| Entity   | Relationship | Description                                                |
+| -------- | ------------ | ---------------------------------------------------------- |
+| Record   | 1:N          | Wallet has many records (income/expense) as `source_id`    |
+| Transfer | 1:N          | Wallet owns many transfer legs (`source_id`, `source_type = WALLET`) |
+| Budget   | 1:N          | Wallet has many budgets (`wallet_id`)                      |
 
 ## Cascade Delete
 
-When a wallet is deleted, **all related data is permanently removed**:
+When a wallet is deleted, **wallet-owned data is permanently removed**:
 
-| Entity            | Cascade Behavior                         |
-| ----------------- | ---------------------------------------- |
-| Records           | Deleted                                  |
-| Transfers         | Deleted (both sides of transfer removed) |
-| Budget references | Reference removed (budget may remain)    |
+| Entity            | Cascade Behavior                                                              |
+| ----------------- | ----------------------------------------------------------------------------- |
+| Records           | Deleted — where `source_id = wallet.id` and `source_type = WALLET`            |
+| Transfers         | Deleted — **owned** legs only; counterparty legs preserved with name snapshots |
+| Budgets           | Cascade deleted — budgets where `wallet_id = wallet.id`                       |
 
 > See [ADR-003: Cascade Delete on Wallet Removal](../../adr/003-cascade-delete-on-wallet-removal.md) for rationale.
 

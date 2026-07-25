@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/sheet";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import type { Wallet } from "@/features/wallets/data/wallets.schemas";
+import { parseAmount } from "@/utils/amount.util";
 import { formatCurrency } from "@/utils/common.util";
 import { useCreateBudgetMutation } from "../data/budgets.mutations";
 import { type CreateBudget, CreateBudgetSchema } from "../data/budgets.schemas";
@@ -50,7 +51,7 @@ function BudgetFormWalletRemainingBalance({ id, balance }: Wallet) {
   const usedBalance = budgetItems
     .filter(budget => budget?.wallet?.id === id)
     .reduce((acc, curr) => acc + Number(curr.balance ?? 0), 0);
-  const remainingBalance = balance - usedBalance;
+  const remainingBalance = parseAmount(balance) - usedBalance;
 
   if (remainingBalance >= 0) {
     return `(Remaining: ${formatCurrency(remainingBalance)})`;
@@ -127,7 +128,7 @@ function BudgetForm({
                     key={wallet.id}
                     value={wallet.id}
                     className="w-full"
-                    disabled={wallet.balance === 0}
+                    disabled={parseAmount(wallet.balance) === 0}
                   >
                     {wallet.name} - {formatCurrency(wallet.balance)}{" "}
                     <BudgetFormWalletRemainingBalance {...wallet} />
@@ -187,7 +188,7 @@ export function BudgetsFormPage() {
   if (walletsQuery.isPending) return <p>Loading . . .</p>;
   if (walletsQuery.isError) return <p>An error occured: {walletsQuery.error.message}</p>;
 
-  const walletOptions = walletsQuery.data.data;
+  const walletOptions = walletsQuery.data ?? [];
   const budgetsSummary = Object.entries(
     form.watch("budgets").reduce<Record<string, CreateBudget["budgets"]>>((group, budget) => {
       if (budget.wallet) {
@@ -254,7 +255,8 @@ export function BudgetsFormPage() {
                   {budgetsSummary.map(([walletId, budgets], summaryIndex) => {
                     const matchedWallet = walletOptions.find(w => w.id === walletId);
                     const usedBalance = budgets.reduce((a, b) => a + Number(b.balance ?? 0), 0);
-                    const usedPercentage = (usedBalance / (matchedWallet?.balance ?? 0)) * 100;
+                    const usedPercentage =
+                      (usedBalance / parseAmount(matchedWallet?.balance ?? "0")) * 100;
 
                     return (
                       <div className="space-y-2" key={summaryIndex}>

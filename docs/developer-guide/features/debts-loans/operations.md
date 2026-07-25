@@ -564,6 +564,133 @@ async function deleteDebtLoan(debtLoanId) {
 | Pending LOAN deleted  | LOAN | +amount         | N/A                | +amount |
 | Resolved LOAN deleted | LOAN | +amount         | −amount            | 0       |
 
+## Update Debt/Loan
+
+Pending debts and loans can be edited. Resolved debts and loans are immutable.
+
+### Editable Fields
+
+| Field         | Balance impact | Notes                                      |
+| ------------- | -------------- | ------------------------------------------ |
+| `note`        | No             | Optional; `null` clears                    |
+| `other_party` | No             | Required when provided                     |
+| `amount`      | Yes            | Recalculates wallet balance and record     |
+| `occurred_at` | No             | Updates debt/loan and initial record date  |
+
+`type` and `wallet_id` are **not** editable — delete and recreate instead.
+
+### Flow
+
+```
+┌─────────────────────────┐
+│    Update DebtLoan      │
+│    Request              │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  Validate Pending       │
+│  (not resolved)         │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  Begin Transaction      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  If amount changed:     │
+│  Apply balance delta    │
+│  (LOAN: check balance)  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  Update DebtLoan        │
+│  Update initial record  │
+│  Update record item     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  Commit Transaction     │
+└─────────────────────────┘
+```
+
+### Implementation
+
+```javascript
+async function updateDebtLoan(debtLoanId, { note, otherParty, amount, occurredAt }) {
+  return await db.$transaction(async tx => {
+    const debtLoan = await tx.debtLoans.findUnique({ where: { id: debtLoanId } });
+    if (!debtLoan) throw new NotFoundError("Debt/Loan not found");
+    if (debtLoan.resolved_at) throw new ValidationError("Already resolved");
+
+    const wallet = await tx.wallets.findUnique({ where: { id: debtLoan.source_id } });
+    const oldAmount = debtLoan.amount;
+    const newAmount = amount ?? oldAmount;
+
+    if (amount !== undefined && newAmount !== oldAmount) {
+      const oldDelta = getBalanceDelta(debtLoan.type, oldAmount);
+      const newDelta = getBalanceDelta(debtLoan.type, newAmount);
+      const netDelta = newDelta - oldDelta;
+
+      if (debtLoan.type === "LOAN" && netDelta < 0 && wallet.balance < Math.abs(netDelta)) {
+        throw new ValidationError("Insufficient balance");
+      }
+
+      await tx.wallets.update({
+        where: { id: debtLoan.source_id },
+        data: { balance: wallet.balance + netDelta },
+      });
+    }
+
+    const newOtherParty = otherParty ?? debtLoan.other_party;
+    const newNote = note !== undefined ? note : debtLoan.note;
+    const newOccurredAt = occurredAt ?? debtLoan.occurred_at;
+    const recordNote = newNote ?? getDefaultNote(debtLoan.type, newOtherParty);
+
+    await tx.debtLoans.update({
+      where: { id: debtLoanId },
+      data: {
+        note: newNote,
+        other_party: newOtherParty,
+        amount: newAmount,
+        occurred_at: newOccurredAt,
+        updated_at: now(),
+      },
+    });
+
+    await tx.records.update({
+      where: { id: debtLoan.initial_record_id },
+      data: {
+        note: recordNote,
+        amount: newAmount,
+        recorded_at: newOccurredAt,
+        updated_at: now(),
+      },
+    });
+
+    await tx.recordItems.updateMany({
+      where: { record_id: debtLoan.initial_record_id },
+      data: { note: recordNote, amount: newAmount },
+    });
+
+    return debtLoan;
+  });
+}
+```
+
+### Amount Change Examples
+
+| Type | Change      | Wallet impact |
+| ---- | ----------- | ------------- |
+| DEBT | 100 → 150   | +50           |
+| DEBT | 150 → 100   | −50           |
+| LOAN | 100 → 150   | −50 (balance check) |
+| LOAN | 150 → 100   | +50           |
+
 ## Validation
 
 ### Create Validation
@@ -585,22 +712,41 @@ async function deleteDebtLoan(debtLoanId) {
 | Already resolved                | `VALIDATION_ERROR: Already resolved`                   |
 | Insufficient balance (for DEBT) | `VALIDATION_ERROR: Insufficient balance for repayment` |
 
+### Update Validation
+
+| Check                           | Error                                                  |
+| ------------------------------- | ------------------------------------------------------ |
+| DebtLoan not found              | `NOT_FOUND`                                            |
+| Already resolved                | `VALIDATION_ERROR: Already resolved`                   |
+| Insufficient balance (for LOAN amount increase) | `VALIDATION_ERROR: Insufficient balance` |
+
 ## Read Operations
+
+Ownership is scoped via the user's wallets (`wallet.user_id`), not a `user_id` column on `debt_loan`.
 
 ### List Debts & Loans
 
 ```javascript
-async function listDebtLoans(userId, { type, status }) {
-  const where = { user_id: userId };
+async function listDebtLoans(userId, { type, status, walletId, limit, offset }) {
+  const walletIds = await getUserWalletIds(userId);
+  const where = { source_id: { in: walletIds }, source_type: "WALLET" };
 
+  if (walletId) where.source_id = walletId;
   if (type) where.type = type;
   if (status === "PENDING") where.resolved_at = null;
   if (status === "RESOLVED") where.resolved_at = { not: null };
 
-  return await db.debtLoans.findMany({
-    where,
-    orderBy: { occurred_at: "desc" },
-  });
+  const [debtLoans, total] = await Promise.all([
+    db.debtLoans.findMany({
+      where,
+      orderBy: { occurred_at: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    db.debtLoans.count({ where }),
+  ]);
+
+  return { debt_loans: debtLoans, pagination: { total, limit, offset } };
 }
 ```
 
@@ -621,6 +767,77 @@ async function getDebtLoan(debtLoanId) {
   return debtLoan;
 }
 ```
+
+## REST API
+
+Server routes are mounted at `/api/debts-loans`. All endpoints require authentication.
+
+### Endpoints
+
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+| `POST` | `/api/debts-loans` | Create debt or loan |
+| `GET` | `/api/debts-loans` | List with filters and pagination |
+| `GET` | `/api/debts-loans/:id` | Detail with linked records and wallet |
+| `PATCH` | `/api/debts-loans/:id` | Update pending debt/loan |
+| `POST` | `/api/debts-loans/:id/resolve` | Mark paid (DEBT) or collected (LOAN) |
+| `DELETE` | `/api/debts-loans/:id` | Delete and reverse balances |
+
+### Create request
+
+```json
+{
+  "type": "DEBT",
+  "wallet_id": "wallet-id",
+  "amount": 100,
+  "other_party": "Sarah",
+  "occurred_at": "2026-02-01T00:00:00.000Z",
+  "note": "Rent help"
+}
+```
+
+### Update request
+
+```json
+{
+  "note": "Updated note",
+  "other_party": "Sarah",
+  "amount": 150,
+  "occurred_at": "2026-02-02T00:00:00.000Z"
+}
+```
+
+At least one field is required. Resolved debt/loans return `DEBT_LOAN_ALREADY_RESOLVED`.
+
+### List query parameters
+
+| Parameter   | Type     | Description                          |
+| ----------- | -------- | ------------------------------------ |
+| `type`      | `DEBT` \| `LOAN` | Filter by type               |
+| `status`    | `PENDING` \| `RESOLVED` | Filter by status      |
+| `wallet_id` | string   | Filter by wallet                     |
+| `limit`     | number   | Page size (default 20, max 100)      |
+| `offset`    | number   | Page offset (default 0)              |
+
+### List response
+
+```json
+{
+  "data": {
+    "debt_loans": [],
+    "pagination": { "total": 0, "limit": 20, "offset": 0 }
+  }
+}
+```
+
+### Error codes
+
+| Code | HTTP | When |
+| ---- | ---- | ---- |
+| `DEBT_LOAN_NOT_FOUND` | 404 | Missing or not owned |
+| `DEBT_LOAN_ALREADY_RESOLVED` | 400 | Update or resolve on resolved entity |
+| `DEBT_LOAN_INSUFFICIENT_BALANCE` | 400 | LOAN create/update or DEBT resolve |
+| `VALIDATION_INVALID_INPUT` | 400 | Zod validation failure |
 
 ## Related
 

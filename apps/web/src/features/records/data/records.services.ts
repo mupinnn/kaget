@@ -1,231 +1,125 @@
-import { nanoid } from "nanoid";
 import { match, P } from "ts-pattern";
-import { BudgetItemSchema, BudgetSchema } from "@/features/budgets/data/budgets.schemas";
-import {
-  getBudgetById,
-  getBudgetItemById,
-  updateBudgetById,
-} from "@/features/budgets/data/budgets.services";
-import { WalletSchema } from "@/features/wallets/data/wallets.schemas";
-import {
-  addWalletBalance,
-  deductWalletBalance,
-  getWalletById,
-  updateWalletById,
-} from "@/features/wallets/data/wallets.services";
-import { db } from "@/libs/db.lib";
-import { cn, matchZodSchema } from "@/libs/utils.lib";
-import { formatCurrency, noop, noopAsync } from "@/utils/common.util";
-import { isDateAfter, isDateBefore } from "@/utils/date.util";
-import { successResponse } from "@/utils/service.util";
-import {
-  type CreateRecord,
-  CreateRecordSchema,
-  type Record,
-  type RecordItem,
-  RecordItemSchema,
-  RecordSchema,
-  type RecordsRequestQuery,
-  RecordsRequestQuerySchema,
-  type RecordWithRelations,
-  RecordWithRelationsSchema,
-  type SourceType,
+import { getBudgetList } from "@/features/budgets/data/budgets.services";
+import { getWalletList } from "@/features/wallets/data/wallets.services";
+import { api } from "@/libs/api.lib";
+import { cn } from "@/libs/utils.lib";
+import { parseAmount } from "@/utils/amount.util";
+import { unwrap, unwrapPaginated } from "@/utils/api.util";
+import { formatCurrency } from "@/utils/common.util";
+import type {
+  ApiRecord,
+  CreateRecordForm,
+  OwnedRecord,
+  RecordListItem,
+  RecordsRequestQuery,
 } from "./records.schemas";
 
-export function getRecordAmountValueAndClasses(record: Record) {
-  const isAddition = match(record.record_type)
+async function resolveSourceNames(records: ApiRecord[]): Promise<RecordListItem[]> {
+  const [wallets, budgets] = await Promise.all([getWalletList(), getBudgetList()]);
+  const walletMap = new Map(wallets.map(wallet => [wallet.id, wallet.name]));
+  const budgetMap = new Map(budgets.map(budget => [budget.id, budget.name]));
+
+  return records.map(record => ({
+    ...record,
+    sourceName:
+      record.sourceType === "WALLET"
+        ? (walletMap.get(record.sourceId) ?? "Wallet")
+        : (budgetMap.get(record.sourceId) ?? "Budget"),
+  }));
+}
+
+export function getRecordAmountValueAndClasses(record: { recordType: string; amount: string }) {
+  const amount = parseAmount(record.amount);
+  const isAddition = match(record.recordType)
     .with(P.union("INCOME", "LOAN", "DEBT_COLLECTION"), () => true)
-    .with(P.union("EXPENSE", "DEBT", "DEBT_REPAYMENT"), () => false)
-    .exhaustive();
+    .with(P.union("EXPENSE", "DEBT", "DEBT_REPAYMENT", "LOAN"), () => false)
+    .otherwise(() => false);
   const className = cn(isAddition ? "text-success" : "text-destructive");
   const operator = isAddition ? "+" : "-";
-  const value = `${operator} ${formatCurrency(record.amount)}`;
+  const value = `${operator} ${formatCurrency(amount)}`;
 
   return { className, value, operator, isAddition };
 }
 
-export function getSourceOrDestinationType(maybeSourceOrDestination: unknown) {
-  return match(maybeSourceOrDestination)
-    .returnType<SourceType>()
-    .with(matchZodSchema(WalletSchema), () => "WALLET")
-    .with(matchZodSchema(BudgetSchema), () => "BUDGET")
-    .with(matchZodSchema(BudgetItemSchema), () => "BUDGET_ITEM")
-    .otherwise(() => {
-      throw new Error("Unable to parse source or destination data");
-    });
-}
-
-export async function getSourceOrDestinationById(id: string, type: SourceType) {
-  return match(type)
-    .with("WALLET", async () => await getWalletById(id))
-    .with("BUDGET", async () => await getBudgetById(id))
-    .with("BUDGET_ITEM", async () => await getBudgetItemById(id))
-    .exhaustive();
-}
-
-export async function getRecordById(recordId: string): Promise<Record> {
-  const storedRecordById = await db.record.get(recordId);
-
-  if (!storedRecordById) throw new Error("Record not found");
-
-  return storedRecordById;
-}
-
-export async function getRecordWithRelations(recordId: string): Promise<RecordWithRelations> {
-  const storedRecordById = await getRecordById(recordId);
-  const matchedSourceType = await getSourceOrDestinationById(
-    storedRecordById.source_id,
-    storedRecordById.source_type
-  );
-  const storedRecordWithRelations: RecordWithRelations = {
-    ...storedRecordById,
-    source: matchedSourceType,
-  };
-
-  return storedRecordWithRelations;
-}
-
-export async function commitRecord(record: Omit<Record, "id" | "created_at" | "updated_at">) {
-  const newRecord: Record = {
-    id: nanoid(),
-    ...record,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  const { isAddition } = getRecordAmountValueAndClasses(newRecord);
-
-  await db.record.add(newRecord);
-
-  await match(newRecord.source_type)
-    .with("WALLET", async () => {
-      await updateWalletById(newRecord.source_id, wallet => {
-        wallet.balance = isAddition
-          ? wallet.balance + newRecord.amount
-          : wallet.balance - newRecord.amount;
-      });
-    })
-    .with("BUDGET", async () => {
-      if (isAddition) {
-        noop();
-      } else {
-        await updateBudgetById(newRecord.source_id, budget => {
-          budget.balance -= newRecord.amount;
-
-          if (budget.balance <= 0) {
-            budget.archived_at = new Date().toISOString();
-          }
-        });
-      }
-    })
-    .with("BUDGET_ITEM", noopAsync)
-    .exhaustive();
-}
-
 export async function getRecordList(query: RecordsRequestQuery = {}) {
-  const parsedFilters = RecordsRequestQuerySchema.parse(query);
-  const storedRecords = await db.record.orderBy("recorded_at").reverse().toArray();
-  const filteredStoredRecords = storedRecords.filter(record => {
-    if (parsedFilters.source_id && record.source_id !== parsedFilters.source_id) {
-      return false;
-    }
+  if (query.source_id && query.source_type === "BUDGET") {
+    const result = await unwrap(
+      api.api.budgets[":id"].records.$get({
+        param: { id: query.source_id },
+        query: {
+          from_date: query.start,
+          to_date: query.end,
+          limit: 100,
+        },
+      })
+    );
 
-    if (parsedFilters.start && parsedFilters.end) {
-      if (
-        isDateBefore(record.recorded_at, parsedFilters.start) ||
-        isDateAfter(record.recorded_at, parsedFilters.end)
-      ) {
-        return false;
-      }
-    }
+    return resolveSourceNames(result.records);
+  }
 
-    return true;
-  });
-  const storedRecordsWithRelations: RecordWithRelations[] = await Promise.all(
-    filteredStoredRecords.map(async record => {
-      const recordWithRelations = await getRecordWithRelations(record.id);
-      return recordWithRelations;
+  const result = await unwrapPaginated(
+    api.api.records.$get({
+      query: {
+        source_id: query.source_id,
+        from_date: query.start,
+        to_date: query.end,
+        limit: 100,
+      },
     })
   );
 
-  return successResponse({
-    data: RecordWithRelationsSchema.array().parse(storedRecordsWithRelations),
-    message: "Successfully retrieved records",
-  });
+  return resolveSourceNames(result.data.records);
 }
 
-export async function getRecordDetail(recordId: string) {
-  const storedRecordWithRelations = await getRecordWithRelations(recordId);
-
-  return successResponse({
-    data: RecordWithRelationsSchema.parse(storedRecordWithRelations),
-    message: "Successfully retrieved record detail",
-  });
-}
+export const getRecordDetail = (recordId: string) =>
+  unwrap(api.api.records[":id"].$get({ param: { id: recordId } }));
 
 export async function getRecordItemList(recordId: string) {
-  const storedRecordItems = await db.record_item.where({ record_id: recordId }).toArray();
-
-  return successResponse({
-    data: RecordItemSchema.array().default([]).parse(storedRecordItems),
-    message: "Successfully retrieved record items",
-  });
+  const record = await getRecordDetail(recordId);
+  return record.items;
 }
 
-export async function createRecord(payload: CreateRecord) {
-  const data = CreateRecordSchema.parse(payload);
-  const sourceType = getSourceOrDestinationType(data.source);
-  const newRecord: Record = {
-    id: nanoid(),
-    note: data.note,
-    amount: data.amount,
-    source_id: data.source.id,
+function toCreateRecordPayload(payload: CreateRecordForm, sourceType: "WALLET" | "BUDGET") {
+  const items =
+    payload.items.length > 0
+      ? payload.items
+      : [{ amount: payload.amount ?? 0, note: payload.note }];
+
+  return {
+    source_id: payload.source.id,
     source_type: sourceType,
-    record_type: data.record_type,
-    recorded_at: new Date(data.dor).toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    record_type: payload.record_type,
+    recorded_at: new Date(payload.dor),
+    note: payload.note,
+    items,
   };
-  const newRecordDetail: RecordItem[] = data.items.map(item => ({
-    id: nanoid(),
-    note: item.note,
-    amount: item.amount,
-    record_id: newRecord.id,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }));
-
-  await db.transaction("rw", db.record, db.record_item, db.wallet, db.budget, async () => {
-    await commitRecord(newRecord);
-
-    if (newRecordDetail.length > 0) {
-      await db.record_item.bulkAdd(newRecordDetail);
-    }
-  });
-
-  return successResponse({
-    data: RecordSchema.parse(newRecord),
-    message: "Successfully create a new record",
-  });
 }
 
-export async function deleteRecord(recordId: string) {
-  const storedRecordById = await getRecordById(recordId);
-  const { isAddition } = getRecordAmountValueAndClasses(storedRecordById);
+export async function createRecord(payload: CreateRecordForm) {
+  const resolvedSourceType = "walletId" in payload.source ? "BUDGET" : "WALLET";
 
-  await db.transaction("rw", db.record, db.record_item, db.wallet, async () => {
-    if (isAddition) {
-      await deductWalletBalance(storedRecordById.source_id, storedRecordById.amount);
-    } else {
-      await addWalletBalance(storedRecordById.source_id, storedRecordById.amount);
-    }
+  return unwrap(
+    api.api.records.$post({
+      json: toCreateRecordPayload(payload, resolvedSourceType),
+    })
+  );
+}
 
-    await db.record.delete(recordId);
-    await db.record_item.where("record_id").equals(recordId).delete();
-  });
+export const deleteRecord = (recordId: string) =>
+  unwrap(api.api.records[":id"].$delete({ param: { id: recordId } }));
 
-  return successResponse({
-    data: RecordSchema.parse(storedRecordById),
-    message: "Successfully delete record",
-  });
+export function getRecordSourceName(record: OwnedRecord | RecordListItem) {
+  if ("sourceName" in record) {
+    return record.sourceName;
+  }
+
+  if ("wallet" in record && record.wallet) {
+    return record.wallet.name;
+  }
+
+  if ("budget" in record && record.budget) {
+    return record.budget.name;
+  }
+
+  return record.sourceType;
 }

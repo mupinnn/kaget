@@ -4,7 +4,6 @@ import { BadgeCheckIcon, CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useState } from "react";
 import CurrencyInput from "react-currency-input-field";
 import { useForm } from "react-hook-form";
-import { StoragePersistenceNotice } from "@/components/storage-persistence-notice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +28,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCreateSettingsMutation } from "@/features/settings/data/settings.mutations";
-import { type Settings, SettingsSchema } from "@/features/settings/data/settings.schemas";
+import {
+  type CreateSettings,
+  currencyCodeBodySchema,
+} from "@/features/settings/data/settings.schemas";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
@@ -47,9 +49,9 @@ const features = [
       "Need to allocate money for a specific occasion? Use a budget! KaGet will cut your wallet balance when start budgeting, making it easy to control your spending.",
   },
   {
-    title: "Offline & Fully client-side",
+    title: "Cloud sync ready",
     description:
-      "Access it anytime even without an internet connection. All your data is not going anywhere but your device.",
+      "Your budget data is stored securely on the server and available whenever you are signed in.",
   },
 ];
 
@@ -97,15 +99,15 @@ export function OnboardingIndexPage() {
 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const form = useForm<Settings>({
-    resolver: zodResolver(SettingsSchema),
+  const form = useForm<CreateSettings>({
+    resolver: zodResolver(currencyCodeBodySchema),
     defaultValues: {
-      currency: "IDR",
+      currencyCode: "IDR",
     },
   });
   const createSettingsMutation = useCreateSettingsMutation();
 
-  function onSubmit(values: Settings) {
+  function onSubmit(values: CreateSettings) {
     createSettingsMutation.mutate(values, {
       async onSuccess() {
         await navigate({ to: "/" });
@@ -121,7 +123,7 @@ export function OnboardingIndexPage() {
           Welcome to <br /> <span className="font-bold">KaGet: Kawan Budget!</span>
         </h1>
         <p className="text-muted-foreground">
-          A fully offline web-based budgeting app that meets your needs.
+          A web-based budgeting app synced with your KaGet account.
         </p>
       </header>
 
@@ -143,8 +145,6 @@ export function OnboardingIndexPage() {
         <h2 className="font-semibold text-xl">Getting Started</h2>
         <p>Before using the app, you need to know a few things:</p>
 
-        <StoragePersistenceNotice />
-
         <ol className="list-disc space-y-2 pl-4">
           <li>
             Numbers are formatted based on your browser&apos;s language (locale) settings and
@@ -162,7 +162,7 @@ export function OnboardingIndexPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="currency"
+              name="currencyCode"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Currency</FormLabel>
@@ -190,7 +190,7 @@ export function OnboardingIndexPage() {
                             value={field.value}
                             setOpen={setIsCurrencyOpen}
                             setSelectedCurrency={value => {
-                              form.setValue("currency", value);
+                              form.setValue("currencyCode", value);
                             }}
                           />
                         </div>
@@ -218,7 +218,7 @@ export function OnboardingIndexPage() {
                           value={field.value}
                           setOpen={setIsCurrencyOpen}
                           setSelectedCurrency={value => {
-                            form.setValue("currency", value);
+                            form.setValue("currencyCode", value);
                           }}
                         />
                       </PopoverContent>
@@ -255,7 +255,7 @@ export function OnboardingIndexPage() {
                   data-testid="onboarding-sample-balance-preview"
                 >
                   {formatCurrency(Number(balancePreview ?? 0), {
-                    currency: form.watch("currency"),
+                    currency: form.watch("currencyCode"),
                   })}
                 </p>
               </CardContent>
