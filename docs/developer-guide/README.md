@@ -4,6 +4,10 @@ Technical documentation for engineers working on KaGet.
 
 ## Contents
 
+### Process
+
+- [Release and deploy](./release-and-deploy.md) — release-please, branch protection, parachute VPS deploy
+
 ### API
 
 - [API Route Handlers](./api-route-handlers.md) — Error handling, validation, and wide-event logging conventions
@@ -29,6 +33,8 @@ Key technical decisions and their rationale.
 - [ADR-002: Balance as Denormalized Cache](./adr/002-balance-as-denormalized-cache.md)
 - [ADR-003: Cascade Delete on Wallet Removal](./adr/003-cascade-delete-on-wallet-removal.md)
 - [ADR-004: Tooling Stack Migration](./adr/004-tooling-stack-migration.md)
+- [ADR-005: Release and Versioning Strategy](./adr/005-release-and-versioning-strategy.md)
+- [ADR-006: VPS Deployment via parachute](./adr/006-vps-deployment-via-parachute.md)
 
 ## Contributing
 

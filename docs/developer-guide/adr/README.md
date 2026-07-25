@@ -25,3 +25,5 @@ Each ADR follows this structure:
 | [002](./002-balance-as-denormalized-cache.md)    | Balance as Denormalized Cache    | Accepted | 2026-02-04 |
 | [003](./003-cascade-delete-on-wallet-removal.md) | Cascade Delete on Wallet Removal | Accepted | 2026-02-04 |
 | [004](./004-tooling-stack-migration.md)       | Tooling Stack Migration          | Accepted | 2026-06-02 |
+| [005](./005-release-and-versioning-strategy.md) | Release and Versioning Strategy | Accepted | 2026-07-22 |
+| [006](./006-vps-deployment-via-parachute.md)  | VPS Deployment via parachute     | Accepted | 2026-07-22 |

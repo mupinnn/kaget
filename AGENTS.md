@@ -338,6 +338,7 @@ Never commit `.env`.
 
 - Wire web UI to **better-auth** client with credentialed `hc` requests
 - Sync or migrate domain data from Dexie to PostgreSQL
-- Re-enable E2E CI (Playwright) when the workflow is turned back on
+- Postgres backup strategy for the in-stack `pgdata` volume (ADR-006)
+- Configure GitHub branch protection on `main` (see [Release and deploy](docs/developer-guide/release-and-deploy.md))
 
 When touching auth, sync, or tooling, read ADRs and add a new ADR for significant decisions.

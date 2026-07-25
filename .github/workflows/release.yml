@@ -1,0 +1,54 @@
+# Release pipeline (ADR-005) + parachute deploy (ADR-006).
+#
+# Deploy runs in the same workflow as release-please because events created with
+# GITHUB_TOKEN do not trigger other workflows. Manual redeploys use workflow_dispatch.
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.manual.outputs.should_deploy || steps.from_release.outputs.should_deploy }}
+    steps:
+      - id: manual
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+
+      - uses: googleapis/release-please-action@v4
+        id: release
+        if: github.event_name == 'push'
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - id: from_release
+        if: >
+          github.event_name == 'push' &&
+          (steps.release.outputs.release_created == 'true' ||
+           steps.release.outputs.releases_created == 'true')
+        run: echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: release-please
+    if: needs.release-please.outputs.should_deploy == 'true'
+    uses: mupinnn/parachute/.github/workflows/deploy.yml@main
+    with:
+      deployment-name: kaget
+      type: compose
+      compose-file: docker-compose.yml
+      join-tailscale: true
+    secrets:
+      parachute-url: ${{ secrets.PARACHUTE_URL }}
+      deploy-token: ${{ secrets.PARACHUTE_DEPLOY_TOKEN }}
+      tailscale-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      tailscale-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}

@@ -36,7 +36,8 @@
 
 **Deployment**
 
-- [Cloudflare Pages](https://pages.cloudflare.com) — frontend static hosting (see `.github/workflows/deploy.yml`)
+- [parachute](https://github.com/mupinnn/parachute) — single-stack VPS deploy behind Traefik (`parachute.toml`, `.github/workflows/release.yml`)
+- [release-please](https://github.com/googleapis/release-please) — semver bumps + changelog (see [Release and deploy](docs/developer-guide/release-and-deploy.md))
 
 ## Prerequisites
 
@@ -241,7 +242,7 @@ bun run --env-file=.env --filter @kaget/api db:migrate
 
 Details and copy-paste examples for every `db:*` script: [apps/api/README.md](apps/api/README.md#running-auth-and-db).
 
-Docker runs `db:migrate` via [`apps/api/docker-entrypoint.sh`](apps/api/docker-entrypoint.sh) before the server starts.
+Docker runs `db:migrate` as a one-shot `migrate` service before `api` starts (see [`docker-compose.yml`](docker-compose.yml)).
 
 ## Environment Variables
 
@@ -260,12 +261,13 @@ Copy [.env.example](.env.example) to `.env` at the repository root.
 | `POSTGRES_PASSWORD` | Docker Compose Postgres password |
 | `POSTGRES_DB` | Docker Compose Postgres database name |
 
-Docker Compose loads `.env` via `env_file` for `db` and `api`. The API reads `Bun.env` through [`apps/api/src/config/env.ts`](apps/api/src/config/env.ts) (Zod-validated).
+Docker Compose loads `.env` via `docker-compose.override.yml` for local `db` / `migrate` / `api`. The API reads `Bun.env` through [`apps/api/src/config/env.ts`](apps/api/src/config/env.ts) (Zod-validated). Production secrets are injected by parachute — see [Release and deploy](docs/developer-guide/release-and-deploy.md).
 
 ## Documentation
 
 - [User guide](docs/user-guide/README.md) — wallets, budgets, records, transfers, settings
 - [Developer guide](docs/developer-guide/README.md) — feature technical docs and [ADRs](docs/developer-guide/adr/README.md)
+- [Release and deploy](docs/developer-guide/release-and-deploy.md) — release-please, branch protection, parachute
 - [API Route Handlers](docs/developer-guide/api-route-handlers.md) — error handling, validation, wide-event logging
 - [API Testing](docs/developer-guide/testing.md) — PGlite, testClient, assertion helpers
 - [AGENTS.md](AGENTS.md) — conventions for AI-assisted development

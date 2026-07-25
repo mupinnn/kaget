@@ -23,30 +23,18 @@
     "format": "biome check --write .",
     "prepare": "lefthook install",
     "test": "turbo test",
-    "test:e2e": "turbo test:e2e --filter @kaget/web",
-    "release": "release-it"
+    "test:e2e": "turbo test:e2e --filter @kaget/web"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
     "@commitlint/cli": "21.0.2",
     "@commitlint/config-conventional": "21.0.2",
     "lefthook": "2.1.9",
-    "release-it": "20.2.0",
     "turbo": "2.9.16",
     "typescript": "catalog:"
   },
   "overrides": {
     "esbuild": "0.28.0"
-  },
-  "release-it": {
-    "git": {
-      "commitMessage": "release: v${version}"
-    },
-    "github": {
-      "release": true,
-      "releaseName": "${version}",
-      "autoGenerate": true,
-      "web": true
-    }
   }
 }
+

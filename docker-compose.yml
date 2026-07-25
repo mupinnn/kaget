@@ -1,47 +1,69 @@
+# Production compose stack for parachute (ADR-006).
+# Local overrides live in docker-compose.override.yml (auto-loaded by
+# `docker compose up`; ignored when CI passes `-f docker-compose.yml` only).
+#
+# Every built service declares `image:` so parachute can `up --no-build --pull always`.
+# IMAGE_TAG is set by the parachute reusable workflow to the release commit SHA.
+
+name: kaget
+
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
-    env_file: .env
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    ports:
-      - "127.0.0.1:5432:5432"
+      POSTGRES_USER: kaget
+      POSTGRES_DB: kaget
+      # POSTGRES_PASSWORD injected by parachute (see parachute.toml service_secrets)
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U kaget -d kaget"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   migrate:
+    image: ghcr.io/mupinnn/kaget/migrate:${IMAGE_TAG:-local}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
       target: migrate
-    env_file: .env
     depends_on:
       db:
         condition: service_healthy
-    restart: no
+    restart: "no"
+    # DATABASE_URL injected by parachute
 
   api:
+    image: ghcr.io/mupinnn/kaget/api:${IMAGE_TAG:-local}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
       target: runner
     restart: unless-stopped
-    env_file: .env
-    ports:
-      - "127.0.0.1:${API_PORT:-3000}:${API_PORT:-3000}"
+    environment:
+      API_PORT: "3000"
+      BETTER_AUTH_URL: https://kaget.mupin.dev
+      CORS_ORIGINS: https://kaget.mupin.dev
+      # DATABASE_URL + BETTER_AUTH_SECRET injected by parachute
     depends_on:
       db:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+
+  web:
+    image: ghcr.io/mupinnn/kaget/web:${IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: https://kaget.mupin.dev
+        VITE_APP_URL: https://kaget.mupin.dev
+    restart: unless-stopped
+    depends_on:
+      - api
 
 volumes:
   pgdata:

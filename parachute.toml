@@ -1,0 +1,22 @@
+# Spec for the VPS Deployment via parachute (ADR-006).
+# Secrets are set once on the box: `parachute secret set kaget KEY=value`
+
+name = "kaget"
+type = "compose"
+rollout = "auto"
+
+# Only the web service is public; nginx proxies /api → api over the compose network.
+[[routes]]
+service = "web"
+hostnames = ["kaget.mupin.dev"]
+port = 8080
+
+[service_secrets]
+db = ["POSTGRES_PASSWORD"]
+migrate = ["DATABASE_URL"]
+api = ["DATABASE_URL", "BETTER_AUTH_SECRET"]
+
+[health]
+path = "/healthz"
+retries = 3
+start_period_seconds = 15
