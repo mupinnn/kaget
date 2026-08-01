@@ -8,6 +8,10 @@ Accepted
 
 2026-02-04
 
+## Applies to
+
+**Client domain engine (Dexie)** — not Postgres. See [ADR-007](./007-local-first-drive-custodian-boundary.md).
+
 ## Context
 
 When a user deletes a wallet, we need to decide what happens to related data:

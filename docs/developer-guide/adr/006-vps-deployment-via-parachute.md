@@ -4,6 +4,8 @@
 
 Accepted (2026-07-22)
 
+**Amendment (2026-08-01):** Per [ADR-007](./007-local-first-drive-custodian-boundary.md), the in-stack Postgres volume holds **auth, OAuth tokens, and Drive file pointers only** — not the financial ledger. Backup strategy for `pgdata` is about session/token recovery, not user budgets.
+
 ## Context
 
 The web app deployed to Cloudflare Pages; the API had a Dockerfile and a local `docker-compose.yml` but no CI deployment. We are migrating deployment **entirely to a single VPS** using [parachute](https://github.com/mupinnn/parachute), the maintainer's deployment tool. Parachute lands a GHCR-image compose stack on one box behind Traefik, routing by hostname, injecting secrets at deploy time, with Cloudflare DNS + TLS.

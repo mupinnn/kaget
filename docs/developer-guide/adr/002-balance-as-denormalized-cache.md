@@ -8,6 +8,10 @@ Accepted
 
 2026-02-04
 
+## Applies to
+
+**Client domain engine (Dexie)** — not Postgres. See [ADR-007](./007-local-first-drive-custodian-boundary.md).
+
 ## Context
 
 KaGet needs to display wallet balances frequently (dashboard, wallet list, wallet details). We need to decide how to calculate and store balance data.

@@ -70,10 +70,11 @@ There is **no** `packages/` directory yet. Web consumes `@kaget/api` as a worksp
 
 ### Data architecture (important)
 
-- **Client-side domain data** (wallets, budgets, records, transfers, settings) lives in **Dexie** via [`apps/web/src/libs/db.lib.ts`](apps/web/src/libs/db.lib.ts).
-- Feature `*.services.ts` files read/write Dexie — they are the main persistence layer for the PWA today.
-- **`apps/api`** holds PostgreSQL + better-auth. Do not assume server CRUD for domain entities unless you add it.
-- When adding server persistence, document sync strategy in an ADR.
+- **Product invariant:** envelope allocation — see root [`CONTEXT.md`](CONTEXT.md).
+- **Working ledger** (wallets, budgets, records, transfers, debts/loans, settings) lives in **Dexie** via [`apps/web/src/libs/db.lib.ts`](apps/web/src/libs/db.lib.ts). Feature `*.services.ts` files are the domain engine.
+- **Optional durability:** user’s Google Drive — one versioned JSON file (same family as import/export). See [PRD 001](docs/developer-guide/prd/001-local-first-drive-sync.md) and [ADR-007](docs/developer-guide/adr/007-local-first-drive-custodian-boundary.md).
+- **`apps/api`:** Google session, OAuth token broker, Drive I/O, `fileId` pointer in Postgres. **Do not** persist financial ledger entities. No email/password auth for product login.
+- Do not add server CRUD for domain entities without an ADR that explicitly supersedes ADR-007.
 
 ### Backend (`apps/api`)
 
@@ -317,7 +318,7 @@ Never commit `.env`.
 1. Use **Bun** only (`bun install`, `bun run`, `bunx`) — not pnpm/npm for this repo.
 2. Do not add ESLint or Prettier — **Biome** at repo root.
 3. Do not add Husky — **Lefthook** only.
-4. Do not put domain budgeting logic in the API without an explicit decision — **Dexie is canonical** today.
+4. Do not put domain budgeting logic or ledger persistence in the API — **Dexie is the working ledger**; Drive is optional durable copy ([ADR-007](docs/developer-guide/adr/007-local-first-drive-custodian-boundary.md)).
 5. Do not bypass `*.services.ts` for Dexie access from components.
 6. Do not use `@hono/node-server` — **Bun.serve** only.
 7. Do not run `auth:*` or `db:*` without `--env-file` pointing at the repo-root `.env` (unless vars are already in the shell).
@@ -336,9 +337,10 @@ Never commit `.env`.
 
 ## Follow-ups
 
-- Wire web UI to **better-auth** client with credentialed `hc` requests
-- Sync or migrate domain data from Dexie to PostgreSQL
-- Postgres backup strategy for the in-stack `pgdata` volume (ADR-006)
+- Google OAuth + Drive token broker + client sync (PRD 001) — strip any domain API CRUD
+- Optional client-side encryption (deferred)
+- Full UI/IA redesign (separate session after sync works)
+- Postgres backup strategy for auth/token volume only (ADR-006)
 - Configure GitHub branch protection on `main` (see [Release and deploy](docs/developer-guide/release-and-deploy.md))
 
 When touching auth, sync, or tooling, read ADRs and add a new ADR for significant decisions.
