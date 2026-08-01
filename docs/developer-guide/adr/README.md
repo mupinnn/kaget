@@ -27,3 +27,6 @@ Each ADR follows this structure:
 | [004](./004-tooling-stack-migration.md)       | Tooling Stack Migration          | Accepted | 2026-06-02 |
 | [005](./005-release-and-versioning-strategy.md) | Release and Versioning Strategy | Accepted | 2026-07-22 |
 | [006](./006-vps-deployment-via-parachute.md)  | VPS Deployment via parachute     | Accepted | 2026-07-22 |
+| [007](./007-local-first-drive-custodian-boundary.md) | Local-first + Drive; API not a ledger custodian | Accepted | 2026-08-01 |
+
+**Note:** ADR-002 and ADR-003 apply to the **client** domain engine (Dexie). ADR-007 forbids persisting that ledger in Postgres. ADR-006’s `db` service remains for **auth/token/pointer** data only after the Drive revamp.

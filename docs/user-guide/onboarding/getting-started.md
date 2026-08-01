@@ -17,7 +17,7 @@ When you first open KaGet, you'll see a brief introduction to the app's main fea
 | ----------------- | ------------------------------------------------------------------- |
 | **Wallets**       | Create and manage multiple wallets (cash, bank accounts, e-wallets) |
 | **Records**       | Track income and expenses with categories                           |
-| **Budgets**       | Set spending limits and monitor progress                            |
+| **Budgets**       | Allocate money into spending envelopes and saving goals           |
 | **Transfers**     | Move money between wallets                                          |
 | **Debts & Loans** | Track money you owe or are owed                                     |
 
@@ -50,7 +50,7 @@ KaGet needs to know your preferred currency to display amounts correctly.
 2. Review the balance and date previews
 3. Tap "Continue" to finish onboarding
 
-Your currency preference is saved to your account and will sync across all your devices.
+Your currency preference is saved on this device. If you later connect Google Drive in Settings, it is included in your ledger backup file.
 
 ## After Onboarding
 

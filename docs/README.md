@@ -1,38 +1,47 @@
 # KaGet Documentation
 
-Welcome to the KaGet documentation. KaGet is a personal budgeting app that helps you track your finances, manage wallets, record transactions, set budgets, and handle debts & loans.
+KaGet (Kawan Budget) is a personal budgeting app built on **envelope allocation**: money moves from a **Wallet** into a **Budget** or **Goal** before it is spent. Budgets are funded pools, not soft category limits on a shared balance.
 
-## Documentation Structure
+Domain language: [`CONTEXT.md`](../CONTEXT.md).
 
-This documentation is organized into two main sections:
+## Product architecture (short)
+
+| Layer | Holds |
+|-------|--------|
+| **Device (Dexie)** | Working ledger — canonical while you use the app |
+| **Your Google Drive** (optional) | Durable JSON copy of the same ledger |
+| **KaGet API** | Google sign-in + Drive access broker only — **not** your transactions |
+
+See [PRD: Local-first + Drive sync](./developer-guide/prd/001-local-first-drive-sync.md) and [ADR-007](./developer-guide/adr/007-local-first-drive-custodian-boundary.md).
+
+## Documentation structure
 
 ### [User Guide](./user-guide/)
 
-Task-oriented documentation for KaGet users. Learn how to use each feature effectively.
+Task-oriented docs for people using KaGet.
 
-- [Onboarding](./user-guide/onboarding/) — Get started with KaGet
-- [Wallets](./user-guide/wallets/) — Create and manage your wallets
-- [Records](./user-guide/records/) — Track income and expenses
-- [Budgets](./user-guide/budgets/) — Allocate spending limits and saving goals
+- [Onboarding](./user-guide/onboarding/) — Get started (no account required)
+- [Wallets](./user-guide/wallets/) — Real-world money accounts
+- [Records](./user-guide/records/) — Income and expenses
+- [Budgets](./user-guide/budgets/) — Spending envelopes and saving goals
 - [Transfers](./user-guide/transfers/) — Move money between wallets and budgets
-- [Settings](./user-guide/settings/) — App preferences and data import/export
-- [Debts & Loans](./user-guide/debts-loans/) — Track money borrowed and lent
+- [Debts & Loans](./user-guide/debts-loans/) — Money borrowed or lent
+- [Settings](./user-guide/settings/) — Preferences, import/export, Drive sync
 
 ### [Developer Guide](./developer-guide/)
 
-Technical documentation for engineers working on KaGet.
-
-- [Features](./developer-guide/features/) — Technical flows and implementation details
-- [Architecture Decision Records](./developer-guide/adr/) — Key technical decisions and rationale
+- [PRDs](./developer-guide/prd/) — Product requirements for major changes
+- [Features](./developer-guide/features/) — Local domain models and operations
+- [ADRs](./developer-guide/adr/) — Architecture decisions
 
 ## Features
 
-| Feature       | User Guide                                                    | Developer Guide                                                                                                                        |
-| ------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Onboarding    | [Getting Started](./user-guide/onboarding/getting-started.md) | [Flow](./developer-guide/features/onboarding/flow.md)                                                                                  |
-| Wallets       | [Managing Wallets](./user-guide/wallets/)                     | [Data Model](./developer-guide/features/wallets/data-model.md), [Operations](./developer-guide/features/wallets/operations.md)         |
-| Records       | [Creating Records](./user-guide/records/)                     | [Data Model](./developer-guide/features/records/data-model.md), [Operations](./developer-guide/features/records/operations.md)         |
-| Budgets       | [Using Budgets](./user-guide/budgets/)                        | [Data Model](./developer-guide/features/budgets/data-model.md), [Operations](./developer-guide/features/budgets/operations.md)         |
-| Transfers     | [Creating Transfers](./user-guide/transfers/)                 | [Data Model](./developer-guide/features/transfers/data-model.md), [Operations](./developer-guide/features/transfers/operations.md)     |
-| Settings      | [App Settings](./user-guide/settings/)                        | [Data Model](./developer-guide/features/settings/data-model.md), [Operations](./developer-guide/features/settings/operations.md)       |
-| Debts & Loans | [Managing Debts & Loans](./user-guide/debts-loans/)           | [Data Model](./developer-guide/features/debts-loans/data-model.md), [Operations](./developer-guide/features/debts-loans/operations.md) |
+| Feature | User Guide | Developer Guide |
+| -------- | ---------- | ---------------- |
+| Onboarding | [Getting Started](./user-guide/onboarding/getting-started.md) | [Flow](./developer-guide/features/onboarding/flow.md) |
+| Wallets | [Managing Wallets](./user-guide/wallets/) | [Data Model](./developer-guide/features/wallets/data-model.md), [Operations](./developer-guide/features/wallets/operations.md) |
+| Records | [Creating Records](./user-guide/records/) | [Data Model](./developer-guide/features/records/data-model.md), [Operations](./developer-guide/features/records/operations.md) |
+| Budgets | [Using Budgets](./user-guide/budgets/) | [Data Model](./developer-guide/features/budgets/data-model.md), [Operations](./developer-guide/features/budgets/operations.md) |
+| Transfers | [Creating Transfers](./user-guide/transfers/) | [Data Model](./developer-guide/features/transfers/data-model.md), [Operations](./developer-guide/features/transfers/operations.md) |
+| Settings | [App Settings](./user-guide/settings/) | [Data Model](./developer-guide/features/settings/data-model.md), [Operations](./developer-guide/features/settings/operations.md) |
+| Debts & Loans | [Managing Debts & Loans](./user-guide/debts-loans/) | [Data Model](./developer-guide/features/debts-loans/data-model.md), [Operations](./developer-guide/features/debts-loans/operations.md) |
