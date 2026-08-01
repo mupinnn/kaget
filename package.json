@@ -1,10 +1,12 @@
 {
   "name": "kaget",
   "private": true,
-  "version": "0.4.2",
+  "version": "0.5.0",
   "type": "module",
   "workspaces": {
-    "packages": ["apps/*"],
+    "packages": [
+      "apps/*"
+    ],
     "catalog": {
       "@types/node": "24.12.4",
       "hono": "4.12.23",
