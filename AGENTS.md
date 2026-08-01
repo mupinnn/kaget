@@ -342,3 +342,20 @@ Never commit `.env`.
 - Configure GitHub branch protection on `main` (see [Release and deploy](docs/developer-guide/release-and-deploy.md))
 
 When touching auth, sync, or tooling, read ADRs and add a new ADR for significant decisions.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues via `gh` (`mupinnn/kaget`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `CONTEXT.md`, ADRs at `docs/developer-guide/adr/`. See `docs/agents/domain.md`.
+

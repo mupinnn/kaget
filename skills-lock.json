@@ -66,6 +66,12 @@
       "skillPath": "skills/logging-best-practices/SKILL.md",
       "computedHash": "b4810947c33b5356bf385c84cfe387afa9c54af652baaedb7d642a083cceaa4c"
     },
+    "setup-matt-pocock-skills": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "computedHash": "74e894a3509e2676d4cdb771c8eace087092430635e845e02a9cc2f757c552a4"
+    },
     "to-spec": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -77,6 +83,12 @@
       "sourceType": "github",
       "skillPath": "skills/engineering/to-tickets/SKILL.md",
       "computedHash": "0349eee265e7005e667b4543de849672106c46d545e998f37d3319300bb07751"
+    },
+    "triage": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/triage/SKILL.md",
+      "computedHash": "7c923b6a677cfe689500721f08307e2a4c46797ff169dc55ef6c34a431a0d533"
     },
     "turborepo": {
       "source": "vercel/turborepo",
