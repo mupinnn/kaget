@@ -1,8 +1,8 @@
 # Settings
 
-Manage your app preferences and data in KaGet.
+Manage preferences, backups, and optional Google Drive sync.
 
 ## Contents
 
-- [App Settings](./app-settings.md) — Change currency and preferences
-- [Import & Export](./import-export.md) — Backup and restore your data
+- [App Settings](./app-settings.md) — Currency and preferences
+- [Import, Export & Drive Sync](./import-export.md) — Backup, restore, and optional Drive

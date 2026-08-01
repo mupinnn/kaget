@@ -1,8 +1,28 @@
 # Developer Guide
 
-Technical documentation for engineers working on KaGet.
+Technical documentation for engineers and agents working on KaGet.
+
+## Architecture (read first)
+
+- **Domain language:** [`CONTEXT.md`](../../CONTEXT.md)
+- **Product direction:** [PRD 001 — Local-first + Drive sync](./prd/001-local-first-drive-sync.md)
+- **Custodian boundary:** [ADR-007](./adr/007-local-first-drive-custodian-boundary.md)
+
+| Concern | Where it lives |
+|---------|----------------|
+| Envelope rules, balances, CRUD for ledger entities | `apps/web` Dexie + `features/*/data/*.services.ts` |
+| Optional durable file | User’s Google Drive (export JSON schema) |
+| Google OAuth, token refresh, Drive I/O, `fileId` | `apps/api` + Postgres (**auth/pointer only**) |
+
+Do **not** add server CRUD for Wallets/Records/Budgets/etc. without a new ADR that explicitly reverses ADR-007.
+
+Feature data-model docs describe the **local domain model** (shapes and invariants), not Postgres tables.
 
 ## Contents
+
+### Product
+
+- [PRDs](./prd/) — Requirements for major initiatives
 
 ### Process
 
@@ -10,32 +30,21 @@ Technical documentation for engineers working on KaGet.
 
 ### API
 
-- [API Route Handlers](./api-route-handlers.md) — Error handling, validation, and wide-event logging conventions
-- [API Testing](./testing.md) — PGlite, testClient, and assertion helpers
+- [API Route Handlers](./api-route-handlers.md) — Error handling, validation, wide-event logging
+- [API Testing](./testing.md) — PGlite, testClient, assertion helpers
 
-### Features
+API scope after ADR-007: auth, Drive broker, health/me — **not** domain ledgers.
 
-Technical flows and implementation details for each feature.
+### Features (local domain)
 
-- [Onboarding](./features/onboarding/) — Onboarding flow and locale handling
-- [Wallets](./features/wallets/) — Wallet data model and operations
-- [Records](./features/records/) — Record data model and operations
-- [Budgets](./features/budgets/) — Budget and goal data model and operations
-- [Transfers](./features/transfers/) — Transfer data model and double-entry system
-- [Settings](./features/settings/) — Settings data model and import/export
-- [Debts & Loans](./features/debts-loans/) — Debt/loan tracking and record integration
+- [Onboarding](./features/onboarding/)
+- [Wallets](./features/wallets/)
+- [Records](./features/records/)
+- [Budgets](./features/budgets/)
+- [Transfers](./features/transfers/)
+- [Settings](./features/settings/) — import/export + sync document
+- [Debts & Loans](./features/debts-loans/)
 
 ### Architecture Decision Records
 
-Key technical decisions and their rationale.
-
-- [ADR-001: Locale and Currency Handling](./adr/001-locale-and-currency-handling.md)
-- [ADR-002: Balance as Denormalized Cache](./adr/002-balance-as-denormalized-cache.md)
-- [ADR-003: Cascade Delete on Wallet Removal](./adr/003-cascade-delete-on-wallet-removal.md)
-- [ADR-004: Tooling Stack Migration](./adr/004-tooling-stack-migration.md)
-- [ADR-005: Release and Versioning Strategy](./adr/005-release-and-versioning-strategy.md)
-- [ADR-006: VPS Deployment via parachute](./adr/006-vps-deployment-via-parachute.md)
-
-## Contributing
-
-See the main repository for contribution guidelines.
+- [ADR index](./adr/)

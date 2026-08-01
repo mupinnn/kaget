@@ -1,14 +1,14 @@
-# Import & Export
+# Import, Export & Drive Sync
 
-This guide explains how to backup and restore your KaGet data.
+Backup and restore your KaGet ledger. All of this is **your** data on **your** device (and optionally **your** Google Drive). KaGet’s servers do not store your wallets, records, or budgets.
 
 ## Overview
 
-KaGet allows you to export all your data as a single JSON file and import it back later. This is useful for:
-
-- **Backup** — Keep a copy of your financial data
-- **Migration** — Move data to a new device or account
-- **Recovery** — Restore after data loss
+| Mechanism | What it does |
+|-----------|----------------|
+| **Export** | Download a JSON file of your full ledger |
+| **Import** | Replace local data from a KaGet JSON file |
+| **Google Drive** (optional) | Keep the same JSON document in My Drive for backup / another device |
 
 ## Exporting Data
 
@@ -21,106 +21,91 @@ KaGet allows you to export all your data as a single JSON file and import it bac
 
 ### What Gets Exported
 
-All your KaGet data is included:
-
-| Entity    | Included                                 |
-| --------- | ---------------------------------------- |
-| Settings  | ✅ Currency preference                   |
-| Wallets   | ✅ All wallets with balances             |
-| Records   | ✅ All income/expense records with items |
-| Budgets   | ✅ All budgets and goals                 |
-| Transfers | ✅ All transfer history                  |
+| Entity | Included |
+| ------ | -------- |
+| Settings | ✅ Currency preference |
+| Wallets | ✅ All wallets with balances |
+| Records | ✅ All income/expense records with items |
+| Budgets / Goals | ✅ All budgets and goals |
+| Transfers | ✅ All transfer history |
+| Debts & Loans | ✅ Outstanding and history as modeled in the app |
 
 ### Export File Format
-
-The export is a single JSON file with the structure:
 
 ```json
 {
   "version": "1.0",
   "exported_at": "2026-02-05T10:00:00Z",
-  "settings": { ... },
-  "wallets": [ ... ],
-  "records": [ ... ],
-  "budgets": [ ... ],
-  "transfers": [ ... ]
+  "settings": { },
+  "wallets": [ ],
+  "records": [ ],
+  "budgets": [ ],
+  "transfers": [ ],
+  "debts": [ ],
+  "loans": [ ]
 }
 ```
 
-### File Naming
+Exact keys may gain sync metadata (`revised_at`, content hash) when Drive sync is enabled; the ledger payload stays one schema family.
 
-Export files are named with a timestamp:
+### File Naming
 
 ```
 kaget-export-2026-02-05.json
 ```
 
-> **Tip:** Store your export file in a secure location like cloud storage or an encrypted drive.
+Store exports somewhere safe. They contain your full financial history.
 
 ## Importing Data
 
-### How to Import
-
 1. Go to **Settings**
 2. Tap **Import Data**
-3. Select your export file (`.json`)
+3. Select a KaGet export file (`.json`)
 4. Review the import summary
-5. Confirm to import
+5. Confirm
 
-### Import Behavior
+| Scenario | Behavior |
+| -------- | -------- |
+| **Empty device** | Data is imported directly |
+| **Existing data** | Import **replaces** all local ledger data |
 
-| Scenario          | Behavior                          |
-| ----------------- | --------------------------------- |
-| **Empty account** | Data is imported directly         |
-| **Existing data** | Import replaces all existing data |
-
-> **Warning:** Importing data will **replace** your current data. Export your current data first if you want to keep it.
+Export first if you might need the current copy.
 
 ### Validation
 
-Before importing, KaGet validates the file:
-
-| Check         | Description                               |
-| ------------- | ----------------------------------------- |
-| **Format**    | Must be valid JSON                        |
-| **Version**   | Must be a supported export version        |
-| **Structure** | Must contain expected entity keys         |
+| Check | Description |
+| ----- | ----------- |
+| **Format** | Valid JSON |
+| **Version** | Supported export version |
+| **Structure** | Expected entity keys |
 | **Integrity** | References between entities must be valid |
 
-If validation fails, you'll see an error message describing the issue.
+## Google Drive (optional)
+
+1. **Settings → Connect Google Drive** (Google sign-in; no email/password for KaGet)
+2. KaGet creates or opens a visible file under My Drive (e.g. `KaGet/kaget-ledger.json`)
+3. **Sync now** uploads or downloads the ledger file
+4. If this device and Drive both changed since the last sync, KaGet asks you to **keep local** or **keep remote** (export first if unsure)
+5. **Disconnect** stops sync; local data remains on the device
+
+You can use KaGet forever without connecting Drive.
 
 ## Best Practices
 
-### Regular Backups
-
-- Export your data weekly or monthly
-- Keep multiple backup versions
-- Store backups in different locations
-
-### Before Major Changes
-
-Export before:
-
-- Deleting wallets
-- Bulk record cleanup
-- Account changes
-
-### Security
-
-- Export files contain all your financial data
-- Store in secure, encrypted locations
-- Don't share export files publicly
+- Export (or sync) before bulk deletes or major cleanup
+- Keep more than one backup version
+- Do not hand-edit the Drive JSON unless you know the schema — prefer Export + edit workflows only if you accept validation failures
 
 ## Troubleshooting
 
-| Issue                   | Solution                             |
-| ----------------------- | ------------------------------------ |
-| Export fails            | Check storage space, try again       |
-| Import fails validation | Ensure file wasn't modified manually |
-| Wrong data after import | Restore from a different backup      |
-| Can't find export file  | Check your downloads folder          |
+| Issue | Solution |
+| ----- | -------- |
+| Export fails | Check storage space, try again |
+| Import fails validation | Ensure the file wasn’t corrupted or hand-broken |
+| Wrong data after import | Restore from another export / Drive copy via “keep remote” or import |
+| Drive conflict | Choose local or remote deliberately; export both sides if needed |
 
 ## Related
 
 - [App Settings](./app-settings.md) — Currency and preferences
-- [Creating Wallets](../wallets/creating-wallets.md) — Set up after import
+- [PRD: Local-first + Drive](../../developer-guide/prd/001-local-first-drive-sync.md) — Architecture
