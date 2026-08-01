@@ -42,7 +42,7 @@ apps/web/e2e/
 |---------|-------|------------|
 | `setup` | `auth.setup.ts` | Creates onboarding-complete user |
 | `seed` | `seed.setup.ts` | Seeds baseline wallets for feature tests |
-| `chromium-unauth` | `auth`, `onboarding` | None (UI sign-up flows) |
+| `chromium-unauth` | `auth` (signed-out shell + Google button) | None |
 | `chromium` | `navigation` | Authenticated |
 | `chromium-features` | `wallets`, `budgets`, `records`, `transfers`, `debts-loans`, `settings` | Authenticated + seeded wallets |
 

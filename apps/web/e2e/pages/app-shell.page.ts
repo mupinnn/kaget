@@ -13,6 +13,9 @@ type SidebarRoute =
 export class AppShellPage extends BasePage {
   readonly brandLink = this.page.getByRole("link", { name: "KaGet" });
   readonly signOutButton = this.page.getByRole("button", { name: "Sign out" });
+  readonly continueWithGoogleButton = this.page.getByRole("button", {
+    name: "Continue with Google",
+  });
 
   sidebarLink(name: SidebarRoute) {
     return this.page.getByRole("link", { name, exact: true });
@@ -24,7 +27,7 @@ export class AppShellPage extends BasePage {
 
   async signOut() {
     await this.signOutButton.click();
-    await this.waitForPath("/sign-in");
+    await this.waitForPath("/");
   }
 
   async expectSidebarVisible() {

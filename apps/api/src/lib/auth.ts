@@ -7,6 +7,14 @@ import * as schema from "../db/schema/index";
 import { AppError } from "./error";
 import { ERROR_CODES } from "./error-codes";
 
+/** Identity + Drive file scope so #33 can broker without a second consent. */
+export const GOOGLE_OAUTH_SCOPES = [
+  "openid",
+  "email",
+  "profile",
+  "https://www.googleapis.com/auth/drive.file",
+] as const;
+
 export function createAuth(db: Database, env: Env) {
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET,
@@ -16,7 +24,16 @@ export function createAuth(db: Database, env: Env) {
       schema,
     }),
     emailAndPassword: {
-      enabled: true,
+      enabled: false,
+    },
+    socialProviders: {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+        scopes: [...GOOGLE_OAUTH_SCOPES],
+        accessType: "offline",
+        prompt: "consent",
+      },
     },
     trustedOrigins: env.CORS_ORIGINS,
     experimental: {

@@ -181,7 +181,16 @@ export function createAuth(db: Database, env: Env) {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     database: drizzleAdapter(db, { provider: 'pg', schema }),
-    emailAndPassword: { enabled: true },
+    emailAndPassword: { enabled: false },
+    socialProviders: {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+        scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/drive.file'],
+        accessType: 'offline',
+        prompt: 'consent',
+      },
+    },
     trustedOrigins: env.CORS_ORIGINS,
   })
 }
@@ -296,6 +305,8 @@ Root [`.env.example`](.env.example):
 | `DATABASE_URL` | API / Drizzle |
 | `BETTER_AUTH_SECRET` | better-auth |
 | `BETTER_AUTH_URL` | better-auth |
+| `GOOGLE_CLIENT_ID` | Google OAuth (required) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth (required) |
 | `CORS_ORIGINS` | API CORS |
 | `POSTGRES_*` | Docker Compose `db` service |
 
@@ -337,7 +348,7 @@ Never commit `.env`.
 
 ## Follow-ups
 
-- Google OAuth + Drive token broker + client sync (PRD 001) — strip any domain API CRUD
+- Google OAuth + Drive token broker + client sync (PRD 001) — strip any domain API CRUD; restore Dexie (#40) before strip (#34)
 - Optional client-side encryption (deferred)
 - Full UI/IA redesign (separate session after sync works)
 - Postgres backup strategy for auth/token volume only (ADR-006)

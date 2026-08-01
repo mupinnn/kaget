@@ -12,8 +12,6 @@ import { Route as rootRouteImport } from "./../routes/__root";
 import { Route as AppRouteImport } from "./../routes/_app";
 import { Route as OnboardingRouteRouteImport } from "./../routes/onboarding.route";
 import { Route as AppIndexRouteImport } from "./../routes/_app/index";
-import { Route as authSignUpRouteRouteImport } from "./../routes/(auth)/sign-up.route";
-import { Route as authSignInRouteRouteImport } from "./../routes/(auth)/sign-in.route";
 import { Route as AppwalletsWalletsIndexRouteRouteImport } from "./../routes/_app/(wallets)/wallets.index.route";
 import { Route as ApptransfersTransfersIndexRouteRouteImport } from "./../routes/_app/(transfers)/transfers.index.route";
 import { Route as AppsettingsSettingsIndexRouteRouteImport } from "./../routes/_app/(settings)/settings.index.route";
@@ -44,16 +42,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: "/",
   path: "/",
   getParentRoute: () => AppRoute,
-} as any);
-const authSignUpRouteRoute = authSignUpRouteRouteImport.update({
-  id: "/(auth)/sign-up",
-  path: "/sign-up",
-  getParentRoute: () => rootRouteImport,
-} as any);
-const authSignInRouteRoute = authSignInRouteRouteImport.update({
-  id: "/(auth)/sign-in",
-  path: "/sign-in",
-  getParentRoute: () => rootRouteImport,
 } as any);
 const AppwalletsWalletsIndexRouteRoute =
   AppwalletsWalletsIndexRouteRouteImport.update({
@@ -155,8 +143,6 @@ const AppwalletsWalletsWalletIdEditRouteRoute =
 export interface FileRoutesByFullPath {
   "/onboarding": typeof OnboardingRouteRoute;
   "/": typeof AppIndexRoute;
-  "/sign-in": typeof authSignInRouteRoute;
-  "/sign-up": typeof authSignUpRouteRoute;
   "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
   "/debts-loans/$debtLoanId": typeof AppdebtLoansDebtsLoansDebtLoanIdRouteRoute;
@@ -176,8 +162,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   "/onboarding": typeof OnboardingRouteRoute;
-  "/sign-in": typeof authSignInRouteRoute;
-  "/sign-up": typeof authSignUpRouteRoute;
   "/": typeof AppIndexRoute;
   "/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
@@ -200,8 +184,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/onboarding": typeof OnboardingRouteRoute;
   "/_app": typeof AppRouteWithChildren;
-  "/(auth)/sign-in": typeof authSignInRouteRoute;
-  "/(auth)/sign-up": typeof authSignUpRouteRoute;
   "/_app/": typeof AppIndexRoute;
   "/_app/(budgets)/budgets/$budgetId": typeof AppbudgetsBudgetsBudgetIdRouteRoute;
   "/_app/(budgets)/budgets/create": typeof AppbudgetsBudgetsCreateRouteRoute;
@@ -225,8 +207,6 @@ export interface FileRouteTypes {
   fullPaths:
     | "/onboarding"
     | "/"
-    | "/sign-in"
-    | "/sign-up"
     | "/budgets/$budgetId"
     | "/budgets/create"
     | "/debts-loans/$debtLoanId"
@@ -246,8 +226,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/onboarding"
-    | "/sign-in"
-    | "/sign-up"
     | "/"
     | "/budgets/$budgetId"
     | "/budgets/create"
@@ -269,8 +247,6 @@ export interface FileRouteTypes {
     | "__root__"
     | "/onboarding"
     | "/_app"
-    | "/(auth)/sign-in"
-    | "/(auth)/sign-up"
     | "/_app/"
     | "/_app/(budgets)/budgets/$budgetId"
     | "/_app/(budgets)/budgets/create"
@@ -293,8 +269,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   OnboardingRouteRoute: typeof OnboardingRouteRoute;
   AppRoute: typeof AppRouteWithChildren;
-  authSignInRouteRoute: typeof authSignInRouteRoute;
-  authSignUpRouteRoute: typeof authSignUpRouteRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -319,20 +293,6 @@ declare module "@tanstack/react-router" {
       fullPath: "/";
       preLoaderRoute: typeof AppIndexRouteImport;
       parentRoute: typeof AppRoute;
-    };
-    "/(auth)/sign-up": {
-      id: "/(auth)/sign-up";
-      path: "/sign-up";
-      fullPath: "/sign-up";
-      preLoaderRoute: typeof authSignUpRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(auth)/sign-in": {
-      id: "/(auth)/sign-in";
-      path: "/sign-in";
-      fullPath: "/sign-in";
-      preLoaderRoute: typeof authSignInRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
     };
     "/_app/(wallets)/wallets/": {
       id: "/_app/(wallets)/wallets/";
@@ -497,8 +457,6 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
 const rootRouteChildren: RootRouteChildren = {
   OnboardingRouteRoute: OnboardingRouteRoute,
   AppRoute: AppRouteWithChildren,
-  authSignInRouteRoute: authSignInRouteRoute,
-  authSignUpRouteRoute: authSignUpRouteRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

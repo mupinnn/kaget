@@ -4,6 +4,7 @@ import type { TestHelpers } from "better-auth/plugins";
 import { testUtils } from "better-auth/plugins";
 import type { Database } from "../../db/client";
 import * as schema from "../../db/schema";
+import { GOOGLE_OAUTH_SCOPES } from "../../lib/auth";
 import { MOCK_ENV } from "./mock";
 
 export async function createTestAuth(db: Database) {
@@ -11,7 +12,16 @@ export async function createTestAuth(db: Database) {
     secret: MOCK_ENV.BETTER_AUTH_SECRET,
     baseURL: MOCK_ENV.BETTER_AUTH_URL,
     database: drizzleAdapter(db, { provider: "pg", schema }),
-    emailAndPassword: { enabled: true },
+    emailAndPassword: { enabled: false },
+    socialProviders: {
+      google: {
+        clientId: MOCK_ENV.GOOGLE_CLIENT_ID,
+        clientSecret: MOCK_ENV.GOOGLE_CLIENT_SECRET,
+        scopes: [...GOOGLE_OAUTH_SCOPES],
+        accessType: "offline",
+        prompt: "consent",
+      },
+    },
     trustedOrigins: MOCK_ENV.CORS_ORIGINS,
     plugins: [testUtils()],
     experimental: {
