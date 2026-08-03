@@ -89,60 +89,90 @@ formatter.format(1234.56); // "$1,234.56" or "1.234,56 €" etc.
 
 No amounts are converted when currency changes.
 
-## Export Data Model
+## Ledger document (export / import / Drive)
 
-Export is not stored — it's generated on demand from all user entities.
+Canonical JSON family for Export, Import, and the optional Drive file. Owned in
+`apps/web` (`ledger-document.schemas.ts` + `ledger-document.ts`); the API must
+not parse entity payloads (ADR-007).
 
-### Export Structure
+| Field | Role |
+| ----- | ---- |
+| `version` | Document family version — currently **`2`** (integer) |
+| `revised_at` | ISO 8601 timestamp when this revision was produced |
+| `content_hash` | SHA-256 (hex) of the **payload only** |
+| payload | `settings`, `wallets`, `budgets`, `records`, `transfers`, `debt_loans` |
+
+`content_hash` is computed over canonical JSON of the payload keys above
+(sorted object keys). It does **not** include `version`, `revised_at`, or
+`content_hash` itself — bumping `revised_at` alone does not change the hash.
+
+Older documents (e.g. `"version": "1.0"`) are rejected with an explicit
+unsupported-version error; there is no silent migrate in v1 of this family.
+
+Dexie persistence / wire-up of export buttons is [#40](https://github.com/mupinnn/kaget/issues/40);
+this schema is the contract those flows must use.
+
+### Structure
 
 ```typescript
-interface ExportData {
-  version: string; // Export format version
-  exported_at: string; // ISO 8601 timestamp
-  settings: Settings;
+interface LedgerDocument {
+  version: 2;
+  revised_at: string; // ISO 8601
+  content_hash: string; // sha-256 hex
+  settings: { currency_code: string };
   wallets: Wallet[];
-  records: Record[]; // Includes record_items nested
-  budgets: Budget[];
+  budgets: Budget[]; // budget_type BUDGET | GOAL
+  records: Record[]; // items nested
   transfers: Transfer[];
+  debt_loans: DebtLoan[]; // type DEBT | LOAN
 }
 ```
 
-### Example Export
+### Example
 
 ```json
 {
-  "version": "1.0",
-  "exported_at": "2026-02-05T10:00:00Z",
+  "version": 2,
+  "revised_at": "2026-08-03T10:00:00.000Z",
+  "content_hash": "…",
   "settings": {
-    "currency": "USD"
+    "currency_code": "USD"
   },
   "wallets": [
     {
       "id": "...",
       "name": "Bank Account",
       "type": "DIGITAL",
-      "balance": 5000.00,
-      "created_at": "2026-01-15T08:00:00Z",
-      "updated_at": "2026-02-01T12:00:00Z"
+      "balance": 5000.0,
+      "created_at": "2026-01-15T08:00:00.000Z",
+      "updated_at": "2026-02-01T12:00:00.000Z"
     }
   ],
+  "budgets": [],
   "records": [
     {
       "id": "...",
       "source_id": "...",
       "source_type": "WALLET",
       "record_type": "EXPENSE",
-      "amount": 50.00,
+      "amount": 50.0,
       "note": "Groceries",
-      "recorded_at": "2026-02-01T12:00:00Z",
+      "recorded_at": "2026-02-01T12:00:00.000Z",
+      "created_at": "2026-02-01T12:00:00.000Z",
+      "updated_at": "2026-02-01T12:00:00.000Z",
       "items": [
-        { "amount": 30.00, "note": "Vegetables" },
-        { "amount": 20.00, "note": "Fruits" }
+        {
+          "id": "...",
+          "amount": 30.0,
+          "note": "Vegetables",
+          "created_at": "2026-02-01T12:00:00.000Z",
+          "updated_at": "2026-02-01T12:00:00.000Z"
+        }
       ]
     }
   ],
-  "budgets": [...],
-  "transfers": [...]
+  "transfers": [],
+  "debt_loans": []
 }
 ```
 

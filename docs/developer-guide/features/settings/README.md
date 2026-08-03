@@ -21,9 +21,10 @@ Settings provides:
 
 Settings uses a single-row table pattern — one row per user containing all preferences.
 
-### Export Format
+### Ledger document (version 2)
 
-Full data export as single JSON file containing all entities with their relationships preserved.
+Export, Import, and optional Drive sync use one schema family (`version: 2`) with
+`revised_at`, payload `content_hash`, and `debt_loans`. See [Data Model](./data-model.md).
 
 ### Currency (Display Only)
 
