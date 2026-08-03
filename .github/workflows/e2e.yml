@@ -29,6 +29,9 @@ jobs:
       DATABASE_URL: postgresql://kaget:kaget@localhost:5432/kaget
       BETTER_AUTH_SECRET: ci-e2e-secret-with-at-least-32-characters-long
       BETTER_AUTH_URL: http://localhost:3000
+      # Placeholders so API env validation passes; real Google OAuth is not exercised in CI yet.
+      GOOGLE_CLIENT_ID: ci-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-google-client-secret
       CORS_ORIGINS: http://localhost:5173
       VITE_API_URL: http://localhost:3000
       VITE_APP_URL: http://localhost:5173
