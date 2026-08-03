@@ -10,7 +10,11 @@ test.describe("Auth", () => {
   test("shows Continue with Google in Settings", async ({ page, appShellPage }) => {
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "Settings", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Google account" }).locator("..").getByRole("button", {
+        name: "Continue with Google",
+      })
+    ).toBeVisible();
     await appShellPage.expectSidebarVisible();
   });
 

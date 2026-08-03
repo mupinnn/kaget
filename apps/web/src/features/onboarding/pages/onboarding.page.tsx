@@ -123,7 +123,8 @@ export function OnboardingIndexPage() {
           Welcome to <br /> <span className="font-bold">KaGet: Kawan Budget!</span>
         </h1>
         <p className="text-muted-foreground">
-          A web-based budgeting app synced with your KaGet account.
+          A local-first budgeting app. Set your currency to get started — Google sign-in is optional
+          for Drive backup later.
         </p>
       </header>
 
@@ -275,10 +276,10 @@ export function OnboardingIndexPage() {
 
             <Button
               className="w-full"
-              isLoading={createSettingsMutation.isPending}
+              disabled={createSettingsMutation.isPending}
               data-testid="onboarding-createSettings-button"
             >
-              Start budgeting!
+              {createSettingsMutation.isPending ? "Saving…" : "Start budgeting!"}
             </Button>
           </form>
         </Form>

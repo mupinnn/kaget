@@ -6,61 +6,47 @@ Technical documentation for the KaGet onboarding feature.
 
 Onboarding introduces new users to KaGet and collects their currency preference. The flow consists of:
 
-1. Feature overview screens (informational)
+1. Feature overview (informational copy on the onboarding page)
 2. Currency selection with live format preview
-3. Preference sync to backend
+3. Persist currency to the local Dexie settings row
 
 ## User Flow
 
-Onboarding is presented as a **modal dialog** overlaying the main dashboard on the user's first login.
+Onboarding runs when IndexedDB has **no local settings**, regardless of Google sign-in.
 
 ```
 ┌─────────────────┐
-│   User Login    │
+│  App bootstrap  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Empty settings? │──no──▶ Main app
+└────────┬────────┘
+         │ yes
+         ▼
+┌─────────────────┐
+│  /onboarding    │
+│  Currency pick  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Write Dexie     │
+│ settings row    │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
 │ Main Dashboard  │
-│    (Behind)     │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────────┐
-│     Onboarding Dialog (Modal)   │
-│  ┌───────────────────────────┐  │
-│  │   Feature Overview        │  │
-│  │   (Swipeable Screens)     │  │
-│  └─────────────┬─────────────┘  │
-│                │                │
-│                ▼                │
-│  ┌───────────────────────────┐  │
-│  │   Currency Selection      │  │
-│  │   + Format Preview        │  │
-│  └─────────────┬─────────────┘  │
-│                │                │
-│                ▼                │
-│  ┌───────────────────────────┐  │
-│  │   Sync to Backend         │  │
-│  └─────────────┬─────────────┘  │
-│                │                │
-│                ▼                │
-│         Dialog Closes           │
-└─────────────────────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Main Dashboard  │
-│   (Active)      │
 └─────────────────┘
 ```
 
-### Dialog Behavior
+### Behavior
 
-- **Trigger:** First login (no `currencyCode` preference on backend)
+- **Trigger:** Missing local settings (signed-in or signed-out)
 - **Dismissible:** No — user must complete onboarding
-- **Backdrop:** Dashboard visible but non-interactive
-- **On complete:** Dialog closes, dashboard becomes active
+- **On complete:** Navigate home; currency available via Dexie-backed query / in-memory cache for formatting
 
 ## Technical Implementation
 

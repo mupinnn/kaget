@@ -59,12 +59,12 @@ Benefits:
 
 ### Preference Storage
 
-**Store only currency code; sync to backend.**
+**Store only currency code in the local Dexie ledger.**
 
-| Data          | Storage           | Rationale                                             |
-| ------------- | ----------------- | ----------------------------------------------------- |
-| Currency code | Backend (synced)  | User choice; must persist across devices              |
-| Locale        | Browser (runtime) | System setting; should not override device preference |
+| Data          | Storage                  | Rationale                                             |
+| ------------- | ------------------------ | ----------------------------------------------------- |
+| Currency code | Dexie settings (local)   | User choice for on-device formatting; Drive may copy later |
+| Locale        | Browser (runtime)        | System setting; should not override device preference |
 
 ### Fallback Behavior
 
@@ -72,7 +72,7 @@ Benefits:
 | ------------------------------------ | ----------------------------------- |
 | `navigator.language` unavailable     | `en-US`                             |
 | `Intl.supportedValuesOf` unavailable | Static list of common currencies    |
-| Backend sync fails                   | Store locally, retry on next launch |
+| Settings missing                     | Force `/onboarding` until created   |
 
 ## Consequences
 

@@ -1,15 +1,26 @@
-import { createTransferSchema } from "@kaget/api/schemas";
-import type { InferResponseType } from "hono/client";
 import { z } from "zod";
 import type { BudgetWithWallet } from "@/features/budgets/data/budgets.schemas";
+import type { SourceType } from "@/features/records/data/records.schemas";
 import type { Wallet } from "@/features/wallets/data/wallets.schemas";
-import { api } from "@/libs/api.lib";
 import { parseAmount } from "@/utils/amount.util";
 
-export type Transfer = InferResponseType<
-  typeof api.api.transfers.$get,
-  200
->["data"]["transfers"][number];
+export type Transfer = {
+  id: string;
+  note: string | null;
+  amount: number;
+  fee: number;
+  sourceId: string;
+  sourceType: SourceType;
+  sourceName: string;
+  destinationId: string;
+  destinationType: SourceType;
+  destinationName: string;
+  type: "INCOMING" | "OUTGOING";
+  refId: string;
+  transferredAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export const TransfersRequestQuerySchema = z.object({
   source_id: z.string().optional(),
@@ -17,6 +28,19 @@ export const TransfersRequestQuerySchema = z.object({
 });
 
 export type TransfersRequestQuery = z.infer<typeof TransfersRequestQuerySchema>;
+
+export const createTransferSchema = z.object({
+  sender_id: z.string().min(1),
+  sender_type: z.enum(["WALLET", "BUDGET"]),
+  receiver_id: z.string().min(1),
+  receiver_type: z.enum(["WALLET", "BUDGET"]),
+  amount: z.coerce.number().positive("Amount must be positive"),
+  fee: z.coerce.number().min(0, "Fee cannot be negative").optional().default(0),
+  note: z.string().max(500).trim().optional(),
+  transferred_at: z.coerce.date().optional(),
+});
+
+export type CreateTransferInput = z.infer<typeof createTransferSchema>;
 
 export const CreateTransferFormSchema = z
   .object({
@@ -37,10 +61,6 @@ export const CreateTransferFormSchema = z
   });
 
 export type CreateTransferForm = z.infer<typeof CreateTransferFormSchema>;
-
-export { createTransferSchema };
-
-export type CreateTransferInput = z.infer<typeof createTransferSchema>;
 
 function getAccountType(account: Wallet | BudgetWithWallet): "WALLET" | "BUDGET" {
   return "walletId" in account ? "BUDGET" : "WALLET";

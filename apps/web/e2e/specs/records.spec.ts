@@ -1,4 +1,4 @@
-import { expect, test } from "../fixtures/test";
+import { expect, testWithSeed as test } from "../fixtures/test";
 import { SEED_PRIMARY_WALLET, uniqueName } from "../helpers/names";
 import {
   createRecordsDetailPage,

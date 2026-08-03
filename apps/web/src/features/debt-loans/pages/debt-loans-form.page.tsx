@@ -232,8 +232,8 @@ export function DebtLoansFormPage() {
             <Button asChild className="no-underline" variant="outline">
               <Link to="/debts-loans">Back</Link>
             </Button>
-            <Button isLoading={createDebtLoanMutation.isPending} type="submit">
-              Save
+            <Button disabled={createDebtLoanMutation.isPending} type="submit">
+              {createDebtLoanMutation.isPending ? "Saving…" : "Save"}
             </Button>
           </div>
         </form>

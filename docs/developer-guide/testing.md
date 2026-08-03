@@ -22,29 +22,26 @@ End-to-end tests use:
 
 - **Playwright** — browser automation (Chromium only in v1)
 - **Page Object Model** — locators and user actions live under `e2e/pages/`; specs orchestrate flows only
-- **Custom fixtures** — inject page objects via `e2e/fixtures/test.ts`
-- **Auth setup project** — onboarding-complete user saved to `e2e/.auth/user.json` for authenticated smoke tests
+- **Local-ledger fixtures** — signed-out path is primary: onboarding + seed wallets run per browser context (IndexedDB is not shared via `storageState`)
 
 Layout:
 
 ```
 apps/web/e2e/
-├── auth.setup.ts          # Playwright setup project (storageState)
-├── fixtures/test.ts       # Extended test with page object fixtures
-├── helpers/               # test-user factory, env constants
+├── fixtures/
+│   ├── test.ts            # Onboards + seeds wallets, then injects page objects
+│   └── fresh.ts           # Empty IndexedDB (onboarding specs)
+├── helpers/               # names, local-ledger ensure helpers
 ├── pages/                 # Page Object Models
-    └── specs/                 # Test specs (auth, onboarding, navigation, features)
+└── specs/                 # Test specs (auth, onboarding, navigation, features)
 ```
 
 #### Test projects
 
-| Project | Specs | Auth state |
-|---------|-------|------------|
-| `setup` | `auth.setup.ts` | Creates onboarding-complete user |
-| `seed` | `seed.setup.ts` | Seeds baseline wallets for feature tests |
-| `chromium-unauth` | `auth` (signed-out shell + Google button) | None |
-| `chromium` | `navigation` | Authenticated |
-| `chromium-features` | `wallets`, `budgets`, `records`, `transfers`, `debts-loans`, `settings` | Authenticated + seeded wallets |
+| Project | Specs | Notes |
+|---------|-------|-------|
+| `chromium-local` | `auth`, `navigation`, feature specs | Uses `fixtures/test.ts` (local Dexie onboard + seed) |
+| `chromium-onboarding` | `onboarding` | Uses `fixtures/fresh.ts` (empty ledger) |
 
 #### Feature coverage
 
@@ -55,7 +52,7 @@ apps/web/e2e/
 | Records | `records.spec.ts` | Create income/expense, delete |
 | Transfers | `transfers.spec.ts` | Transfer between wallets, with fee |
 | Debts & Loans | `debts-loans.spec.ts` | Create debt/loan, resolve, delete |
-| Settings | `settings.spec.ts` | Read-only currency display |
+| Settings | `settings.spec.ts` | Local currency display |
 
 #### Prerequisites
 

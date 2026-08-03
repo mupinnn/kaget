@@ -1,19 +1,50 @@
-import { createRecordSchema } from "@kaget/api/schemas";
-import type { InferResponseType } from "hono/client";
 import { z } from "zod";
 import type { Wallet } from "@/features/wallets/data/wallets.schemas";
-import { api } from "@/libs/api.lib";
 
-export type ApiRecord = InferResponseType<
-  typeof api.api.records.$get,
-  200
->["data"]["records"][number];
+export type RecordType =
+  | "INCOME"
+  | "EXPENSE"
+  | "DEBT"
+  | "DEBT_REPAYMENT"
+  | "LOAN"
+  | "LOAN_COLLECTION";
 
-export type OwnedRecord = InferResponseType<(typeof api.api.records)[":id"]["$get"], 200>["data"];
+export type SourceType = "WALLET" | "BUDGET";
 
-export type RecordListItem = ApiRecord & {
-  sourceName: string;
+export type RecordItem = {
+  id: string;
+  recordId: string;
+  note: string | null;
+  amount: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
+
+export type Record = {
+  id: string;
+  note: string | null;
+  amount: number;
+  sourceId: string;
+  sourceType: SourceType;
+  recordType: RecordType;
+  recordedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type RecordWithItems = Record & { items: RecordItem[] };
+
+export type OwnedRecord = RecordWithItems &
+  (
+    | { sourceType: "WALLET"; wallet: Wallet }
+    | {
+        sourceType: "BUDGET";
+        budget: import("@/features/budgets/data/budgets.schemas").Budget;
+      }
+  );
+
+export type ApiRecord = RecordWithItems;
+export type RecordListItem = RecordWithItems & { sourceName: string };
 
 export const RecordsRequestQuerySchema = z.object({
   start: z.coerce.date().optional(),
@@ -23,6 +54,36 @@ export const RecordsRequestQuerySchema = z.object({
 });
 
 export type RecordsRequestQuery = z.infer<typeof RecordsRequestQuerySchema>;
+
+export const createRecordSchema = z
+  .object({
+    source_id: z.string().min(1),
+    source_type: z.enum(["WALLET", "BUDGET"]),
+    record_type: z.enum(["INCOME", "EXPENSE"], {
+      message: "Record type must be INCOME or EXPENSE",
+    }),
+    recorded_at: z.coerce.date(),
+    note: z.string().max(500).trim().optional(),
+    items: z
+      .array(
+        z.object({
+          note: z.string().max(500).trim().optional(),
+          amount: z.coerce.number().positive("Item amount must be positive"),
+        })
+      )
+      .min(1, "At least one item is required"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.source_type === "BUDGET" && data.record_type !== "EXPENSE") {
+      ctx.addIssue({
+        code: "custom",
+        message: "Budget records must be EXPENSE",
+        path: ["record_type"],
+      });
+    }
+  });
+
+export type CreateRecordInput = z.infer<typeof createRecordSchema>;
 
 export const CreateRecordFormSchema = z.object({
   note: z.string().trim().optional(),
@@ -41,7 +102,3 @@ export const CreateRecordFormSchema = z.object({
 });
 
 export type CreateRecordForm = z.infer<typeof CreateRecordFormSchema>;
-
-export { createRecordSchema };
-
-export type CreateRecordInput = z.infer<typeof createRecordSchema>;
