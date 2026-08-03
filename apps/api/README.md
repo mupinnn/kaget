@@ -91,6 +91,8 @@ Set these in the **root** `.env` (see [`.env.example`](../../.env.example)).
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `BETTER_AUTH_SECRET` | Yes | Secret key (min 32 characters) |
 | `BETTER_AUTH_URL` | Yes | Public API base URL (e.g. `http://localhost:3000`) |
+| `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID (Drive `drive.file` scopes requested at sign-in) |
+| `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
 | `CORS_ORIGINS` | No | Comma-separated browser origins (default `http://localhost:5173`) |
 
 Related root-only variables used by Docker Compose and the web app:
