@@ -28,25 +28,28 @@ Backup and restore your KaGet ledger. All of this is **your** data on **your** d
 | Records | ✅ All income/expense records with items |
 | Budgets / Goals | ✅ All budgets and goals |
 | Transfers | ✅ All transfer history |
-| Debts & Loans | ✅ Outstanding and history as modeled in the app |
+| Debts & Loans | ✅ Outstanding and history as modeled in the app (`debt_loans`) |
 
 ### Export File Format
 
+Canonical family **version `2`** (Export, Import, and Drive share one schema):
+
 ```json
 {
-  "version": "1.0",
-  "exported_at": "2026-02-05T10:00:00Z",
-  "settings": { },
-  "wallets": [ ],
-  "records": [ ],
-  "budgets": [ ],
-  "transfers": [ ],
-  "debts": [ ],
-  "loans": [ ]
+  "version": 2,
+  "revised_at": "2026-08-03T10:00:00.000Z",
+  "content_hash": "…sha-256 hex of ledger payload…",
+  "settings": { "currency_code": "USD" },
+  "wallets": [],
+  "budgets": [],
+  "records": [],
+  "transfers": [],
+  "debt_loans": []
 }
 ```
 
-Exact keys may gain sync metadata (`revised_at`, content hash) when Drive sync is enabled; the ledger payload stays one schema family.
+- `content_hash` covers **settings + entity arrays only** — not `version`, `revised_at`, or the hash field itself.
+- Older files (for example `"version": "1.0"`) are **not** migrated silently; import fails with an unsupported-version error.
 
 ### File Naming
 
@@ -76,9 +79,9 @@ Export first if you might need the current copy.
 | Check | Description |
 | ----- | ----------- |
 | **Format** | Valid JSON |
-| **Version** | Supported export version |
+| **Version** | Supported document version (`2`) |
 | **Structure** | Expected entity keys |
-| **Integrity** | References between entities must be valid |
+| **Integrity** | `content_hash` matches payload; references between entities must be valid |
 
 ## Google Drive (optional)
 
@@ -102,6 +105,7 @@ You can use KaGet forever without connecting Drive.
 | ----- | -------- |
 | Export fails | Check storage space, try again |
 | Import fails validation | Ensure the file wasn’t corrupted or hand-broken |
+| Unsupported version | Re-export from a current KaGet build; older `"1.0"` files are not auto-upgraded |
 | Wrong data after import | Restore from another export / Drive copy via “keep remote” or import |
 | Drive conflict | Choose local or remote deliberately; export both sides if needed |
 

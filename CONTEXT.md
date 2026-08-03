@@ -28,6 +28,16 @@ _Avoid_: Transaction, entry (when meaning a cash-flow event)
 A movement of money between Wallets and/or Budgets/Goals, tracked as internal fund movement (optional fee).
 _Avoid_: Move, reallocation (as the entity name)
 
+### Obligations
+
+**Debt**:
+Money the user owes someone else; creating it increases a Wallet balance (borrowed cash received); resolving it records repayment.
+_Avoid_: Accounts payable, bill, IOU (alone)
+
+**Loan**:
+Money someone else owes the user; creating it reduces a Wallet balance (cash lent out); resolving it records collection.
+_Avoid_: Accounts receivable, receivable (alone)
+
 ### Product invariant
 
 **Envelope allocation**:
