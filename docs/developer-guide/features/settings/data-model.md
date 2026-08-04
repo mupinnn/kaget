@@ -116,7 +116,7 @@ table `driveSyncMeta`, **outside** this payload so the cursor cannot change
 `content_hash` ([ADR-008](../../adr/008-drive-sync-content-hash-divergence.md)).
 Manual import clears the cursor.
 
-Dexie persistence / wire-up of export buttons is [#40](https://github.com/mupinnn/kaget/issues/40);
+Dexie persistence / wire-up of export buttons ships with the working-ledger restore ([#40](https://github.com/mupinnn/kaget/issues/40));
 this schema is the contract those flows must use.
 
 ### Structure

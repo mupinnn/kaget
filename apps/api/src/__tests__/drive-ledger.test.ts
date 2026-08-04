@@ -12,6 +12,7 @@ describe("Drive ledger broker", () => {
   let testDatabase: Awaited<ReturnType<typeof setupTestDatabase>>;
   let authHeaders: Record<string, string>;
   let drive: ReturnType<typeof createMemoryDriveClient>;
+  let app: ReturnType<typeof createTestApp>;
   let client: ReturnType<typeof testClient<ReturnType<typeof createTestApp>>>;
 
   beforeAll(async () => {
@@ -26,21 +27,30 @@ describe("Drive ledger broker", () => {
     authHeaders = await getTestAuthHeaders(testAuth.test, user.id);
 
     drive = createMemoryDriveClient();
-    client = testClient(
-      createTestApp(testDatabase.db, testAuth.auth, {
-        drive,
-        getGoogleAccessToken: async () => "test-google-access-token",
-      })
-    );
+    app = createTestApp(testDatabase.db, testAuth.auth, {
+      drive,
+      getGoogleAccessToken: async () => "test-google-access-token",
+    });
+    client = testClient(app);
   });
 
   afterAll(async () => {
     await testDatabase.close();
   });
 
-  it("rejects unauthenticated ensure", async () => {
-    const res = await client.api.drive.ledger.ensure.$post();
-    await expectError(res, ERROR_CODES.AUTH.UNAUTHORIZED, 401);
+  it("rejects unauthenticated ensure/GET/PUT/DELETE", async () => {
+    await expectError(
+      await client.api.drive.ledger.ensure.$post(),
+      ERROR_CODES.AUTH.UNAUTHORIZED,
+      401
+    );
+    await expectError(await client.api.drive.ledger.$get(), ERROR_CODES.AUTH.UNAUTHORIZED, 401);
+    await expectError(
+      await client.api.drive.ledger.$put({ json: { content: { a: 1 } } }),
+      ERROR_CODES.AUTH.UNAUTHORIZED,
+      401
+    );
+    await expectError(await client.api.drive.ledger.$delete(), ERROR_CODES.AUTH.UNAUTHORIZED, 401);
   });
 
   it("ensures a default path file and persists fileId", async () => {
@@ -172,5 +182,39 @@ describe("Drive ledger broker", () => {
 
     const res = await gated.api.drive.ledger.ensure.$post({}, { headers });
     await expectError(res, ERROR_CODES.DRIVE.GOOGLE_AUTH_REQUIRED, 401);
+  });
+
+  it("returns FILE_NOT_FOUND when the pointer exists but Drive file is gone", async () => {
+    const ensure = await client.api.drive.ledger.ensure.$post({}, { headers: authHeaders });
+    const { data: bound } = await expectSuccess<{ data: { fileId: string } }>(
+      ensure,
+      ensure.status === 201 ? 201 : 200
+    );
+
+    drive.trash(bound.fileId);
+
+    const get = await client.api.drive.ledger.$get({}, { headers: authHeaders });
+    await expectError(get, ERROR_CODES.DRIVE.FILE_NOT_FOUND, 404);
+
+    const put = await client.api.drive.ledger.$put(
+      { json: { content: { a: 1 } } },
+      { headers: authHeaders }
+    );
+    await expectError(put, ERROR_CODES.DRIVE.FILE_NOT_FOUND, 404);
+  });
+
+  it("rejects PUT without a content envelope", async () => {
+    await client.api.drive.ledger.ensure.$post({}, { headers: authHeaders });
+
+    const res = await app.request("/api/drive/ledger", {
+      method: "PUT",
+      headers: {
+        ...authHeaders,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    await expectError(res, ERROR_CODES.VALIDATION.INVALID_INPUT, 400);
   });
 });

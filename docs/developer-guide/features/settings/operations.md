@@ -119,7 +119,7 @@ async function updateCurrency(userId, newCurrency) {
 
 ### Implementation
 
-Canonical helpers live in `apps/web` (`ledger-document.ts`). Dexie I/O lands with [#40](https://github.com/mupinnn/kaget/issues/40).
+Canonical helpers live in `apps/web` (`ledger-document.ts`). Dexie read/write for export/import is wired via `ledger-ie.services.ts` (working ledger restored in [#40](https://github.com/mupinnn/kaget/issues/40)).
 
 ```javascript
 import {

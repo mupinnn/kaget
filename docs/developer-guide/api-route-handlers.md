@@ -94,7 +94,7 @@ Codes live in [`apps/api/src/lib/error-codes.ts`](../../apps/api/src/lib/error-c
 | Domain | Example codes |
 |--------|---------------|
 | `AUTH` | `AUTH_UNAUTHORIZED`, `AUTH_FORBIDDEN` |
-| `DRIVE` | `DRIVE_FILE_NOT_BOUND`, `DRIVE_GOOGLE_AUTH_REQUIRED`, `DRIVE_UPSTREAM_ERROR` |
+| `DRIVE` | `DRIVE_FILE_NOT_BOUND`, `DRIVE_FILE_NOT_FOUND`, `DRIVE_INVALID_REMOTE_JSON`, `DRIVE_GOOGLE_AUTH_REQUIRED`, `DRIVE_UPSTREAM_ERROR` |
 | `VALIDATION` | `VALIDATION_INVALID_INPUT` |
 | `INTERNAL` | `INTERNAL_SERVER_ERROR` |
 
