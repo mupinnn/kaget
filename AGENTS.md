@@ -30,6 +30,7 @@ apps/api/src/
 │   └── schema/           # auth + domain tables (regenerate auth via auth:generate)
 ├── lib/
 │   ├── auth.ts           # betterAuth + getSafeSession
+│   ├── drive/            # Drive port (Google adapter + memory fake); opaque ledger I/O
 │   ├── error.ts          # AppError + onError handler
 │   ├── error-codes.ts    # ERROR_CODES constants
 │   ├── logger.ts         # Pino singleton
@@ -38,7 +39,7 @@ apps/api/src/
 │   ├── auth.ts           # Session middleware
 │   ├── cors.ts
 │   └── logger.ts         # Wide-event logging (one log line per /api/* request)
-├── routes/               # me, wallets (factory per route group)
+├── routes/               # me, drive/ledger, wallets (factory per route group)
 └── __tests__/            # Vitest suites + helpers (assertions, auth, app, db, mock)
 
 apps/web/src/
