@@ -55,18 +55,34 @@ function throwHttp(status: number, message: string): never {
   }
 }
 
+export async function ensureDriveLedger(): Promise<void> {
+  const res = await api.api.drive.ledger.ensure.$post();
+  if (!res.ok) {
+    const err = await parseError(res);
+    if (err.code === "DRIVE_GOOGLE_AUTH_REQUIRED" || err.status === 401 || err.status === 403) {
+      throw new DriveSyncNotConnectedError(err.message);
+    }
+    throwHttp(err.status, err.message);
+  }
+}
+
+/** Unbinds the server-side Drive `fileId` pointer. Does not delete Drive file content. */
+export async function unbindDriveLedger(): Promise<{ cleared: boolean; fileId?: string }> {
+  const res = await api.api.drive.ledger.$delete();
+  if (!res.ok) {
+    const err = await parseError(res);
+    if (err.code === "DRIVE_GOOGLE_AUTH_REQUIRED" || err.status === 401 || err.status === 403) {
+      throw new DriveSyncNotConnectedError(err.message);
+    }
+    throwHttp(err.status, err.message);
+  }
+  const body = (await res.json()) as { data: { cleared: boolean; fileId?: string } };
+  return body.data;
+}
+
 export function createApiDriveLedgerRemote(): DriveLedgerRemote {
   return {
-    async ensure() {
-      const res = await api.api.drive.ledger.ensure.$post();
-      if (!res.ok) {
-        const err = await parseError(res);
-        if (err.code === "DRIVE_GOOGLE_AUTH_REQUIRED" || err.status === 401 || err.status === 403) {
-          throw new DriveSyncNotConnectedError(err.message);
-        }
-        throwHttp(err.status, err.message);
-      }
-    },
+    ensure: ensureDriveLedger,
 
     async download() {
       const res = await api.api.drive.ledger.$get();

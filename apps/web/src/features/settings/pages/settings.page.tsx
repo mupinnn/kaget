@@ -6,8 +6,11 @@ import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { GoogleAuthControls } from "@/features/auth/components/google-auth-controls";
 import { formatDate } from "@/utils/date.util";
+import {
+  GoogleDriveSyncSection,
+  SETTINGS_EXPORT_SECTION_ID,
+} from "../components/google-drive-sync-section";
 import { exportData, importData } from "../data/ledger-ie.services";
 import { useSettingsQuery } from "../data/settings.queries";
 
@@ -73,13 +76,7 @@ export function SettingsIndexPage() {
   return (
     <PageLayout title="Settings">
       <div className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="font-semibold text-lg">Google account</h2>
-          <p className="text-muted-foreground text-sm">
-            Optional. Sign in with Google to enable Drive backup later. Local use needs no login.
-          </p>
-          <GoogleAuthControls />
-        </div>
+        <GoogleDriveSyncSection />
 
         <Separator />
 
@@ -101,7 +98,7 @@ export function SettingsIndexPage() {
 
         <Separator />
 
-        <div className="flex flex-col items-start gap-1">
+        <div id={SETTINGS_EXPORT_SECTION_ID} className="flex flex-col items-start gap-1">
           <h2 className="font-semibold text-lg">Export data</h2>
           <p className="text-muted-foreground text-sm">Export and backup your local ledger</p>
           <Button variant="outline" onClick={handleExport} disabled={isExporting || isImporting}>
