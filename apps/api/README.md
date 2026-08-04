@@ -113,6 +113,7 @@ apps/api/
 │   ├── db/                   # Drizzle client + schema
 │   ├── lib/
 │   │   ├── auth.ts           # betterAuth + getSafeSession
+│   │   ├── drive/            # Drive port, Google adapter, memory fake
 │   │   ├── error.ts          # AppError + onError handler
 │   │   ├── error-codes.ts    # ERROR_CODES constants
 │   │   ├── logger.ts         # Pino singleton
@@ -123,6 +124,7 @@ apps/api/
 │   │   └── logger.ts         # Wide-event logging
 │   ├── routes/
 │   │   ├── me.ts
+│   │   ├── drive-ledger.ts   # Opaque Drive ledger broker + fileId pointer
 │   │   ├── records.ts
 │   │   ├── debt-loans.ts
 │   │   ├── settings.ts
@@ -167,6 +169,10 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/me` | Current user (requires session) |
+| POST | `/api/drive/ledger/ensure` | Create-or-open `KaGet/kaget-ledger.json`; persist `fileId` pointer |
+| GET | `/api/drive/ledger` | Download opaque JSON `{ content }` for the bound file |
+| PUT | `/api/drive/ledger` | Upload opaque JSON `{ content }` to the bound file |
+| DELETE | `/api/drive/ledger` | Clear Postgres `fileId` pointer only (Drive file kept) |
 | GET | `/api/wallets` | List wallets for authenticated user |
 | POST | `/api/wallets` | Create wallet (optional opening balance record) |
 | GET | `/api/wallets/:id` | Get wallet with recent records |

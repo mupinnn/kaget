@@ -2,12 +2,17 @@ import { createApp } from "./app";
 import { loadEnv } from "./config/env";
 import { createDb } from "./db/client";
 import { type Auth, createAuth } from "./lib/auth";
+import { createGoogleDriveClient } from "./lib/drive/google-drive";
+import { createGoogleAccessTokenGetter } from "./lib/drive/google-token";
 import { logger } from "./lib/logger";
 
 const env = loadEnv();
 const db = createDb(env.DATABASE_URL);
 export const auth = createAuth(db, env);
-const app = createApp(env, db, auth);
+const app = createApp(env, db, auth, {
+  drive: createGoogleDriveClient(),
+  getGoogleAccessToken: createGoogleAccessTokenGetter(auth),
+});
 
 declare module "hono" {
   interface ContextVariableMap {

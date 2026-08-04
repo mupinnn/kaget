@@ -165,12 +165,20 @@ Prefer `getTestAuthHeaders` over `test.getAuthHeaders` — it returns a plain ob
 
 ### App Factory (`createTestApp`)
 
-Located in `src/__tests__/helpers/app.ts`, wraps `createApp` with test env config from `helpers/mock.ts`:
+Located in `src/__tests__/helpers/app.ts`, wraps `createApp` with test env config from `helpers/mock.ts`. By default it injects an in-memory Drive client and a stub Google access-token getter (no live Google calls):
 
 ```ts
 import { createTestApp } from './helpers/app'
+import { createMemoryDriveClient } from '../lib/drive/memory-drive'
 
 const app = createTestApp(testDatabase.db, auth)
+
+// Optional Drive doubles for broker tests (#33):
+const drive = createMemoryDriveClient()
+const appWithDrive = createTestApp(testDatabase.db, auth, {
+  drive,
+  getGoogleAccessToken: async () => 'test-token',
+})
 ```
 
 ### Test Client (`testClient`)
