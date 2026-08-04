@@ -314,7 +314,7 @@ if (budget.balance === 0) {
 
 ## Spend (Create Record from Budget)
 
-On the API, spending is **`POST /api/records`** with `source_type: BUDGET` and `record_type: EXPENSE` — see [Record Operations](../records/operations.md#create-record). Expense history for a budget is **`GET /api/budgets/:id/records`** (see [`apps/api/README.md`](../../../../apps/api/README.md#api-routes)).
+Spending from a budget is implemented as record creation in the client Dexie ledger (`source_type: BUDGET`, `record_type: EXPENSE`) — see [Record Operations](../records/operations.md#create-record). There is no server `/api/budgets` or `/api/records` CRUD ([ADR-007](../../adr/007-local-first-drive-custodian-boundary.md)).
 
 Create an expense record that reduces budget balance.
 
@@ -585,17 +585,9 @@ WHERE id = :budget_id AND balance = 0;
 COMMIT;
 ```
 
-## HTTP API
+## Persistence surface
 
-Domain rules above map to `/api/budgets*` routes. Full method/path/request tables are in [`apps/api/README.md`](../../../../apps/api/README.md#api-routes) — not duplicated here.
-
-| Domain operation | API surface |
-| ---------------- | ----------- |
-| Create / bulk create | `POST /api/budgets`, `POST /api/budgets/bulk` |
-| List / get | `GET /api/budgets`, `GET /api/budgets/:id` |
-| Add / refund / reactivate | `POST /api/budgets/:id/add-funds`, `…/refund`, `…/reactivate` |
-| Spend | `POST /api/records` (`source_type: BUDGET`) |
-| Budget expense history | `GET /api/budgets/:id/records` |
+Server domain CRUD for budgets was removed. Domain rules above run in the web app’s Dexie services (`apps/web/src/features/budgets/data/`). Optional durability is the opaque Drive ledger JSON via `/api/drive/ledger` — see [`apps/api/README.md`](../../../../apps/api/README.md#api-routes) and [ADR-007](../../adr/007-local-first-drive-custodian-boundary.md).
 
 ## Related
 

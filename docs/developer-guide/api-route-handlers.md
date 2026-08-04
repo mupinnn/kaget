@@ -1,10 +1,12 @@
 # API Route Handlers
 
-Conventions for writing Hono route handlers in `apps/api`. The reference implementation is [`apps/api/src/routes/wallets.ts`](../../apps/api/src/routes/wallets.ts).
+Conventions for writing Hono route handlers in `apps/api`. The reference implementation is [`apps/api/src/routes/drive-ledger.ts`](../../apps/api/src/routes/drive-ledger.ts).
+
+The API is a **custodian boundary** ([ADR-007](./adr/007-local-first-drive-custodian-boundary.md)): auth, OAuth token broker, and opaque Drive ledger I/O. Do not add server CRUD for wallets, budgets, records, transfers, debts/loans, or settings.
 
 ## Overview
 
-Each route group is a factory function (e.g. `createWalletRoutes(db, auth)`) that returns a `Hono` sub-app. Routes are mounted in [`apps/api/src/app.ts`](../../apps/api/src/app.ts).
+Each route group is a factory function (e.g. `createDriveLedgerRoutes(db, auth, driveDeps)`) that returns a `Hono` sub-app. Routes are mounted in [`apps/api/src/app.ts`](../../apps/api/src/app.ts).
 
 Middleware runs in this order for `/api/*` requests:
 
@@ -27,7 +29,7 @@ sequenceDiagram
   LoggerMW->>AuthMW: next
   AuthMW->>Handler: next
   Handler->>Handler: getSafeSession + business logic
-  Handler->>Handler: wideEvent.wallet = {...}
+  Handler->>Handler: wideEvent.drive = {...}
   Handler-->>Client: c.json({ data })
   Note over Handler,OnError: On failure
   Handler->>OnError: throw AppError
@@ -50,8 +52,8 @@ Handlers should **not** wrap business logic in try/catch for logging or error fo
 Use `200` for reads/updates and `201` for creates:
 
 ```ts
-return c.json({ data: wallets })
-return c.json({ data: newWallet }, 201)
+return c.json({ data: metaResponse(existing) })
+return c.json({ data: metaResponse(created) }, 201)
 ```
 
 ### Error
@@ -59,16 +61,16 @@ return c.json({ data: newWallet }, 201)
 ```json
 {
   "error": {
-    "code": "WALLET_NOT_FOUND",
-    "message": "Wallet not found",
-    "details": { "name": ["Wallet name is required"] }
+    "code": "DRIVE_FILE_NOT_BOUND",
+    "message": "No Drive ledger file bound for this user",
+    "details": { "content": ["Expected object"] }
   }
 }
 ```
 
 - `code` — stable identifier for clients and tests (see `ERROR_CODES`)
 - `message` — human-readable summary
-- `details` — optional; field-level validation messages keyed by path (e.g. `"name"`, `"initial_balance"`)
+- `details` — optional; field-level validation messages keyed by path
 
 ## AppError and ERROR_CODES
 
@@ -78,17 +80,21 @@ return c.json({ data: newWallet }, 201)
 import { AppError } from '../lib/error'
 import { ERROR_CODES } from '../lib/error-codes'
 
-if (!walletData) {
-  throw new AppError(404, ERROR_CODES.WALLET.NOT_FOUND, 'Wallet not found')
+if (!pointer) {
+  throw new AppError(
+    404,
+    ERROR_CODES.DRIVE.FILE_NOT_BOUND,
+    'No Drive ledger file bound for this user',
+  )
 }
 ```
 
-Domain codes live in [`apps/api/src/lib/error-codes.ts`](../../apps/api/src/lib/error-codes.ts):
+Codes live in [`apps/api/src/lib/error-codes.ts`](../../apps/api/src/lib/error-codes.ts):
 
 | Domain | Example codes |
 |--------|---------------|
 | `AUTH` | `AUTH_UNAUTHORIZED`, `AUTH_FORBIDDEN` |
-| `WALLET` | `WALLET_NOT_FOUND`, `WALLET_CONFLICT` |
+| `DRIVE` | `DRIVE_FILE_NOT_BOUND`, `DRIVE_GOOGLE_AUTH_REQUIRED`, `DRIVE_UPSTREAM_ERROR` |
 | `VALIDATION` | `VALIDATION_INVALID_INPUT` |
 | `INTERNAL` | `INTERNAL_SERVER_ERROR` |
 
@@ -119,8 +125,8 @@ Use [`validator()`](../../apps/api/src/lib/validator.ts) instead of raw `@hono/z
 ```ts
 import { validator } from '../lib/validator'
 
-.post('/', validator('json', createWalletSchema), async c => {
-  const { name, type, initial_balance } = c.req.valid('json')
+.put('/', validator('json', putDriveLedgerSchema), async c => {
+  const { content } = c.req.valid('json')
   // ...
 })
 ```
@@ -139,7 +145,7 @@ Example validation error response:
     "code": "VALIDATION_INVALID_INPUT",
     "message": "Validation failed",
     "details": {
-      "name": ["Wallet name is required"]
+      "content": ["Expected object"]
     }
   }
 }
@@ -156,20 +162,17 @@ Use **nested domain keys** — group related fields under a namespace:
 ```ts
 const wideEvent = c.get('wideEvent')
 
-// List wallets
-wideEvent.wallet = { count: wallets.length }
-
-// Get single wallet
-wideEvent.wallet = { id: walletId, record_count: walletData.records.length }
-
-// Delete wallet
-wideEvent.wallet = { id: walletId, deleted_record_count: walletData.records.length }
+wideEvent.drive = {
+  action: 'ensure',
+  fileId: created.fileId,
+  rebound: false,
+}
 ```
 
 | Layer | Responsibility |
 |-------|----------------|
 | Logger middleware | `request_id`, `method`, `path`, `timestamp`, `outcome` (default `success`), `status_code`, `duration_ms` |
-| Handler (success) | Domain context — e.g. `wideEvent.wallet`, future `wideEvent.record` |
+| Handler (success) | Domain context — e.g. `wideEvent.drive` |
 | `onError` (failure) | `wideEvent.outcome = 'error'`, `wideEvent.error = { code, message, details? }` |
 
 Handlers do **not** set `wideEvent.outcome` or `wideEvent.error` manually.
@@ -177,22 +180,23 @@ Handlers do **not** set `wideEvent.outcome` or `wideEvent.error` manually.
 ## Handler template
 
 ```ts
-.get('/:id', async c => {
+.get('/', async c => {
   const { user } = getSafeSession(c)
   const wideEvent = c.get('wideEvent')
-  const walletId = c.req.param('id')
+  const accessToken = await getGoogleAccessToken(c.req.raw.headers)
 
-  const walletData = await db.query.wallet.findFirst({
-    where: and(eq(wallet.id, walletId), eq(wallet.userId, user.id)),
-    with: { records: { orderBy: (record, { desc }) => [desc(record.date)], limit: 10 } },
-  })
-
-  if (!walletData) {
-    throw new AppError(404, ERROR_CODES.WALLET.NOT_FOUND, 'Wallet not found')
+  const pointer = await getPointer(db, user.id)
+  if (!pointer) {
+    throw new AppError(
+      404,
+      ERROR_CODES.DRIVE.FILE_NOT_BOUND,
+      'No Drive ledger file bound for this user',
+    )
   }
 
-  wideEvent.wallet = { id: walletId, record_count: walletData.records.length }
-  return c.json({ data: walletData })
+  const payload = await drive.getContent(accessToken, pointer.fileId)
+  wideEvent.drive = { action: 'download', fileId: payload.fileId }
+  return c.json({ data: { content: payload.content } })
 })
 ```
 
@@ -210,10 +214,11 @@ When adding a new route group:
 8. Register in `createApp()`: `.route('/api/{name}', create{Name}Routes(...))`
 9. Add error codes to `ERROR_CODES` if needed
 10. Add integration tests — see [API Testing](./testing.md)
+11. Do not persist financial ledger entities in Postgres
 
 ## Reference implementation
 
-- Routes: [`apps/api/src/routes/wallets.ts`](../../apps/api/src/routes/wallets.ts)
-- Tests: [`apps/api/src/__tests__/wallets.test.ts`](../../apps/api/src/__tests__/wallets.test.ts)
+- Routes: [`apps/api/src/routes/drive-ledger.ts`](../../apps/api/src/routes/drive-ledger.ts)
+- Tests: [`apps/api/src/__tests__/drive-ledger.test.ts`](../../apps/api/src/__tests__/drive-ledger.test.ts)
 - Error handling: [`apps/api/src/lib/error.ts`](../../apps/api/src/lib/error.ts)
 - Validation: [`apps/api/src/lib/validator.ts`](../../apps/api/src/lib/validator.ts)

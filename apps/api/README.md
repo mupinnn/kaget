@@ -2,6 +2,8 @@
 
 Hono API on Bun with PostgreSQL, Drizzle ORM, and [better-auth](https://www.better-auth.com). Exports `AppType` for the typed Hono RPC client in `@kaget/web`.
 
+Postgres holds **auth/session tables** and the **Drive ledger `fileId` pointer** only. Financial ledger entities (wallets, budgets, records, transfers, debts/loans, settings) live in the web app’s Dexie store and optionally as an opaque JSON file on Google Drive — see [ADR-007](../../docs/developer-guide/adr/007-local-first-drive-custodian-boundary.md).
+
 ## Prerequisites
 
 - [Bun](https://bun.sh/) **1.3.3+** (see root `packageManager` in [`package.json`](../../package.json))
@@ -110,7 +112,7 @@ apps/api/
 │   ├── index.ts              # Entry: env → db → auth → Bun.serve
 │   ├── app.ts                # Hono app; export type AppType
 │   ├── config/env.ts         # Zod validation (Bun.env)
-│   ├── db/                   # Drizzle client + schema
+│   ├── db/                   # Drizzle client + schema (auth + drive_ledger_file)
 │   ├── lib/
 │   │   ├── auth.ts           # betterAuth + getSafeSession
 │   │   ├── drive/            # Drive port, Google adapter, memory fake
@@ -124,12 +126,7 @@ apps/api/
 │   │   └── logger.ts         # Wide-event logging
 │   ├── routes/
 │   │   ├── me.ts
-│   │   ├── drive-ledger.ts   # Opaque Drive ledger broker + fileId pointer
-│   │   ├── records.ts
-│   │   ├── debt-loans.ts
-│   │   ├── settings.ts
-│   │   ├── transfers.ts
-│   │   └── wallets.ts
+│   │   └── drive-ledger.ts   # Opaque Drive ledger broker + fileId pointer
 │   └── __tests__/            # Vitest suites + helpers
 ├── migrations/               # Drizzle SQL (committed)
 ├── drizzle.config.ts
@@ -137,11 +134,11 @@ apps/api/
 └── docker-entrypoint.sh      # db:migrate then exec CMD
 ```
 
-Routes are mounted in [`src/app.ts`](src/app.ts) on explicit paths (e.g. `.route('/api/wallets', createWalletRoutes(db, auth))`). See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md) for handler conventions.
+Routes are mounted in [`src/app.ts`](src/app.ts) on explicit paths (e.g. `.route('/api/drive/ledger', createDriveLedgerRoutes(...))`). See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md) for handler conventions.
 
 ## Database workflow
 
-**Auth schema** is generated from better-auth (requires root `.env` via `--env-file`):
+**Schema** is auth tables (from better-auth) plus `drive_ledger_file`. Always import tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) so Drizzle Kit picks them up.
 
 ```bash
 bun --env-file=../../.env run auth:generate
@@ -162,7 +159,9 @@ bun --env-file=../../.env run db:generate
 bun --env-file=../../.env run db:migrate
 ```
 
-Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) so Drizzle Kit picks them up.
+### Migration squash / local DB wipe
+
+Domain ledger tables were removed and migration history was squashed to a single baseline (`0000_*.sql`) covering auth + `drive_ledger_file` only. **Local and Docker Postgres databases that still have the old domain tables / journal must be wiped and recreated** (e.g. `docker compose down -v` then `up -d db`, then `db:migrate`). Do not try to migrate forward from the pre-squash journal.
 
 ## API routes
 
@@ -173,39 +172,11 @@ Always import new tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) s
 | GET | `/api/drive/ledger` | Download opaque JSON `{ content }` for the bound file |
 | PUT | `/api/drive/ledger` | Upload opaque JSON `{ content }` to the bound file |
 | DELETE | `/api/drive/ledger` | Clear Postgres `fileId` pointer only (Drive file kept) |
-| GET | `/api/wallets` | List wallets for authenticated user |
-| POST | `/api/wallets` | Create wallet (optional opening balance record) |
-| GET | `/api/wallets/:id` | Get wallet with recent records |
-| PATCH | `/api/wallets/:id` | Update wallet name |
-| DELETE | `/api/wallets/:id` | Delete wallet; cascade owned records, transfers, and debt/loans |
-| GET | `/api/budgets` | List budgets (filter by `wallet_id`, `budget_type`, `archived`) |
-| POST | `/api/budgets` | Create budget (BUDGET or GOAL); funds via transfer pair |
-| POST | `/api/budgets/bulk` | Bulk create budgets (grouped wallet deduction) |
-| GET | `/api/budgets/:id` | Get budget with computed fields (`usedAmount`, `isReached`, …) |
-| GET | `/api/budgets/:id/records` | List expense records for a budget (paginated) |
-| POST | `/api/budgets/:id/add-funds` | Add funds / contribute (wallet → budget transfer) |
-| POST | `/api/budgets/:id/refund` | Refund / release (budget → wallet transfer; auto-archive at zero) |
-| POST | `/api/budgets/:id/reactivate` | Reactivate archived budget (`use_same_amount` or new `amount`) |
-| GET | `/api/transfers` | List transfers (filter by `account_id`, `account_type`, `type`, dates; paginated) |
-| POST | `/api/transfers` | Create transfer pair (wallet/budget); updates balances atomically |
-| GET | `/api/transfers/:id` | Get transfer with paired leg (`ref_id`) |
-| GET | `/api/records` | List records (filter by `source_id`, `record_type`, dates; paginated) |
-| POST | `/api/records` | Create record with items; updates wallet or budget balance (`source_type`: `WALLET` or `BUDGET`; budget = EXPENSE only) |
-| GET | `/api/records/:id` | Get record with items and source (`wallet` or `budget`) |
-| PATCH | `/api/records/:id` | Update record, sync items, recalculate balance |
-| DELETE | `/api/records/:id` | Delete record and reverse wallet balance |
-| GET | `/api/debts-loans` | List debts/loans (filter by `type`, `status`, `wallet_id`; paginated) |
-| POST | `/api/debts-loans` | Create debt or loan (`type`: `DEBT` or `LOAN`) |
-| GET | `/api/debts-loans/:id` | Get debt/loan with linked records and wallet |
-| PATCH | `/api/debts-loans/:id` | Update pending debt/loan (`note`, `other_party`, `amount`, `occurred_at`) |
-| POST | `/api/debts-loans/:id/resolve` | Mark debt as paid or loan as collected |
-| DELETE | `/api/debts-loans/:id` | Delete debt/loan and reverse balances |
-| GET | `/api/settings` | Get app settings (currency preference) |
-| POST | `/api/settings` | Create app settings (`409` if already exists) |
-| PATCH | `/api/settings` | Update `currencyCode` |
 | GET, POST | `/api/auth/*` | better-auth handlers |
 
-Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure. See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md).
+There is **no** server CRUD for wallets, budgets, records, transfers, debts/loans, or settings.
+
+Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure (except `/api/me`, which returns `{ user }`). See [API Route Handlers](../../docs/developer-guide/api-route-handlers.md).
 
 CORS is applied under `/api/*` with credentials support for cookie-based web auth.
 
@@ -250,3 +221,4 @@ The [`Dockerfile`](Dockerfile) is a multi-stage Bun build: install workspace dep
 - [API Route Handlers](../../docs/developer-guide/api-route-handlers.md) — error handling, validation, logging
 - [API Testing](../../docs/developer-guide/testing.md) — PGlite, testClient, assertion helpers
 - [ADR-004](../../docs/developer-guide/adr/004-tooling-stack-migration.md) — Bun, Biome, Lefthook migration notes
+- [ADR-007](../../docs/developer-guide/adr/007-local-first-drive-custodian-boundary.md) — local-first custodian boundary

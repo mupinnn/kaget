@@ -768,76 +768,9 @@ async function getDebtLoan(debtLoanId) {
 }
 ```
 
-## REST API
+## Persistence surface
 
-Server routes are mounted at `/api/debts-loans`. All endpoints require authentication.
-
-### Endpoints
-
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| `POST` | `/api/debts-loans` | Create debt or loan |
-| `GET` | `/api/debts-loans` | List with filters and pagination |
-| `GET` | `/api/debts-loans/:id` | Detail with linked records and wallet |
-| `PATCH` | `/api/debts-loans/:id` | Update pending debt/loan |
-| `POST` | `/api/debts-loans/:id/resolve` | Mark paid (DEBT) or collected (LOAN) |
-| `DELETE` | `/api/debts-loans/:id` | Delete and reverse balances |
-
-### Create request
-
-```json
-{
-  "type": "DEBT",
-  "wallet_id": "wallet-id",
-  "amount": 100,
-  "other_party": "Sarah",
-  "occurred_at": "2026-02-01T00:00:00.000Z",
-  "note": "Rent help"
-}
-```
-
-### Update request
-
-```json
-{
-  "note": "Updated note",
-  "other_party": "Sarah",
-  "amount": 150,
-  "occurred_at": "2026-02-02T00:00:00.000Z"
-}
-```
-
-At least one field is required. Resolved debt/loans return `DEBT_LOAN_ALREADY_RESOLVED`.
-
-### List query parameters
-
-| Parameter   | Type     | Description                          |
-| ----------- | -------- | ------------------------------------ |
-| `type`      | `DEBT` \| `LOAN` | Filter by type               |
-| `status`    | `PENDING` \| `RESOLVED` | Filter by status      |
-| `wallet_id` | string   | Filter by wallet                     |
-| `limit`     | number   | Page size (default 20, max 100)      |
-| `offset`    | number   | Page offset (default 0)              |
-
-### List response
-
-```json
-{
-  "data": {
-    "debt_loans": [],
-    "pagination": { "total": 0, "limit": 20, "offset": 0 }
-  }
-}
-```
-
-### Error codes
-
-| Code | HTTP | When |
-| ---- | ---- | ---- |
-| `DEBT_LOAN_NOT_FOUND` | 404 | Missing or not owned |
-| `DEBT_LOAN_ALREADY_RESOLVED` | 400 | Update or resolve on resolved entity |
-| `DEBT_LOAN_INSUFFICIENT_BALANCE` | 400 | LOAN create/update or DEBT resolve |
-| `VALIDATION_INVALID_INPUT` | 400 | Zod validation failure |
+Server routes under `/api/debts-loans` were removed. Debt/loan domain rules above run in the web app’s Dexie services (`apps/web/src/features/debt-loans/data/`). Optional durability is the opaque Drive ledger JSON via `/api/drive/ledger` — see [`apps/api/README.md`](../../../../apps/api/README.md#api-routes) and [ADR-007](../../adr/007-local-first-drive-custodian-boundary.md).
 
 ## Related
 

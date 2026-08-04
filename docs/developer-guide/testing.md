@@ -14,7 +14,7 @@ The API test suite uses:
 - **Vitest** — test runner and assertion library
 - **Assertion helpers** — `expectSuccess` / `expectError` for typed response checks
 
-The reference test suite is [`apps/api/src/__tests__/wallets.test.ts`](../../apps/api/src/__tests__/wallets.test.ts).
+The reference test suite is [`apps/api/src/__tests__/drive-ledger.test.ts`](../../apps/api/src/__tests__/drive-ledger.test.ts) (also see `auth.test.ts`).
 
 ### Web E2E (`apps/web`)
 
@@ -227,7 +227,7 @@ Asserts failure status, `res.ok === false`, and that `error.code` matches the ex
 import { expectError } from './helpers/assertions'
 import { ERROR_CODES } from '../lib/error-codes'
 
-await expectError(res, ERROR_CODES.WALLET.NOT_FOUND, 404)
+await expectError(res, ERROR_CODES.DRIVE.FILE_NOT_BOUND, 404)
 await expectError(res, ERROR_CODES.VALIDATION.INVALID_INPUT, 400)
 await expectError(res, ERROR_CODES.AUTH.UNAUTHORIZED, 401)
 ```
@@ -242,19 +242,19 @@ Import codes from [`ERROR_CODES`](../../apps/api/src/lib/error-codes.ts) — do 
 
 ## Complete test example
 
-Mirrors [`wallets.test.ts`](../../apps/api/src/__tests__/wallets.test.ts):
+Mirrors [`drive-ledger.test.ts`](../../apps/api/src/__tests__/drive-ledger.test.ts):
 
 ```ts
-import { eq } from 'drizzle-orm'
 import { testClient } from 'hono/testing'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createMemoryDriveClient } from '../lib/drive/memory-drive'
 import { ERROR_CODES } from '../lib/error-codes'
 import { createTestApp } from './helpers/app'
 import { expectError, expectSuccess } from './helpers/assertions'
 import { createTestAuth, getTestAuthHeaders } from './helpers/auth'
 import { setupTestDatabase } from './helpers/db'
 
-describe('Wallets API', () => {
+describe('Drive ledger broker', () => {
   let testDatabase: Awaited<ReturnType<typeof setupTestDatabase>>
   let authHeaders: Record<string, string>
   let client: ReturnType<typeof testClient<ReturnType<typeof createTestApp>>>
@@ -267,58 +267,45 @@ describe('Wallets API', () => {
     await test.saveUser(user)
     authHeaders = await getTestAuthHeaders(test, user.id)
 
-    client = testClient(createTestApp(testDatabase.db, auth))
+    client = testClient(
+      createTestApp(testDatabase.db, auth, {
+        drive: createMemoryDriveClient(),
+        getGoogleAccessToken: async () => 'test-google-access-token',
+      }),
+    )
   })
 
   afterAll(async () => {
     await testDatabase.close()
   })
 
-  it('should create a wallet', async () => {
-    const res = await client.api.wallets.$post(
-      { json: { name: 'My Savings', type: 'DIGITAL', initial_balance: 0 } },
-      { headers: authHeaders },
-    )
-
-    const { data } = await expectSuccess(res, 201)
-    expect(data).toMatchObject({ name: 'My Savings', type: 'DIGITAL', balance: '0.0000' })
+  it('ensures a Drive ledger file', async () => {
+    const res = await client.api.drive.ledger.ensure.$post({}, { headers: authHeaders })
+    const { data } = await expectSuccess<{ data: { fileId: string } }>(res, 201)
+    expect(data.fileId).toBeTruthy()
   })
 
-  it('should return 404 for non-existent wallet', async () => {
-    const res = await client.api.wallets[':id'].$get(
-      { param: { id: 'non-existent-id' } },
-      { headers: authHeaders },
-    )
-
-    await expectError(res, ERROR_CODES.WALLET.NOT_FOUND, 404)
+  it('rejects download when unbound', async () => {
+    const res = await client.api.drive.ledger.$get({}, { headers: authHeaders })
+    await expectError(res, ERROR_CODES.DRIVE.FILE_NOT_BOUND, 404)
   })
 
-  it('should reject unauthorized requests', async () => {
-    const res = await client.api.wallets.$get()
-
+  it('rejects unauthorized requests', async () => {
+    const res = await client.api.drive.ledger.ensure.$post()
     await expectError(res, ERROR_CODES.AUTH.UNAUTHORIZED, 401)
-  })
-
-  it('should reject invalid input', async () => {
-    const res = await client.api.wallets.$post(
-      { json: { name: '', type: 'DIGITAL' } },
-      { headers: authHeaders },
-    )
-
-    await expectError(res, ERROR_CODES.VALIDATION.INVALID_INPUT, 400)
   })
 })
 ```
 
 ## Side-effect assertions
 
-When the HTTP response alone is not enough (e.g. cascade deletes), query Drizzle directly via `testDatabase.db`:
+When the HTTP response alone is not enough, query Drizzle directly via `testDatabase.db` (e.g. `drive_ledger_file` pointer rows):
 
 ```ts
-const records = await testDatabase.db.query.record.findMany({
-  where: rec => eq(rec.walletId, walletId!),
+const pointers = await testDatabase.db.query.driveLedgerFile.findMany({
+  where: (row, { eq }) => eq(row.userId, userId),
 })
-expect(records).toHaveLength(0)
+expect(pointers).toHaveLength(1)
 ```
 
 ## Running tests
@@ -350,7 +337,7 @@ bun run test
 5. **Use `ERROR_CODES` in tests** — Keeps assertions aligned with handler error codes
 6. **Use testClient RPC** — Typed routes; avoid raw `app.request()` calls
 7. **Pass headers per-request** — Second parameter: `{ headers: authHeaders }`
-8. **Group by endpoint** — Nested `describe('GET /wallets/:id', ...)` blocks
+8. **Group by endpoint** — Nested `describe('GET /drive/ledger', ...)` blocks
 
 ## File layout
 
@@ -359,10 +346,11 @@ apps/api/src/__tests__/
 ├── helpers/
 │   ├── assertions.ts  # expectSuccess, expectError
 │   ├── auth.ts        # createTestAuth, getTestAuthHeaders
-│   ├── app.ts         # createTestApp(db, auth)
+│   ├── app.ts         # createTestApp(db, auth, driveDeps?)
 │   ├── db.ts          # setupTestDatabase()
 │   └── mock.ts        # MOCK_ENV for test app config
-└── wallets.test.ts    # Reference test suite
+├── auth.test.ts       # Auth posture + /api/me
+└── drive-ledger.test.ts  # Reference test suite
 ```
 
 ## Architecture

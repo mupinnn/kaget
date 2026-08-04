@@ -27,7 +27,7 @@ apps/api/src/
 ├── config/env.ts         # Zod-validated Bun.env (API_PORT, DATABASE_URL, …)
 ├── db/
 │   ├── client.ts
-│   └── schema/           # auth + domain tables (regenerate auth via auth:generate)
+│   └── schema/           # auth + drive_ledger_file (regenerate auth via auth:generate)
 ├── lib/
 │   ├── auth.ts           # betterAuth + getSafeSession
 │   ├── drive/            # Drive port (Google adapter + memory fake); opaque ledger I/O
@@ -39,7 +39,7 @@ apps/api/src/
 │   ├── auth.ts           # Session middleware
 │   ├── cors.ts
 │   └── logger.ts         # Wide-event logging (one log line per /api/* request)
-├── routes/               # me, drive/ledger, wallets (factory per route group)
+├── routes/               # me, drive/ledger (factory per route group)
 └── __tests__/            # Vitest suites + helpers (assertions, auth, app, db, mock)
 
 apps/web/src/
@@ -81,13 +81,13 @@ There is **no** `packages/` directory yet. Web consumes `@kaget/api` as a worksp
 
 - **Runtime:** Bun only — `Bun.serve({ port: env.API_PORT, fetch: app.fetch })`. No `@hono/node-server`.
 - **Env:** Validate with Zod in `config/env.ts` from `Bun.env`. Update [`.env.example`](.env.example) for every new variable. Port is **`API_PORT`**, not `PORT`.
-- **App factory:** Register routes on explicit paths in `app.ts`, e.g. `.route('/api/wallets', createWalletRoutes(db, auth))`. Sub-routers use `/` internally. Mount `.onError(onError)` from `lib/error.ts`.
+- **App factory:** Register routes on explicit paths in `app.ts`, e.g. `.route('/api/drive/ledger', createDriveLedgerRoutes(db, auth, driveDeps))`. Sub-routers use `/` internally. Mount `.onError(onError)` from `lib/error.ts`. Do not mount domain ledger CRUD.
 - **Auth:** `better-auth` with `drizzleAdapter`; mount `auth.handler` on `/api/auth/*`. Protected handlers use `getSafeSession(c)` — throws `AppError` with `ERROR_CODES.AUTH.UNAUTHORIZED` when unauthenticated.
 - **Errors:** Throw `AppError(status, ERROR_CODES.DOMAIN.CODE, message, details?)` — do not `return c.json({ error: ... }, status)`. Add codes in `lib/error-codes.ts`. Global `onError` returns `{ error: { code, message, details? } }` and enriches `wideEvent.error`.
 - **Validation:** Use `validator('json' | 'param' | 'query', schema)` from `lib/validator.ts` — not raw `zValidator`. Validation failures throw `AppError` with `VALIDATION_INVALID_INPUT` and field-level `details`.
 - **Responses:** Success `{ data: T }` (200/201). Errors handled by `onError` — see [API Route Handlers](docs/developer-guide/api-route-handlers.md).
-- **Logging:** Handlers annotate `c.get('wideEvent')` with nested domain keys on success only (e.g. `wideEvent.wallet = { id, count }`). Do not wrap handlers in try/catch for logging — `onError` sets `wideEvent.outcome` and `wideEvent.error`.
-- **DB:** Prefer `db:migrate` for committed changes; `db:push` for local dev only. Commit files under `migrations/`.
+- **Logging:** Handlers annotate `c.get('wideEvent')` with nested domain keys on success only (e.g. `wideEvent.drive = { action, fileId }`). Do not wrap handlers in try/catch for logging — `onError` sets `wideEvent.outcome` and `wideEvent.error`.
+- **DB:** Prefer `db:migrate` for committed changes; `db:push` for local dev only. Commit files under `migrations/`. Schema is auth + `drive_ledger_file` only.
 - **Build:** `bun run build` compiles a standalone binary at `dist/kaget-api`; run with `bun run start`.
 - **Style:** Double quotes and semicolons match current API source — follow existing files in `apps/api`.
 
@@ -158,7 +158,7 @@ Same pattern for `auth:generate`, `db:push`, `db:generate`, `db:studio`. Full ta
 
 ### Adding an API route
 
-Reference: [`apps/api/src/routes/wallets.ts`](apps/api/src/routes/wallets.ts) and [API Route Handlers](docs/developer-guide/api-route-handlers.md).
+Reference: [`apps/api/src/routes/drive-ledger.ts`](apps/api/src/routes/drive-ledger.ts) and [API Route Handlers](docs/developer-guide/api-route-handlers.md). Do **not** add server CRUD for ledger entities without an ADR that supersedes ADR-007.
 
 1. Add `apps/api/src/routes/{name}.ts` returning a `Hono` sub-app via `create{Name}Routes(deps)`
 2. Use `getSafeSession(c)` for authenticated handlers
@@ -233,7 +233,7 @@ Integration tests use **PGlite** (in-process Postgres), **better-auth testUtils*
 - **Assertions**: `expectSuccess(res, status)` and `expectError(res, ERROR_CODES.X, status)` — import codes from `lib/error-codes.ts`
 - **Requests**: `client.api.{route}.$method({ ... }, { headers: authHeaders })`
 
-Full details in [docs/developer-guide/testing.md](docs/developer-guide/testing.md). Reference: [`apps/api/src/__tests__/wallets.test.ts`](apps/api/src/__tests__/wallets.test.ts).
+Full details in [docs/developer-guide/testing.md](docs/developer-guide/testing.md). Reference: [`apps/api/src/__tests__/drive-ledger.test.ts`](apps/api/src/__tests__/drive-ledger.test.ts).
 
 ```ts
 const testDatabase = await setupTestDatabase()
@@ -243,14 +243,15 @@ await test.saveUser(user)
 const authHeaders = await getTestAuthHeaders(test, user.id)
 const client = testClient(createTestApp(testDatabase.db, auth))
 
-const res = await client.api.wallets.$post(
-  { json: { name: 'My Wallet', type: 'DIGITAL' } },
-  { headers: authHeaders },
-)
+const res = await client.api.drive.ledger.ensure.$post({}, { headers: authHeaders })
 const { data } = await expectSuccess(res, 201)
-expect(data).toMatchObject({ name: 'My Wallet', type: 'DIGITAL' })
+expect(data.fileId).toBeTruthy()
 
-await expectError(res, ERROR_CODES.WALLET.NOT_FOUND, 404)
+await expectError(
+  await client.api.drive.ledger.$get({}, { headers: authHeaders }),
+  ERROR_CODES.DRIVE.FILE_NOT_BOUND,
+  404,
+)
 ```
 
 ---
@@ -349,7 +350,7 @@ Never commit `.env`.
 
 ## Follow-ups
 
-- Google OAuth + Drive token broker + client sync (PRD 001) — strip any domain API CRUD; restore Dexie (#40) before strip (#34)
+- Google OAuth + Drive token broker + client sync (PRD 001) — domain API CRUD stripped (#34); Dexie is the working ledger
 - Optional client-side encryption (deferred)
 - Full UI/IA redesign (separate session after sync works)
 - Postgres backup strategy for auth/token volume only (ADR-006)

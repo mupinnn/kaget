@@ -109,7 +109,7 @@ cd apps/api && bun run dev   # http://localhost:3000 (or API_PORT from .env)
 | Web (PWA) | http://localhost:5173 |
 | API | http://localhost:3000 (default `API_PORT`) |
 | better-auth | http://localhost:3000/api/auth/* |
-| Wallets API | http://localhost:3000/api/wallets |
+| Drive ledger broker | http://localhost:3000/api/drive/ledger |
 
 Run API + database in Docker:
 
