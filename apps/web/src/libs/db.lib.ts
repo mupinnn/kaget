@@ -2,6 +2,7 @@ import Dexie, { type EntityTable } from "dexie";
 import type { Budget } from "@/features/budgets/data/budgets.schemas";
 import type { DebtLoan } from "@/features/debt-loans/data/debt-loans.schemas";
 import type { Record, RecordItem } from "@/features/records/data/records.schemas";
+import type { DriveSyncMeta } from "@/features/settings/data/drive-sync.schemas";
 import type { Settings } from "@/features/settings/data/settings.schemas";
 import type { Transfer } from "@/features/transfers/data/transfers.schemas";
 import type { Wallet } from "@/features/wallets/data/wallets.schemas";
@@ -16,6 +17,7 @@ class KagetDB extends Dexie {
   transfers!: EntityTable<Transfer, "id">;
   debtLoans!: EntityTable<DebtLoan, "id">;
   settings!: EntityTable<Settings, "id">;
+  driveSyncMeta!: EntityTable<DriveSyncMeta, "id">;
 
   constructor() {
     super("KagetDB");
@@ -28,6 +30,17 @@ class KagetDB extends Dexie {
         "id, refId, sourceId, sourceType, destinationId, destinationType, type, transferredAt, createdAt, updatedAt",
       debtLoans: "id, sourceId, type, resolvedAt, occurredAt, createdAt, updatedAt",
       settings: "id, currencyCode",
+    });
+    this.version(2).stores({
+      wallets: "id, type, createdAt, updatedAt",
+      budgets: "id, walletId, budgetType, archivedAt, createdAt, updatedAt",
+      records: "id, sourceId, sourceType, recordType, recordedAt, createdAt, updatedAt",
+      recordItems: "id, recordId, createdAt, updatedAt",
+      transfers:
+        "id, refId, sourceId, sourceType, destinationId, destinationType, type, transferredAt, createdAt, updatedAt",
+      debtLoans: "id, sourceId, type, resolvedAt, occurredAt, createdAt, updatedAt",
+      settings: "id, currencyCode",
+      driveSyncMeta: "id, lastSyncedAt",
     });
   }
 }

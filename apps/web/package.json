@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "check-types": "tsc --noEmit",
+    "test": "vitest run",
     "gen:routes": "tsr generate",
     "gen:pwa-assets": "pwa-assets-generator --preset minimal-2023 public/kaget-logo.svg",
     "ui:add": "bunx shadcn@latest add",
