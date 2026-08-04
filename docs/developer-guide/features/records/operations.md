@@ -87,7 +87,7 @@ wallet.balance += delta;
 
 ### Budget source (`source_type: BUDGET`)
 
-Spending from a budget is implemented as record creation (`POST /api/records`). See [Budget Operations — Spend](../budgets/operations.md#spend-create-record-from-budget).
+Spending from a budget is implemented as record creation in the Dexie ledger. See [Budget Operations — Spend](../budgets/operations.md#spend-create-record-from-budget).
 
 | Check | Rule |
 | ----- | ---- |
@@ -97,7 +97,7 @@ Spending from a budget is implemented as record creation (`POST /api/records`). 
 | GOAL | `balance` must equal `total_balance` (goal reached) |
 | Side effects | Decrement budget balance; auto-archive when balance reaches 0 |
 
-Budget expense history is listed via `GET /api/budgets/:id/records` (not `GET /api/records` in the current API).
+Budget expense history is queried from Dexie (records with `source_type: BUDGET`). There is no server `/api/records` or `/api/budgets` CRUD.
 
 ### Error Cases
 

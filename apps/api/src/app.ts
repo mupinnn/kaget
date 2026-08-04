@@ -7,14 +7,8 @@ import { onError } from "./lib/error";
 import { createAuthMiddleware } from "./middleware/auth";
 import { createCorsMiddleware } from "./middleware/cors";
 import { createLoggerMiddleware } from "./middleware/logger";
-import { createBudgetRoutes } from "./routes/budgets";
-import { createDebtLoanRoutes } from "./routes/debt-loans";
 import { createDriveLedgerRoutes } from "./routes/drive-ledger";
 import { createMeRoutes } from "./routes/me";
-import { createRecordRoutes } from "./routes/records";
-import { createSettingsRoutes } from "./routes/settings";
-import { createTransferRoutes } from "./routes/transfers";
-import { createWalletRoutes } from "./routes/wallets";
 
 export function createApp(env: Env, db: Database, auth: Auth, driveDeps: DriveDeps) {
   return new Hono()
@@ -24,12 +18,6 @@ export function createApp(env: Env, db: Database, auth: Auth, driveDeps: DriveDe
     .on(["POST", "GET"], "/api/auth/*", c => auth.handler(c.req.raw))
     .route("/api/me", createMeRoutes(auth))
     .route("/api/drive/ledger", createDriveLedgerRoutes(db, auth, driveDeps))
-    .route("/api/wallets", createWalletRoutes(db, auth))
-    .route("/api/budgets", createBudgetRoutes(db, auth))
-    .route("/api/records", createRecordRoutes(db, auth))
-    .route("/api/transfers", createTransferRoutes(db, auth))
-    .route("/api/debts-loans", createDebtLoanRoutes(db, auth))
-    .route("/api/settings", createSettingsRoutes(db, auth))
     .onError(onError);
 }
 
