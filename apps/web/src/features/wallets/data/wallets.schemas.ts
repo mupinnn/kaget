@@ -1,14 +1,38 @@
-import { createWalletSchema, updateWalletSchema } from "@kaget/api/schemas";
-import type { InferResponseType } from "hono/client";
-import type { z } from "zod";
-import { api } from "@/libs/api.lib";
+import * as z from "zod";
 
-export { createWalletSchema, updateWalletSchema };
+export const createWalletSchema = z.object({
+  name: z.string().min(1, "Wallet name is required").max(255).trim(),
+  type: z.enum(["CASH", "DIGITAL"]),
+  initial_balance: z.coerce
+    .number()
+    .min(0, "Initial balance must be non-negative")
+    .optional()
+    .default(0),
+});
+
+export const updateWalletSchema = z.object({
+  name: z.string().min(1, "Wallet name is required").max(255).trim(),
+});
 
 export type CreateWallet = z.infer<typeof createWalletSchema>;
 export type UpdateWallet = z.infer<typeof updateWalletSchema>;
-export type Wallet = InferResponseType<typeof api.api.wallets.$get, 200>["data"][number];
-export type WalletDetail = InferResponseType<(typeof api.api.wallets)[":id"]["$get"], 200>["data"];
+
+export type Wallet = {
+  id: string;
+  name: string;
+  type: "CASH" | "DIGITAL";
+  balance: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type WalletDetail = Wallet & {
+  records: Array<
+    import("@/features/records/data/records.schemas").Record & {
+      items: import("@/features/records/data/records.schemas").RecordItem[];
+    }
+  >;
+};
 
 export type WalletsRequestQuery = {
   type?: Wallet["type"];

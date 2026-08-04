@@ -29,7 +29,6 @@ export function GoogleAuthControls({ className, compact = false }: GoogleAuthCon
       toast.error(error.message ?? "Sign out failed");
       return;
     }
-    window.settings = undefined;
     await navigate({ to: "/" });
   }
 

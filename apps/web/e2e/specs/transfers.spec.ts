@@ -1,4 +1,4 @@
-import { test } from "../fixtures/test";
+import { testWithSeed as test } from "../fixtures/test";
 import { SEED_PRIMARY_WALLET, SEED_SECONDARY_WALLET, uniqueName } from "../helpers/names";
 import { createTransfersFormPage, createTransfersPage } from "../pages/transfers.page";
 

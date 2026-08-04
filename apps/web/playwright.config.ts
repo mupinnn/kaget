@@ -1,7 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";
-const authFile = "e2e/.auth/user.json";
 const chromiumExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 const launchOptions = chromiumExecutable ? { executablePath: chromiumExecutable } : undefined;
@@ -11,7 +10,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "html",
   use: {
     baseURL,
@@ -22,44 +21,19 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "setup",
-      testDir: "./e2e",
-      testMatch: /auth\.setup\.ts/,
-    },
-    {
-      name: "seed",
-      testDir: "./e2e",
-      testMatch: /seed\.setup\.ts/,
-      dependencies: ["setup"],
-      use: {
-        ...devices["Desktop Chrome"],
-        storageState: authFile,
-      },
-    },
-    {
-      name: "chromium",
-      use: {
-        ...devices["Desktop Chrome"],
-        storageState: authFile,
-      },
-      dependencies: ["setup"],
-      testMatch: /navigation\.spec\.ts/,
-    },
-    {
-      name: "chromium-features",
-      use: {
-        ...devices["Desktop Chrome"],
-        storageState: authFile,
-      },
-      dependencies: ["seed"],
-      testMatch: /(wallets|budgets|records|transfers|debts-loans|settings)\.spec\.ts/,
-    },
-    {
-      name: "chromium-unauth",
+      name: "chromium-local",
       use: {
         ...devices["Desktop Chrome"],
       },
-      testMatch: /(auth|onboarding)\.spec\.ts/,
+      testMatch:
+        /(navigation|auth|wallets|budgets|records|transfers|debts-loans|settings)\.spec\.ts/,
+    },
+    {
+      name: "chromium-onboarding",
+      use: {
+        ...devices["Desktop Chrome"],
+      },
+      testMatch: /onboarding\.spec\.ts/,
     },
   ],
   webServer: {
@@ -67,5 +41,10 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      VITE_API_URL: process.env.VITE_API_URL ?? "http://localhost:3000",
+      VITE_APP_URL: process.env.VITE_APP_URL ?? baseURL,
+    },
   },
 });

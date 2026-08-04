@@ -1,9 +1,15 @@
-import { test } from "../fixtures/test";
+import { expect, test } from "../fixtures/fresh";
 
 test.describe("Onboarding", () => {
-  test.skip(true, "Onboarding still assumes authenticated settings API; resume with Dexie #40");
+  test("redirects empty local settings to onboarding", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/onboarding/);
+  });
 
-  test("completes onboarding and lands on home", async () => {
-    // Placeholder until local settings/onboarding work without a Google session.
+  test("completes onboarding and lands on home", async ({ page, onboardingPage, appShellPage }) => {
+    await page.goto("/onboarding");
+    await onboardingPage.completeOnboarding("IDR");
+    await expect(page).toHaveURL(/\/$/);
+    await appShellPage.expectSidebarVisible();
   });
 });

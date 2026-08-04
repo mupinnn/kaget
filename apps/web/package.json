@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.4.0",
+    "dexie": "^4.4.4",
     "hono": "catalog:",
     "lucide-react": "^1.17.0",
     "nanoid": "catalog:",

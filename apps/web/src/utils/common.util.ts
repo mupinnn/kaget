@@ -1,7 +1,9 @@
+import { getCachedCurrencyCode } from "@/features/settings/data/settings.cache";
+
 export const formatCurrency = (number: number, options?: Intl.NumberFormatOptions) => {
   return new Intl.NumberFormat(window.navigator.languages, {
     style: "currency",
-    currency: window.settings?.currencyCode ?? "IDR",
+    currency: getCachedCurrencyCode(),
     ...options,
   }).format(number);
 };

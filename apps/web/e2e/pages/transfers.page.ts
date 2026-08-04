@@ -20,7 +20,7 @@ export class TransfersPage extends BasePage {
   }
 
   async expectTransferNote(note: string) {
-    await this.page.getByText(note).waitFor();
+    await this.page.getByText(note).first().waitFor();
   }
 }
 

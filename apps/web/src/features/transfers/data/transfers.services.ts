@@ -1,23 +1,55 @@
-import { api } from "@/libs/api.lib";
-import { unwrap } from "@/utils/api.util";
+import { db } from "@/libs/db.lib";
+import { createTransferPair, resolveAccount, validateTransferRules } from "@/libs/ledger.lib";
 import type { CreateTransferForm, TransfersRequestQuery } from "./transfers.schemas";
 import { toCreateTransferInput } from "./transfers.schemas";
 
 export async function getTransferList(query: TransfersRequestQuery = {}) {
-  const result = await unwrap(
-    api.api.transfers.$get({
-      query: {
-        account_id: query.source_id,
-        account_type: query.source_id ? query.source_type : undefined,
-        limit: 100,
-      },
-    })
-  );
+  let transfers = await db.transfers.toArray();
 
-  return result.transfers;
+  if (query.source_id) {
+    transfers = transfers.filter(
+      transfer =>
+        transfer.sourceId === query.source_id &&
+        (!query.source_type || transfer.sourceType === query.source_type)
+    );
+  }
+
+  transfers.sort((a, b) => b.transferredAt.getTime() - a.transferredAt.getTime());
+  return transfers.slice(0, 100);
 }
 
 export async function createTransfer(payload: CreateTransferForm) {
-  const json = toCreateTransferInput(payload);
-  return unwrap(api.api.transfers.$post({ json }));
+  const input = toCreateTransferInput(payload);
+  const now = new Date();
+  const transferredAt = input.transferred_at ?? now;
+
+  const outgoingId = await db.transaction(
+    "rw",
+    db.wallets,
+    db.budgets,
+    db.transfers,
+    db.records,
+    db.recordItems,
+    async () => {
+      const sender = await resolveAccount(input.sender_id, input.sender_type);
+      const receiver = await resolveAccount(input.receiver_id, input.receiver_type);
+      validateTransferRules(sender, receiver, input.amount, input.fee ?? 0);
+
+      return createTransferPair({
+        sender,
+        receiver,
+        amount: input.amount,
+        fee: input.fee ?? 0,
+        note: input.note,
+        transferredAt,
+        now,
+      });
+    }
+  );
+
+  const created = await db.transfers.get(outgoingId);
+  if (!created) {
+    throw new Error("Transfer was not created");
+  }
+  return created;
 }
