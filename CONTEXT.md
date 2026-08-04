@@ -43,3 +43,25 @@ _Avoid_: Accounts receivable, receivable (alone)
 **Envelope allocation**:
 Money leaves a Wallet into a Budget or Goal before it can be spent from that envelope. Budgets and Goals are funded pools, not soft limits on Wallet balance.
 _Avoid_: Category budgeting, virtual budget, spending limit
+
+### Durability (optional)
+
+**Working ledger**:
+The day-to-day copy of the user's financial ledger on the device; envelope rules and balances apply here.
+_Avoid_: Server ledger, cloud database, source of truth on Drive
+
+**Ledger document**:
+The versioned whole-file JSON that represents a ledger snapshot for export, import, and optional Drive durability.
+_Avoid_: Spreadsheet, row sync, partial merge file
+
+**Sync**:
+Optional whole-file reconcile between the Working ledger and the Drive Ledger document; offline use does not require it.
+_Avoid_: Record-level sync, realtime replication, silent last-write-wins
+
+**Sync conflict**:
+Both the Working ledger and the remote Ledger document changed since the last successful Sync; the product blocks auto-apply until the user chooses.
+_Avoid_: Merge conflict (as CRDT/field merge), auto-resolve
+
+**Keep local** / **Keep remote**:
+The only Sync conflict resolutions in v1 — overwrite Drive with the Working ledger, or replace the Working ledger from Drive (export first is allowed).
+_Avoid_: Last-write-wins, automatic merge

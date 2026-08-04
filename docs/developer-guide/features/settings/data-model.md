@@ -109,6 +109,13 @@ not parse entity payloads (ADR-007).
 Older documents (e.g. `"version": "1.0"`) are rejected with an explicit
 unsupported-version error; there is no silent migrate in v1 of this family.
 
+### Sync cursor (not part of the document)
+
+Last successful Sync stores `lastSyncedContentHash` (+ `lastSyncedAt`) in Dexie
+table `driveSyncMeta`, **outside** this payload so the cursor cannot change
+`content_hash` ([ADR-008](../../adr/008-drive-sync-content-hash-divergence.md)).
+Manual import clears the cursor.
+
 Dexie persistence / wire-up of export buttons is [#40](https://github.com/mupinnn/kaget/issues/40);
 this schema is the contract those flows must use.
 

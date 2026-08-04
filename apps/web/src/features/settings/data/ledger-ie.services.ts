@@ -6,6 +6,7 @@ import type { Transfer } from "@/features/transfers/data/transfers.schemas";
 import type { Wallet } from "@/features/wallets/data/wallets.schemas";
 import { db, LOCAL_SETTINGS_ID } from "@/libs/db.lib";
 import { NotFoundError } from "@/utils/error.util";
+import { clearDriveSyncCursor } from "./drive-sync.meta";
 import {
   buildLedgerDocument,
   parseLedgerDocumentJson,
@@ -247,15 +248,20 @@ export async function replaceLocalLedgerFromDocument(document: LedgerDocument) {
   setCachedCurrencyCode(document.settings.currency_code);
 }
 
-export async function exportLedgerDocumentJson(options: { pretty?: boolean } = {}) {
+export async function buildLocalLedgerDocument(options: { revisedAt?: string } = {}) {
   const payload = await loadLedgerDocumentPayload();
-  const document = await buildLedgerDocument(payload);
+  return buildLedgerDocument(payload, options);
+}
+
+export async function exportLedgerDocumentJson(options: { pretty?: boolean } = {}) {
+  const document = await buildLocalLedgerDocument();
   return serializeLedgerDocument(document, options);
 }
 
 export async function importLedgerDocumentJson(json: string) {
   const document = await parseLedgerDocumentJson(json);
   await replaceLocalLedgerFromDocument(document);
+  await clearDriveSyncCursor();
   return document;
 }
 

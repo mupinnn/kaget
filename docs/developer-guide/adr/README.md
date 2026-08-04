@@ -28,5 +28,6 @@ Each ADR follows this structure:
 | [005](./005-release-and-versioning-strategy.md) | Release and Versioning Strategy | Accepted | 2026-07-22 |
 | [006](./006-vps-deployment-via-parachute.md)  | VPS Deployment via parachute     | Accepted | 2026-07-22 |
 | [007](./007-local-first-drive-custodian-boundary.md) | Local-first + Drive; API not a ledger custodian | Accepted | 2026-08-01 |
+| [008](./008-drive-sync-content-hash-divergence.md) | Drive sync via `content_hash`; cursor outside payload | Accepted | 2026-08-04 |
 
-**Note:** ADR-002 and ADR-003 apply to the **client** domain engine (Dexie). ADR-007 forbids persisting that ledger in Postgres. ADR-006’s `db` service remains for **auth/token/pointer** data only after the Drive revamp.
+**Note:** ADR-002 and ADR-003 apply to the **client** domain engine (Dexie). ADR-007 forbids persisting that ledger in Postgres. ADR-006’s `db` service remains for **auth/token/pointer** data only after the Drive revamp. ADR-008 defines how the web Sync engine detects divergence for [#36](https://github.com/mupinnn/kaget/issues/36).
