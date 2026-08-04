@@ -4,4 +4,4 @@ Product requirements for major KaGet initiatives. Execution is tracked on GitHub
 
 | PRD | Title | Status |
 | ----- | ----- | ------ |
-| [001](./001-local-first-drive-sync.md) | Local-first ledger + optional Google Drive sync | Accepted |
+| [001](./001-local-first-drive-sync.md) | Local-first ledger + optional Google Drive sync | Done (v1) |

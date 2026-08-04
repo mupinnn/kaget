@@ -7,14 +7,14 @@ test.describe("Auth", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test("shows Continue with Google in Settings", async ({ page, appShellPage }) => {
+  test("shows Connect Google Drive in Settings without requiring login", async ({
+    page,
+    appShellPage,
+  }) => {
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "Settings", exact: true })).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Google account" }).locator("..").getByRole("button", {
-        name: "Continue with Google",
-      })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Google Drive", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Connect Google Drive" })).toBeVisible();
     await appShellPage.expectSidebarVisible();
   });
 

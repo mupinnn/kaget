@@ -9,8 +9,8 @@
 - [React 19](https://react.dev) + [TypeScript](https://www.typescriptlang.org) 6
 - [Vite](https://vitejs.dev) 8 — build tool and dev server
 - [TanStack Router](https://tanstack.com/router) — file-based routing (`src/routes/**/*.route.tsx`)
-- [TanStack Query](https://tanstack.com/query) — async state (API integration)
-- [Dexie](https://dexie.org) — IndexedDB persistence (primary data store today)
+- [TanStack Query](https://tanstack.com/query) — async state (Dexie queries + optional API)
+- [Dexie](https://dexie.org) — IndexedDB working ledger (day-to-day source of truth)
 - [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com) — styling and components
 - [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) — installable PWA
 - [Zod](https://zod.dev) 4 — client-side validation
@@ -19,8 +19,8 @@
 
 - [Bun](https://bun.sh) — runtime and package manager
 - [Hono](https://hono.dev) — API framework
-- [better-auth](https://www.better-auth.com) — authentication (email/password)
-- [Drizzle ORM](https://orm.drizzle.team) + [PostgreSQL](https://www.postgresql.org) — database layer
+- [better-auth](https://www.better-auth.com) — Google OAuth session (Drive sync opt-in; no email/password)
+- [Drizzle ORM](https://orm.drizzle.team) + [PostgreSQL](https://www.postgresql.org) — auth + Drive `fileId` pointer only
 - [Pino](https://getpino.io) — structured wide-event logging
 - [Zod](https://zod.dev) 4 — env and request validation
 
@@ -137,7 +137,7 @@ kaget/
 │       │   ├── db/               # Drizzle client + schema
 │       │   ├── lib/              # auth, error, error-codes, logger, validator
 │       │   ├── middleware/       # auth, cors, logger (wide events)
-│       │   ├── routes/           # me, wallets (factory per route group)
+│       │   ├── routes/           # me, drive/ledger (factory per route group)
 │       │   └── __tests__/        # Vitest integration tests + helpers
 │       ├── migrations/           # Drizzle SQL migrations
 │       ├── drizzle.config.ts
@@ -221,7 +221,7 @@ When you add or change API routes in [`apps/api/src/app.ts`](apps/api/src/app.ts
 
 **API conventions:** Protected routes return `{ data: ... }` on success and `{ error: { code, message, details? } }` on failure. Handlers use `AppError`, `ERROR_CODES`, and `validator()` — see [API Route Handlers](docs/developer-guide/api-route-handlers.md).
 
-**Note:** Budgeting data (wallets, budgets, records, transfers) still lives primarily in **Dexie (IndexedDB)** on the client. The API provides auth and server-side wallet CRUD; broader domain sync is a planned follow-up.
+**Note:** Budgeting data (wallets, budgets, records, transfers, debts/loans) lives in **Dexie (IndexedDB)** as the working ledger. The API provides Google session, Drive token broker, and a `fileId` pointer only — it does **not** persist financial entities ([ADR-007](docs/developer-guide/adr/007-local-first-drive-custodian-boundary.md)).
 
 ## Database Migrations
 
@@ -256,6 +256,8 @@ Copy [.env.example](.env.example) to `.env` at the repository root.
 | `DATABASE_URL` | PostgreSQL connection string |
 | `BETTER_AUTH_SECRET` | Auth secret (min 32 characters) |
 | `BETTER_AUTH_URL` | Public API base URL for better-auth |
+| `GOOGLE_CLIENT_ID` | Google OAuth client id (required) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (required) |
 | `CORS_ORIGINS` | Comma-separated allowed browser origins |
 | `POSTGRES_USER` | Docker Compose Postgres user |
 | `POSTGRES_PASSWORD` | Docker Compose Postgres password |

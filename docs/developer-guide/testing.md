@@ -52,7 +52,8 @@ apps/web/e2e/
 | Records | `records.spec.ts` | Create income/expense, delete |
 | Transfers | `transfers.spec.ts` | Transfer between wallets, with fee |
 | Debts & Loans | `debts-loans.spec.ts` | Create debt/loan, resolve, delete |
-| Settings | `settings.spec.ts` | Local currency display |
+| Settings | `settings.spec.ts` | Local currency; signed-out Google Drive Connect chrome + export section |
+| Auth | `auth.spec.ts` | Signed-out shell; Connect Drive in Settings; Continue with Google in navbar |
 
 #### Prerequisites
 

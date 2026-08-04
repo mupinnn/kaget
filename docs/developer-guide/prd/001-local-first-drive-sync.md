@@ -1,6 +1,6 @@
 # PRD: Local-first ledger + optional Google Drive sync
 
-**Status:** Accepted (grilling 2026-08-01)  
+**Status:** Done (v1 hardening 2026-08-04)  
 **Glossary:** [`CONTEXT.md`](../../../CONTEXT.md)  
 **ADR:** [ADR-007](../adr/007-local-first-drive-custodian-boundary.md)  
 **Tracking:** [Wayfinder map #30](https://github.com/mupinnn/kaget/issues/30)
@@ -89,14 +89,16 @@ and can export first. No silent whole-file LWW.
 
 ## Success criteria (v1 “done”)
 
-- [ ] Local envelope flows work without Google.
-- [ ] Settings: Connect / Disconnect Google Drive; Sync now; last-synced status.
-- [ ] Upload/download of the ledger file via API broker.
-- [ ] Conflict UI: choose local / remote (+ export path).
-- [ ] API persists **no** financial entities; domain routes/tables removed or never shipped.
-- [ ] Export/import and Drive document share one schema family; Debts & Loans included.
-- [ ] Docs + ADR-007 match this PRD; stale “server ledger / account sync” copy gone.
-- [ ] Wayfinder map + child tickets cover the work; agents can claim `ready-for-agent` slices.
+- [x] Local envelope flows work without Google.
+- [x] Settings: Connect / Disconnect Google Drive; Sync now; last-synced status.
+- [x] Upload/download of the ledger file via API broker.
+- [x] Conflict UI: choose local / remote (+ export path).
+- [x] API persists **no** financial entities; domain routes/tables removed or never shipped.
+- [x] Export/import and Drive document share one schema family; Debts & Loans included.
+- [x] Docs + ADR-007 match this PRD; stale “server ledger / account sync” copy gone.
+- [x] Wayfinder map + child tickets cover the work; agents can claim `ready-for-agent` slices.
+
+**Residual fog (out of v1 CI):** end-to-end Sync / conflict against a real Google account is manual — unit + API integration cover broker, strip-domain, and conflict engine; Settings e2e covers signed-out Connect chrome only.
 
 ## Phasing
 

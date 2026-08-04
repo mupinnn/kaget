@@ -13,4 +13,15 @@ test.describe("Settings", () => {
       page.getByText("Your currency preference is stored on this device.")
     ).toBeVisible();
   });
+
+  test("shows Connect Google Drive chrome without requiring login", async ({ page }) => {
+    const settingsPage = createSettingsPage(page);
+
+    await settingsPage.goto();
+    await settingsPage.expectLoaded();
+    await settingsPage.expectDriveChromeSignedOut();
+
+    await expect(page.getByRole("button", { name: "Sync now" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Disconnect" })).toHaveCount(0);
+  });
 });
