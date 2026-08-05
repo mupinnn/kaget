@@ -6,9 +6,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Wallet } from "../data/wallets.schemas";
 import { WalletListItem } from "./wallet-list-item";
 
-export const WalletListLoader = () => {
-  return Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />);
-};
+export function WalletListLoader() {
+  return ["a", "b", "c", "d", "e"].map(id => (
+    <Skeleton key={id} className="h-[5.5rem] w-full rounded-lg" />
+  ));
+}
 
 export interface WalletListProps {
   data: Wallet[];
@@ -16,26 +18,26 @@ export interface WalletListProps {
   emptyMessageDescription?: string;
 }
 
-export const WalletList = ({
+export function WalletList({
   data,
-  emptyMessageTitle = "No wallet created",
-  emptyMessageDescription = "Create your first wallet to start tracking your cashflow!",
-}: WalletListProps) => {
+  emptyMessageTitle = "No wallets yet",
+  emptyMessageDescription = "Add a wallet on this device to hold cash, bank, or e-wallet balances.",
+}: WalletListProps) {
   if (data.length > 0) {
     return data.map(wallet => <WalletListItem key={wallet.id} {...wallet} />);
   }
 
   return (
     <EmptyState
-      className="w-full sm:col-span-2 xl:col-span-4"
+      className="w-full p-4 sm:col-span-2 xl:col-span-4"
       title={emptyMessageTitle}
       description={emptyMessageDescription}
       icon={WalletIcon}
       actions={
-        <Button asChild className="no-underline">
+        <Button asChild className="no-underline" size="sm">
           <Link to="/wallets/create">Create a wallet</Link>
         </Button>
       }
     />
   );
-};
+}

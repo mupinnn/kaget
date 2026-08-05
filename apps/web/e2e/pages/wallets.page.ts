@@ -49,7 +49,7 @@ export class WalletsFormPage extends BasePage {
     initialBalance?: string;
   }) {
     await this.nameInput.fill(options.name);
-    await selectComboboxOption(this.page, "Type", options.type ?? "DIGITAL");
+    await selectComboboxOption(this.page, "Type", options.type === "CASH" ? "Cash" : "Digital");
     if (options.initialBalance) {
       await fillCurrencyField(this.page, "Initial balance", options.initialBalance);
     }

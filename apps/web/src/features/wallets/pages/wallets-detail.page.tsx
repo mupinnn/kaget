@@ -5,6 +5,7 @@ import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { HidableBalance } from "@/components/hidable-balance";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecordList, RecordListLoader } from "@/features/records/components/record-list";
 import { useRecordsQuery } from "@/features/records/data/records.queries";
@@ -12,8 +13,40 @@ import { TransferList, TransferListLoader } from "@/features/transfers/component
 import { useTransfersQuery } from "@/features/transfers/data/transfers.queries";
 import { useDeleteWalletMutation } from "../data/wallets.mutations";
 import { useWalletDetailQuery } from "../data/wallets.queries";
+import { WALLET_TYPE_LABEL } from "../data/wallets.schemas";
 
 const route = getRouteApi("/_app/(wallets)/wallets/$walletId");
+
+function WalletDetailLoader() {
+  return (
+    <div className="space-y-3">
+      <Skeleton className="size-8 rounded-md" />
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-16" />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-7 w-32" />
+      </div>
+      <Skeleton className="h-8 w-40" />
+      <Skeleton className="h-9 w-full max-w-sm" />
+      <Skeleton className="h-24 w-full" />
+    </div>
+  );
+}
+
+function WalletQueryError({ message, onRetry }: { message?: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
+      {message ?? "Couldn't load this wallet."}{" "}
+      <button
+        type="button"
+        className="font-medium text-foreground underline-offset-4 hover:underline"
+        onClick={onRetry}
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
 
 export function WalletsDetailPage() {
   const { walletId } = route.useParams();
@@ -23,8 +56,15 @@ export function WalletsDetailPage() {
   const transfersQuery = useTransfersQuery({ source_id: walletId, source_type: "WALLET" });
   const deleteWalletMutation = useDeleteWalletMutation();
 
-  if (walletDetailQuery.isPending) return <p>Loading . . .</p>;
-  if (walletDetailQuery.isError) return <p>An error occured: {walletDetailQuery.error.message}</p>;
+  if (walletDetailQuery.isPending) return <WalletDetailLoader />;
+  if (walletDetailQuery.isError) {
+    return (
+      <WalletQueryError
+        message="Couldn't load this wallet."
+        onRetry={() => void walletDetailQuery.refetch()}
+      />
+    );
+  }
 
   const handleDeleteWallet = () => {
     deleteWalletMutation.mutate(walletId, {
@@ -39,22 +79,23 @@ export function WalletsDetailPage() {
   return (
     <PageLayout
       title={wallet.name}
+      badge={WALLET_TYPE_LABEL[wallet.type]}
       subtitle={
-        <p className="text-lg text-muted-foreground">
+        <p className="font-semibold text-foreground text-xl tabular-nums tracking-tight">
           <HidableBalance value={wallet.balance} />
         </p>
       }
     >
-      <div className="flex items-center gap-2">
-        <Button asChild className="no-underline" size="sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button asChild className="no-underline" size="sm" variant="outline">
           <Link to="/wallets/$walletId/edit" params={{ walletId }}>
             <PencilIcon />
             Edit
           </Link>
         </Button>
         <ConfirmationDialog
-          title={<>Are you sure want to delete {wallet.name} wallet?</>}
-          description="This action cannot be undone. This will permanently delete your wallet and remove others associated data (records, budget, etc)"
+          title={<>Delete {wallet.name}?</>}
+          description="This cannot be undone. Records, budgets, and transfers tied to this wallet will be removed."
           trigger={
             <Button variant="destructive" size="sm">
               <Trash2Icon />
@@ -67,29 +108,35 @@ export function WalletsDetailPage() {
       </div>
 
       <Tabs defaultValue="records">
-        <TabsList className="grid w-full grid-cols-2 sm:w-96">
+        <TabsList className="grid h-9 w-full grid-cols-2 sm:w-80">
           <TabsTrigger value="records">Records</TabsTrigger>
           <TabsTrigger value="transfers">Transfers</TabsTrigger>
         </TabsList>
-        <TabsContent value="records">
+        <TabsContent value="records" className="mt-3">
           {match(recordsQuery)
             .with({ isPending: true }, () => <RecordListLoader />)
-            .with({ isError: true }, () => <p>An error occured</p>)
-            .otherwise(recordsQuery => (
+            .with({ isError: true }, () => (
+              <WalletQueryError onRetry={() => void recordsQuery.refetch()} />
+            ))
+            .otherwise(query => (
               <RecordList
-                data={recordsQuery.data}
-                emptyMessageDescription="You have not record any transactions for this wallet"
+                data={query.data}
+                emptyMessageTitle="No records yet"
+                emptyMessageDescription="Record spending or income against this wallet when it happens."
               />
             ))}
         </TabsContent>
-        <TabsContent value="transfers">
+        <TabsContent value="transfers" className="mt-3">
           {match(transfersQuery)
             .with({ isPending: true }, () => <TransferListLoader />)
-            .with({ isError: true }, () => <p>An error occured</p>)
-            .otherwise(transfersQuery => (
+            .with({ isError: true }, () => (
+              <WalletQueryError onRetry={() => void transfersQuery.refetch()} />
+            ))
+            .otherwise(query => (
               <TransferList
-                data={transfersQuery.data}
-                emptyMessageDescription="You have no transfers for this wallet"
+                data={query.data}
+                emptyMessageTitle="No transfers yet"
+                emptyMessageDescription="Move money between wallets or into budgets from Transfers."
               />
             ))}
         </TabsContent>
