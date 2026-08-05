@@ -14,7 +14,7 @@ function AppLayout() {
       <AppSidebar />
       <main className="flex min-h-svh w-full flex-1 flex-col overflow-auto">
         <AppNavbar />
-        <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex flex-1 flex-col gap-3 p-3 md:gap-4 md:px-4 md:py-3">
           <Outlet />
         </div>
         <AppFooter />

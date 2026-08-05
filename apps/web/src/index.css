@@ -32,15 +32,16 @@
   --chart-5: hsl(27 87% 67%);
   --success: hsl(142.1 76.2% 36.3%);
   --success-foreground: hsl(355.7 100% 97.3%);
-  --sidebar-background: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(240 5.9% 10%);
-  --sidebar-primary-foreground: hsl(0 0% 98%);
-  --sidebar-accent: hsl(240 4.8% 95.9%);
-  --sidebar-accent-foreground: hsl(240 5.9% 10%);
-  --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --sidebar: hsl(0 0% 98%);
+  /* Warm-aligned with app neutrals (no cool blue sidebar accent) */
+  --sidebar-background: hsl(60 4.8% 97%);
+  --sidebar-foreground: hsl(24 9.8% 10%);
+  --sidebar-primary: hsl(20 14.3% 4.1%);
+  --sidebar-primary-foreground: hsl(60 9.1% 97.8%);
+  --sidebar-accent: hsl(60 4.8% 93%);
+  --sidebar-accent-foreground: hsl(24 9.8% 10%);
+  --sidebar-border: hsl(20 5.9% 90%);
+  --sidebar-ring: hsl(20 14.3% 4.1%);
+  --sidebar: hsl(60 4.8% 97%);
 }
 
 .dark {
@@ -70,15 +71,15 @@
   --chart-5: hsl(340 75% 55%);
   --success: hsl(142.1 70.6% 45.3%);
   --success-foreground: hsl(144.9 80.4% 10%);
-  --sidebar-background: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-background: hsl(20 14.3% 6%);
+  --sidebar-foreground: hsl(60 9.1% 97.8%);
+  --sidebar-primary: hsl(60 9.1% 97.8%);
+  --sidebar-primary-foreground: hsl(20 14.3% 4.1%);
+  --sidebar-accent: hsl(12 6.5% 15.1%);
+  --sidebar-accent-foreground: hsl(60 9.1% 97.8%);
+  --sidebar-border: hsl(12 6.5% 15.1%);
+  --sidebar-ring: hsl(35.5 91.7% 32.9%);
+  --sidebar: hsl(20 14.3% 6%);
 }
 
 @theme inline {

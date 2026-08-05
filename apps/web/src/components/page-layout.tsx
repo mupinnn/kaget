@@ -23,19 +23,19 @@ export function PageLayout({
   children,
 }: PageLayoutProps) {
   return (
-    <div className="space-y-4">
-      <Button asChild className="no-underline" size="icon" variant="outline">
+    <div className="space-y-3">
+      <Button asChild className="no-underline" size="icon-sm" variant="outline">
         <Link to="..">
           <ChevronLeftIcon />
         </Link>
       </Button>
 
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {match(badge)
           .with(P.string, () => <Badge variant="secondary">{badge}</Badge>)
           .otherwise(() => null)}
 
-        <h1 className={cn("font-bold text-3xl", titleClassName)}>{title}</h1>
+        <h1 className={cn("font-semibold text-2xl tracking-tight", titleClassName)}>{title}</h1>
 
         {match(subtitle)
           .with(P.string, () => (
