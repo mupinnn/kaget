@@ -53,7 +53,7 @@ apps/web/e2e/
 | Transfers | `transfers.spec.ts` | Transfer between wallets, with fee |
 | Debts & Loans | `debts-loans.spec.ts` | Create debt/loan, resolve, delete |
 | Settings | `settings.spec.ts` | Local currency; signed-out Google Drive Connect chrome + export section |
-| Auth | `auth.spec.ts` | Signed-out shell; Connect Drive in Settings; Continue with Google in navbar |
+| Auth | `auth.spec.ts` | Signed-out shell; Connect Drive in Settings; no navbar Google control; home Drive banner → Settings deep-link + dismiss |
 
 #### Prerequisites
 

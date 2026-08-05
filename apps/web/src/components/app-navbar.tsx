@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { GoogleAuthControls } from "@/features/auth/components/google-auth-controls";
 import { ToggleHidableBalance } from "./hidable-balance";
 import { ThemeSelector } from "./theme-selector";
 import { Separator } from "./ui/separator";
@@ -19,7 +18,6 @@ export function AppNavbar() {
       <div className="flex items-center gap-2">
         <ToggleHidableBalance />
         <ThemeSelector />
-        <GoogleAuthControls compact />
       </div>
     </nav>
   );

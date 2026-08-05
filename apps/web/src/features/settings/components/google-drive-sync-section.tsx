@@ -18,6 +18,8 @@ import type { SyncNowResult } from "../data/drive-sync.schemas";
 import { PENDING_DRIVE_CONNECT_KEY } from "../data/drive-sync.services";
 
 export const SETTINGS_EXPORT_SECTION_ID = "settings-export";
+/** Anchor for home banner / deep-links into Settings → Google Drive. */
+export const SETTINGS_DRIVE_SECTION_ID = "settings-google-drive";
 
 type ConflictState = Extract<SyncNowResult, { status: "conflict" }>;
 
@@ -32,11 +34,15 @@ function syncSuccessMessage(result: Exclude<SyncNowResult, { status: "conflict" 
   }
 }
 
-function scrollToExportSection() {
-  document.getElementById(SETTINGS_EXPORT_SECTION_ID)?.scrollIntoView({
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({
     behavior: "smooth",
     block: "start",
   });
+}
+
+function scrollToExportSection() {
+  scrollToSection(SETTINGS_EXPORT_SECTION_ID);
 }
 
 export function GoogleDriveSyncSection() {
@@ -50,6 +56,15 @@ export function GoogleDriveSyncSection() {
   const resolveMutation = useResolveConflictMutation();
   const [conflict, setConflict] = useState<ConflictState | null>(null);
   const pendingConnectAttempted = useRef(false);
+
+  useEffect(() => {
+    if (window.location.hash !== `#${SETTINGS_DRIVE_SECTION_ID}`) {
+      return;
+    }
+    // Defer so layout is ready after Settings mount.
+    const frame = requestAnimationFrame(() => scrollToSection(SETTINGS_DRIVE_SECTION_ID));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     if (session.isPending || !user || pendingConnectAttempted.current) {
@@ -120,7 +135,7 @@ export function GoogleDriveSyncSection() {
 
   if (session.isPending) {
     return (
-      <div className="space-y-2">
+      <div id={SETTINGS_DRIVE_SECTION_ID} className="scroll-mt-4 space-y-2">
         <h2 className="font-semibold text-lg">Google Drive</h2>
         <p className="text-muted-foreground text-sm">Loading…</p>
       </div>
@@ -128,7 +143,7 @@ export function GoogleDriveSyncSection() {
   }
 
   return (
-    <div className="space-y-3">
+    <div id={SETTINGS_DRIVE_SECTION_ID} className="scroll-mt-4 space-y-3">
       <div className="space-y-2">
         <h2 className="font-semibold text-lg">Google Drive</h2>
         <p className="text-muted-foreground text-sm">
