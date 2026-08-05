@@ -33,10 +33,16 @@ function WalletDetailLoader() {
   );
 }
 
-function WalletQueryError({ message, onRetry }: { message?: string; onRetry: () => void }) {
+function WalletQueryError({
+  message = "Couldn't load this section.",
+  onRetry,
+}: {
+  message?: string;
+  onRetry: () => void;
+}) {
   return (
     <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
-      {message ?? "Couldn't load this wallet."}{" "}
+      {message}{" "}
       <button
         type="button"
         className="font-medium text-foreground underline-offset-4 hover:underline"
@@ -116,7 +122,10 @@ export function WalletsDetailPage() {
           {match(recordsQuery)
             .with({ isPending: true }, () => <RecordListLoader />)
             .with({ isError: true }, () => (
-              <WalletQueryError onRetry={() => void recordsQuery.refetch()} />
+              <WalletQueryError
+                message="Couldn't load records."
+                onRetry={() => void recordsQuery.refetch()}
+              />
             ))
             .otherwise(query => (
               <RecordList
@@ -130,7 +139,10 @@ export function WalletsDetailPage() {
           {match(transfersQuery)
             .with({ isPending: true }, () => <TransferListLoader />)
             .with({ isError: true }, () => (
-              <WalletQueryError onRetry={() => void transfersQuery.refetch()} />
+              <WalletQueryError
+                message="Couldn't load transfers."
+                onRetry={() => void transfersQuery.refetch()}
+              />
             ))
             .otherwise(query => (
               <TransferList
