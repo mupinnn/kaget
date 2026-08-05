@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import { formatCurrency } from "@/utils/common.util";
@@ -45,10 +47,39 @@ export function TransfersFormPage() {
     });
   };
 
+  if (walletsQuery.isPending) {
+    return (
+      <PageLayout title="Transfer" subtitle="Move money from one wallet to another on this device.">
+        <div className="max-w-lg space-y-3">
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (walletsQuery.isError) {
+    return (
+      <PageLayout title="Transfer" subtitle="Move money from one wallet to another on this device.">
+        <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
+          Couldn&apos;t load wallets.{" "}
+          <button
+            type="button"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+            onClick={() => void walletsQuery.refetch()}
+          >
+            Try again
+          </button>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
-    <PageLayout title="Transfer">
+    <PageLayout title="Transfer" subtitle="Move money from one wallet to another on this device.">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-lg space-y-3">
           <FormField
             control={form.control}
             name="source"
@@ -57,7 +88,7 @@ export function TransfersFormPage() {
                 <FormLabel>Source wallet</FormLabel>
                 <Select
                   value={field.value?.id}
-                  disabled={walletsQuery.isPending || hasNoWallets}
+                  disabled={hasNoWallets}
                   onValueChange={value => {
                     field.onChange(walletsQuery.data?.find(w => w.id === value));
                     form.resetField("destination");
@@ -67,9 +98,7 @@ export function TransfersFormPage() {
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
-                          hasNoWallets
-                            ? "You have no wallets. Create a wallet first"
-                            : "Choose a source wallet"
+                          hasNoWallets ? "Create a wallet first" : "Choose a source wallet"
                         }
                       />
                     </SelectTrigger>
@@ -96,7 +125,7 @@ export function TransfersFormPage() {
                 <Select
                   value={field.value?.id}
                   key={field.value?.id}
-                  disabled={walletsQuery.isPending || hasNoWallets || !selectedSourceWallet}
+                  disabled={hasNoWallets || !selectedSourceWallet}
                   onValueChange={value =>
                     field.onChange(walletsQuery.data?.find(w => w.id === value))
                   }
@@ -105,8 +134,8 @@ export function TransfersFormPage() {
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
-                          hasNoWallets
-                            ? "You have no wallets. Create a wallet first"
+                          !selectedSourceWallet
+                            ? "Choose a source wallet first"
                             : "Choose a destination wallet"
                         }
                       />
@@ -136,7 +165,7 @@ export function TransfersFormPage() {
                 <FormControl>
                   <CurrencyInput
                     autoComplete="off"
-                    placeholder="e.g, 1.000.000"
+                    placeholder="e.g. 1.000.000"
                     allowNegativeValue={false}
                     inputMode="numeric"
                     customInput={Input}
@@ -162,7 +191,7 @@ export function TransfersFormPage() {
                 <FormControl>
                   <CurrencyInput
                     autoComplete="off"
-                    placeholder="e.g, 2.500"
+                    placeholder="e.g. 2.500"
                     allowNegativeValue={false}
                     inputMode="numeric"
                     customInput={Input}
@@ -174,6 +203,9 @@ export function TransfersFormPage() {
                     onValueChange={value => field.onChange(value)}
                   />
                 </FormControl>
+                <FormDescription>
+                  Optional. Leave empty when there is no transfer fee.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -186,27 +218,24 @@ export function TransfersFormPage() {
               <FormItem>
                 <FormLabel>Note</FormLabel>
                 <FormControl>
-                  <Textarea
-                    autoComplete="off"
-                    placeholder="I'm transferring this for . . ."
-                    {...field}
-                  />
+                  <Textarea autoComplete="off" placeholder="Why you moved this money…" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 pt-1">
             <Button
               asChild
               variant="outline"
               className="no-underline"
+              size="sm"
               disabled={createTransferMutation.isPending}
             >
               <Link to="..">Back</Link>
             </Button>
-            <Button type="submit" isLoading={createTransferMutation.isPending}>
+            <Button type="submit" size="sm" isLoading={createTransferMutation.isPending}>
               Save
             </Button>
           </div>

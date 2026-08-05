@@ -6,17 +6,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Transfer } from "../data/transfers.schemas";
 import { TransferListItem } from "./transfer-list-item";
 
-export const TransferListLoader = () => {
+export function TransferListLoader() {
   return (
     <div className="divide-y">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="py-2">
-          <Skeleton className="h-14 w-full" />
+      {["a", "b", "c", "d", "e"].map(id => (
+        <div key={id} className="py-2.5">
+          <Skeleton className="h-12 w-full" />
         </div>
       ))}
     </div>
   );
-};
+}
 
 export interface TransferListProps {
   data: Transfer[];
@@ -25,12 +25,12 @@ export interface TransferListProps {
   withActions?: boolean;
 }
 
-export const TransferList = ({
+export function TransferList({
   data,
-  emptyMessageTitle = "No transfer yet",
-  emptyMessageDescription = "You have not transferring anything. Transfer one above.",
+  emptyMessageTitle = "No transfers yet",
+  emptyMessageDescription = "Move money between wallets on this device when you need to reshuffle funds.",
   withActions = true,
-}: TransferListProps) => {
+}: TransferListProps) {
   if (data.length > 0) {
     return (
       <div className="divide-y">
@@ -43,16 +43,17 @@ export const TransferList = ({
 
   return (
     <EmptyState
+      className="p-4"
       title={emptyMessageTitle}
       description={emptyMessageDescription}
       icon={ArrowRightLeftIcon}
       actions={
         withActions ? (
-          <Button asChild className="no-underline">
+          <Button asChild className="no-underline" size="sm">
             <Link to="/transfers/create">Transfer balance</Link>
           </Button>
         ) : null
       }
     />
   );
-};
+}
