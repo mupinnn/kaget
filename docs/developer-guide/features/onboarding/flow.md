@@ -130,32 +130,15 @@ interface UserPreference {
 - Avoids sync conflicts when user changes device language
 - Browser locale can change; stored preference would become stale
 
-## Backend Sync
-
-The selected currency is synced to the backend as part of the user's preferences. Implementation details (endpoint, payload structure) are left to the backend specification.
-
-### Sync Contract
-
-| Field          | Type     | Description                                     |
-| -------------- | -------- | ----------------------------------------------- |
-| `currencyCode` | `string` | ISO 4217 currency code (e.g., `"USD"`, `"EUR"`) |
-
-### Sync Behavior
-
-| Aspect                  | Behavior                                                  |
-| ----------------------- | --------------------------------------------------------- |
-| **Trigger**             | User taps "Continue" after selecting currency             |
-| **Retry**               | If sync fails, store locally and retry on next app launch |
-| **Conflict resolution** | Server preference wins; client re-fetches on login        |
-| **Offline**             | Allow completion, queue sync for when connection restores |
-
 ## Persistence
 
-| Data                      | Storage              | Sync |
-| ------------------------- | -------------------- | ---- |
-| Onboarding completed flag | Local (localStorage) | No   |
-| Selected currency         | Backend              | Yes  |
-| Locale                    | Browser (runtime)    | No   |
+Currency is written to the local Dexie `settings` row when the user completes onboarding. There is **no** server ledger preference sync (ADR-007): optional durability is the Drive ledger document via Settings → Connect / Sync.
+
+| Data               | Storage                         | Sync                                      |
+| ------------------ | ------------------------------- | ----------------------------------------- |
+| Selected currency  | Dexie `settings`                | Included in optional Drive ledger backup  |
+| Locale             | Browser (runtime)               | No                                        |
+| Onboarding gate    | Absence of local settings row   | No                                        |
 
 ## Edge Cases
 
@@ -175,18 +158,11 @@ const getCurrencies = () => {
 
 ### Offline Onboarding
 
-1. Allow user to complete onboarding offline
-2. Store preference in localStorage
-3. Sync to backend when connection is restored
-4. Show sync status indicator
+Onboarding only needs IndexedDB. Complete currency setup offline; optional Drive Connect happens later in Settings when online.
 
 ### Returning User (Re-onboarding)
 
-If user clears app data but backend has existing preference:
-
-1. Fetch preferences on login
-2. Skip onboarding if `currencyCode` exists
-3. Navigate directly to dashboard
+If the user clears site data, local settings are gone and onboarding runs again — even if a Drive backup exists. Restore via Settings → Import or Connect + Sync after currency setup.
 
 ## Testing Considerations
 
@@ -214,4 +190,5 @@ Test with multiple locales to verify formatting:
 ## Related
 
 - [ADR-001: Locale and Currency Handling](../../adr/001-locale-and-currency-handling.md)
+- [ADR-007: Local-first Drive custodian boundary](../../adr/007-local-first-drive-custodian-boundary.md)
 - [User Guide: Getting Started](../../../user-guide/onboarding/getting-started.md)
