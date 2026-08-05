@@ -11,6 +11,22 @@ export type RecordType =
 
 export type SourceType = "WALLET" | "BUDGET";
 
+/** UI labels for stored record type enums (domain values unchanged). */
+export const RECORD_TYPE_LABEL: Record<RecordType, string> = {
+  INCOME: "Income",
+  EXPENSE: "Expense",
+  DEBT: "Debt",
+  DEBT_REPAYMENT: "Debt repayment",
+  LOAN: "Loan",
+  LOAN_COLLECTION: "Loan collection",
+};
+
+/** UI labels for stored source type enums (domain values unchanged). */
+export const SOURCE_TYPE_LABEL: Record<SourceType, string> = {
+  WALLET: "Wallet",
+  BUDGET: "Budget",
+};
+
 export type RecordItem = {
   id: string;
   recordId: string;

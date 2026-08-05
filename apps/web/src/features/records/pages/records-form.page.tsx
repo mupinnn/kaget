@@ -32,13 +32,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { useCreateRecordMutation } from "../data/records.mutations";
-import { type CreateRecordForm, CreateRecordFormSchema } from "../data/records.schemas";
+import {
+  type CreateRecordForm,
+  CreateRecordFormSchema,
+  RECORD_TYPE_LABEL,
+} from "../data/records.schemas";
 
 export function TotalRecordsAmount({
   control,
@@ -59,12 +64,14 @@ export function TotalRecordsAmount({
   if (recordItems.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-dashed p-4">
-      <h2 className="text-muted-foreground">Total amount</h2>
-      <p className="font-medium text-2xl">{formatCurrency(totalAmount)}</p>
-      {errors.amount?.message && (
+    <div className="rounded-lg border border-dashed p-3">
+      <h2 className="text-muted-foreground text-sm">Total amount</h2>
+      <p className="font-semibold text-xl tabular-nums tracking-tight">
+        {formatCurrency(totalAmount)}
+      </p>
+      {errors.amount?.message ? (
         <p className="font-medium text-[0.8rem] text-destructive">{errors.amount.message}</p>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -123,10 +130,48 @@ export function RecordsFormPage() {
     form.setValue("dor", newDorDate);
   };
 
+  if (walletsQuery.isPending) {
+    return (
+      <PageLayout
+        title="Record cash flow"
+        subtitle="Log income or expense against a wallet on this device."
+      >
+        <div className="max-w-lg space-y-3">
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (walletsQuery.isError) {
+    return (
+      <PageLayout
+        title="Record cash flow"
+        subtitle="Log income or expense against a wallet on this device."
+      >
+        <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
+          Couldn&apos;t load wallets.{" "}
+          <button
+            type="button"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+            onClick={() => void walletsQuery.refetch()}
+          >
+            Try again
+          </button>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
-    <PageLayout title="Record cash flow">
+    <PageLayout
+      title="Record cash flow"
+      subtitle="Log income or expense against a wallet on this device."
+    >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-lg space-y-3">
           <FormField
             control={form.control}
             name="source"
@@ -138,16 +183,12 @@ export function RecordsFormPage() {
                     field.onChange(walletsQuery.data?.find(w => w.id === value))
                   }
                   defaultValue={field.value?.id}
-                  disabled={walletsQuery.isPending || hasNoWallets}
+                  disabled={hasNoWallets}
                 >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue
-                        placeholder={
-                          hasNoWallets
-                            ? "You have no wallets. Create a wallet first"
-                            : "Choose a wallet"
-                        }
+                        placeholder={hasNoWallets ? "Create a wallet first" : "Choose a wallet"}
                       />
                     </SelectTrigger>
                   </FormControl>
@@ -173,12 +214,12 @@ export function RecordsFormPage() {
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose a record type" />
+                      <SelectValue placeholder="Choose Income or Expense" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="INCOME">INCOME</SelectItem>
-                    <SelectItem value="EXPENSE">EXPENSE</SelectItem>
+                    <SelectItem value="INCOME">{RECORD_TYPE_LABEL.INCOME}</SelectItem>
+                    <SelectItem value="EXPENSE">{RECORD_TYPE_LABEL.EXPENSE}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -196,7 +237,7 @@ export function RecordsFormPage() {
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant={"outline"}
+                        variant="outline"
                         className={cn(
                           "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
@@ -223,10 +264,7 @@ export function RecordsFormPage() {
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription>
-                  You can choose the desired date of record. The default is today, when you open
-                  this page.
-                </FormDescription>
+                <FormDescription>Defaults to now. Change if you are logging later.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -242,7 +280,7 @@ export function RecordsFormPage() {
                   <FormControl>
                     <CurrencyInput
                       autoComplete="off"
-                      placeholder="e.g, 1.000.000"
+                      placeholder="e.g. 1.000.000"
                       allowNegativeValue={false}
                       inputMode="numeric"
                       customInput={Input}
@@ -267,11 +305,7 @@ export function RecordsFormPage() {
               <FormItem>
                 <FormLabel>Note</FormLabel>
                 <FormControl>
-                  <Textarea
-                    autoComplete="off"
-                    placeholder="I'm using or getting this money for . . ."
-                    {...field}
-                  />
+                  <Textarea autoComplete="off" placeholder="What this money was for…" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -280,15 +314,20 @@ export function RecordsFormPage() {
 
           {recordItems.fields.length > 0
             ? recordItems.fields.map((recordItem, recordItemIndex) => (
-                <div className="space-y-4 rounded-lg border border-dashed p-4" key={recordItem.id}>
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-medium text-2xl">Record {recordItemIndex + 1}</h2>
+                <div className="space-y-3 rounded-lg border border-dashed p-3" key={recordItem.id}>
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="font-medium text-base tracking-tight">
+                      Line {recordItemIndex + 1}
+                    </h2>
                     <Button
-                      variant="destructive"
-                      size="icon"
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-destructive"
                       onClick={() => recordItems.remove(recordItemIndex)}
                     >
                       <Trash2Icon />
+                      <span className="sr-only">Remove line</span>
                     </Button>
                   </div>
 
@@ -301,7 +340,7 @@ export function RecordsFormPage() {
                         <FormControl>
                           <CurrencyInput
                             autoComplete="off"
-                            placeholder="e.g, 1.000.000"
+                            placeholder="e.g. 1.000.000"
                             allowNegativeValue={false}
                             inputMode="numeric"
                             customInput={Input}
@@ -325,11 +364,7 @@ export function RecordsFormPage() {
                       <FormItem>
                         <FormLabel>Note</FormLabel>
                         <FormControl>
-                          <Textarea
-                            autoComplete="off"
-                            placeholder="I'm using or getting this money for . . ."
-                            {...field}
-                          />
+                          <Textarea autoComplete="off" placeholder="Line item note…" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -343,6 +378,7 @@ export function RecordsFormPage() {
             type="button"
             className="w-full"
             variant="secondary"
+            size="sm"
             onClick={() => recordItems.append({ amount: 0, note: "" })}
           >
             <PlusIcon /> Split record
@@ -354,16 +390,17 @@ export function RecordsFormPage() {
             errors={form.formState.errors}
           />
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 pt-1">
             <Button
               asChild
               variant="outline"
               className="no-underline"
+              size="sm"
               disabled={createRecordMutation.isPending}
             >
               <Link to="..">Back</Link>
             </Button>
-            <Button type="submit" isLoading={createRecordMutation.isPending}>
+            <Button type="submit" size="sm" isLoading={createRecordMutation.isPending}>
               Save
             </Button>
           </div>
