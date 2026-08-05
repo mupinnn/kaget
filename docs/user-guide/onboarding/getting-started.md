@@ -1,39 +1,27 @@
 # Getting Started with KaGet
 
-This guide walks you through the onboarding process when you first open KaGet.
+This guide walks you through onboarding when you first open KaGet.
 
 ## Overview
 
-Onboarding consists of two steps:
+Onboarding is a single screen with one required job: **choose your currency**. You do not need to sign in.
 
-1. **Feature Overview** — Learn what KaGet can do for you
-2. **Currency Selection** — Choose your preferred currency with a live preview of how amounts and dates will appear
+1. **Welcome** — Short local-first intro (wallets, envelope budgets, data on this device)
+2. **Currency selection** — Pick a currency and preview how amounts and dates will look
 
-## Step 1: Feature Overview
+Google Drive backup is optional later in **Settings** — it is not part of onboarding.
 
-When you first open KaGet, you'll see a brief introduction to the app's main features:
+## Currency selection
 
-| Feature           | Description                                                         |
-| ----------------- | ------------------------------------------------------------------- |
-| **Wallets**       | Create and manage multiple wallets (cash, bank accounts, e-wallets) |
-| **Records**       | Track income and expenses with categories                           |
-| **Budgets**       | Allocate money into spending envelopes and saving goals           |
-| **Transfers**     | Move money between wallets                                          |
-| **Debts & Loans** | Track money you owe or are owed                                     |
+KaGet needs a currency so amounts display correctly. Your preference is saved on this device (Dexie / IndexedDB).
 
-Swipe through or tap "Next" to proceed to currency selection.
+### What you'll see
 
-## Step 2: Currency Selection
+1. **Currency picker** — Searchable ISO 4217 codes (USD, EUR, IDR, JPY, …)
+2. **Balance preview** — Sample amount formatted with your currency + browser locale
+3. **Date preview** — Dates formatted from your browser language settings
 
-KaGet needs to know your preferred currency to display amounts correctly.
-
-### What You'll See
-
-1. **Currency Picker** — A searchable list of all available currencies (USD, EUR, IDR, JPY, etc.)
-2. **Balance Preview** — Shows how a sample balance will appear with your chosen currency
-3. **Date Preview** — Shows how dates will be formatted based on your browser's locale
-
-### Example Previews
+### Example previews
 
 | Locale           | Currency | Balance Preview | Date Preview |
 | ---------------- | -------- | --------------- | ------------ |
@@ -42,28 +30,26 @@ KaGet needs to know your preferred currency to display amounts correctly.
 | Indonesian       | IDR      | Rp 1.234,56     | 4/2/2026     |
 | Japanese         | JPY      | ¥1,235          | 2026/2/4     |
 
-> **Note:** The date format is automatically determined by your browser's language settings. The currency symbol, decimal separator, and grouping are based on the currency you select combined with your browser's locale.
+> **Note:** Date format comes from the browser language. Currency symbol, decimals, and grouping combine your selected currency with that locale.
 
-### Completing Onboarding
+### Completing onboarding
 
-1. Select your currency from the list
-2. Review the balance and date previews
-3. Tap "Continue" to finish onboarding
+1. Select your currency (default is often IDR)
+2. Optionally tweak the sample balance to check formatting
+3. Tap **Start budgeting!**
 
-Your currency preference is saved on this device. If you later connect Google Drive in Settings, it is included in your ledger backup file.
+You land on Home. Currency is stored locally; if you later connect Google Drive in Settings, it is included in the ledger backup file.
 
-## After Onboarding
-
-Once onboarding is complete, you'll be taken to the main dashboard where you can:
+## After onboarding
 
 - [Create your first wallet](../wallets/creating-wallets.md)
-- Start recording transactions
-- Set up your first budget
+- Record income and expenses
+- Allocate money into budgets (envelopes)
 
-## Changing Your Currency Later
+## Changing currency later
 
-You can change your currency at any time in **Settings > Currency**. Note that changing your currency only affects how amounts are displayed — it does not convert existing transaction values.
+Currency chosen at onboarding is intended to stay fixed. Settings currently shows your currency for reference; it does not offer a change flow.
 
 ## Related
 
-- [Currency Format Reference](./currency-format-reference.md) — Detailed information about currency and date formatting
+- [Currency Format Reference](./currency-format-reference.md)

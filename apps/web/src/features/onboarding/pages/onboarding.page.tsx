@@ -1,12 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { BadgeCheckIcon, CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, WalletIcon } from "lucide-react";
 import { useState } from "react";
 import CurrencyInput from "react-currency-input-field";
 import { useForm } from "react-hook-form";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
@@ -38,20 +36,21 @@ import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 
 const currencies = Intl.supportedValuesOf("currency");
+
 const features = [
   {
     title: "Wallets",
-    description: "Manage your “wallet” in a way like your real-life wallet. Split it as you need.",
+    description: "Mirror cash, bank, and e-wallets — split the way you actually hold money.",
   },
   {
     title: "Budgets",
     description:
-      "Need to allocate money for a specific occasion? Use a budget! KaGet will cut your wallet balance when start budgeting, making it easy to control your spending.",
+      "Envelope allocation: money leaves a wallet into a budget so spending stays intentional.",
   },
   {
-    title: "Cloud sync ready",
+    title: "On this device",
     description:
-      "Your budget data is stored securely on the server and available whenever you are signed in.",
+      "Your ledger lives locally. Google Drive backup is optional later in Settings — no login to start.",
   },
 ];
 
@@ -106,6 +105,7 @@ export function OnboardingIndexPage() {
     },
   });
   const createSettingsMutation = useCreateSettingsMutation();
+  const selectedCurrency = form.watch("currencyCode");
 
   function onSubmit(values: CreateSettings) {
     createSettingsMutation.mutate(values, {
@@ -116,174 +116,192 @@ export function OnboardingIndexPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-lg flex-1 flex-col gap-4 p-4">
-      <header className="space-y-1">
-        <Badge variant="outline">Onboarding</Badge>
-        <h1 className="text-2xl" data-testid="onboarding-welcome-title">
-          Welcome to <br /> <span className="font-bold">KaGet: Kawan Budget!</span>
-        </h1>
-        <p className="text-muted-foreground">
-          A local-first budgeting app. Set your currency to get started — Google sign-in is optional
-          for Drive backup later.
-        </p>
-      </header>
+    <main className="relative min-h-svh overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_color-mix(in_oklab,var(--primary)_28%,transparent),_transparent_55%),linear-gradient(180deg,var(--secondary),var(--background)_65%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--primary)_18%,transparent),transparent)] opacity-70"
+      />
 
-      <section className="space-y-2">
-        <h2 className="font-semibold text-xl">Features Overview</h2>
-        <div className="space-y-4">
-          {features.map(feature => (
-            <article key={feature.title}>
-              <h3 className="inline-flex items-center gap-1 font-medium text-lg">
-                <BadgeCheckIcon className="fill-primary" /> {feature.title}
-              </h3>
-              <p>{feature.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="font-semibold text-xl">Getting Started</h2>
-        <p>Before using the app, you need to know a few things:</p>
-
-        <ol className="list-disc space-y-2 pl-4">
-          <li>
-            Numbers are formatted based on your browser&apos;s language (locale) settings and
-            selected currency code below.
-          </li>
-          <li>
-            The locale is standardized via BCP 47 language tag. Your current browser&apos;s locale
-            is: <code>{window.navigator.language}</code>
-          </li>
-          <li>If you have multiple locales, the first locale on the list will be used</li>
-          <li>Currency codes below is using ISO 4217 currency codes standard.</li>
-        </ol>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="currencyCode"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Currency</FormLabel>
-                  {isMobile ? (
-                    <Drawer open={isCurrencyOpen} onOpenChange={setIsCurrencyOpen}>
-                      <DrawerTrigger asChild>
-                        <FormControl data-testid="onboarding-select-currency-trigger">
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ?? "Select currency . . ."}
-                            <ChevronsUpDownIcon className="opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </DrawerTrigger>
-                      <DrawerContent>
-                        <DrawerTitle className="hidden" />
-                        <div className="mt-4 border-t">
-                          <CurrencyList
-                            value={field.value}
-                            setOpen={setIsCurrencyOpen}
-                            setSelectedCurrency={value => {
-                              form.setValue("currencyCode", value);
-                            }}
-                          />
-                        </div>
-                      </DrawerContent>
-                    </Drawer>
-                  ) : (
-                    <Popover open={isCurrencyOpen} onOpenChange={setIsCurrencyOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl data-testid="onboarding-select-currency-trigger">
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ?? "Select currency . . ."}
-                            <ChevronsUpDownIcon className="opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-(--radix-popover-trigger-width)">
-                        <CurrencyList
-                          value={field.value}
-                          setOpen={setIsCurrencyOpen}
-                          setSelectedCurrency={value => {
-                            form.setValue("currencyCode", value);
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                  <FormDescription>Selected currency can not be changed later.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormItem>
-              <FormLabel>Sample balance</FormLabel>
-              <CurrencyInput
-                data-testid="onboarding-sample-balance-input"
-                placeholder="e.g, 100"
-                value={balancePreview}
-                onValueChange={value => setBalancePreview(value)}
-                autoComplete="off"
-                allowNegativeValue={false}
-                inputMode="numeric"
-                customInput={Input}
-              />
-            </FormItem>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Balance</CardTitle>
-                <CardDescription>Example of the formatted balance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p
-                  className="font-semibold text-lg"
-                  data-testid="onboarding-sample-balance-preview"
-                >
-                  {formatCurrency(Number(balancePreview ?? 0), {
-                    currency: form.watch("currencyCode"),
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Date</CardTitle>
-                <CardDescription>Example of the formatted date</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="font-semibold text-lg" data-testid="onboarding-sample-date-preview">
-                  {formatDate(new Date(), { dateStyle: "full", timeStyle: "long" })}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Button
-              className="w-full"
-              disabled={createSettingsMutation.isPending}
-              data-testid="onboarding-createSettings-button"
+      <div className="relative mx-auto grid min-h-svh w-full max-w-5xl gap-10 px-4 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14 lg:py-12">
+        <section className="fade-in slide-in-from-bottom-2 animate-in space-y-8 duration-500">
+          <header className="space-y-4">
+            <p className="inline-flex items-center gap-2 font-semibold text-sm tracking-wide">
+              <span className="inline-flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <WalletIcon className="size-4" aria-hidden />
+              </span>
+              <span className="text-foreground">KaGet</span>
+            </p>
+            <h1
+              className="max-w-xl text-balance font-semibold text-3xl leading-tight tracking-tight sm:text-4xl"
+              data-testid="onboarding-welcome-title"
             >
-              {createSettingsMutation.isPending ? "Saving…" : "Start budgeting!"}
-            </Button>
-          </form>
-        </Form>
-      </section>
+              Kawan Budget — envelopes on your device
+            </h1>
+            <p className="max-w-md text-base text-muted-foreground leading-relaxed">
+              Pick a currency to start. No account wall: budgeting works offline; Drive backup stays
+              optional in Settings.
+            </p>
+          </header>
+
+          <ul className="hidden space-y-4 lg:block">
+            {features.map(feature => (
+              <li key={feature.title} className="max-w-md">
+                <p className="font-medium text-foreground">{feature.title}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {feature.description}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="fade-in slide-in-from-bottom-3 animate-in fill-mode-both delay-100 duration-500">
+          <div className="rounded-xl border border-border/80 bg-card/90 p-5 shadow-sm backdrop-blur-sm sm:p-6">
+            <div className="mb-5 space-y-1">
+              <h2 className="font-semibold text-lg">Choose your currency</h2>
+              <p className="text-muted-foreground text-sm">
+                Amounts format with your browser locale (
+                <code className="text-xs">{window.navigator.language}</code>
+                ). Currency uses ISO 4217 codes and cannot be changed later.
+              </p>
+            </div>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="currencyCode"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Currency</FormLabel>
+                      {isMobile ? (
+                        <Drawer open={isCurrencyOpen} onOpenChange={setIsCurrencyOpen}>
+                          <DrawerTrigger asChild>
+                            <FormControl data-testid="onboarding-select-currency-trigger">
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ?? "Select currency . . ."}
+                                <ChevronsUpDownIcon className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </DrawerTrigger>
+                          <DrawerContent>
+                            <DrawerTitle className="hidden" />
+                            <div className="mt-4 border-t">
+                              <CurrencyList
+                                value={field.value}
+                                setOpen={setIsCurrencyOpen}
+                                setSelectedCurrency={value => {
+                                  form.setValue("currencyCode", value);
+                                }}
+                              />
+                            </div>
+                          </DrawerContent>
+                        </Drawer>
+                      ) : (
+                        <Popover open={isCurrencyOpen} onOpenChange={setIsCurrencyOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl data-testid="onboarding-select-currency-trigger">
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ?? "Select currency . . ."}
+                                <ChevronsUpDownIcon className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-(--radix-popover-trigger-width)">
+                            <CurrencyList
+                              value={field.value}
+                              setOpen={setIsCurrencyOpen}
+                              setSelectedCurrency={value => {
+                                form.setValue("currencyCode", value);
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      <FormDescription>Selected currency can not be changed later.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormItem>
+                  <FormLabel>Sample balance</FormLabel>
+                  <CurrencyInput
+                    data-testid="onboarding-sample-balance-input"
+                    placeholder="e.g, 100"
+                    value={balancePreview}
+                    onValueChange={value => setBalancePreview(value)}
+                    autoComplete="off"
+                    allowNegativeValue={false}
+                    inputMode="numeric"
+                    customInput={Input}
+                  />
+                </FormItem>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border bg-background/70 p-3">
+                    <p className="text-muted-foreground text-xs">Balance preview</p>
+                    <p
+                      className="mt-1 font-semibold text-base"
+                      data-testid="onboarding-sample-balance-preview"
+                    >
+                      {formatCurrency(Number(balancePreview ?? 0), {
+                        currency: selectedCurrency,
+                      })}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border bg-background/70 p-3">
+                    <p className="text-muted-foreground text-xs">Date preview</p>
+                    <p
+                      className="mt-1 font-semibold text-sm leading-snug"
+                      data-testid="onboarding-sample-date-preview"
+                    >
+                      {formatDate(new Date(), { dateStyle: "full", timeStyle: "short" })}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full"
+                  disabled={createSettingsMutation.isPending}
+                  data-testid="onboarding-createSettings-button"
+                >
+                  {createSettingsMutation.isPending ? "Saving…" : "Start budgeting!"}
+                </Button>
+              </form>
+            </Form>
+          </div>
+
+          <ul className="mt-6 space-y-3 lg:hidden">
+            {features.map(feature => (
+              <li key={feature.title}>
+                <p className="font-medium text-sm">{feature.title}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {feature.description}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </main>
   );
 }
