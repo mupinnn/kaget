@@ -26,6 +26,12 @@ export type Wallet = {
   updatedAt: Date;
 };
 
+/** UI labels for stored wallet type enums (domain values unchanged). */
+export const WALLET_TYPE_LABEL: Record<Wallet["type"], string> = {
+  CASH: "Cash",
+  DIGITAL: "Digital",
+};
+
 export type WalletDetail = Wallet & {
   records: Array<
     import("@/features/records/data/records.schemas").Record & {
