@@ -6,21 +6,39 @@ import { Button } from "@/components/ui/button";
 import { RecordList, RecordListLoader } from "../components/record-list";
 import { useRecordsQuery } from "../data/records.queries";
 
+function RecordsQueryError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
+      Couldn&apos;t load records.{" "}
+      <button
+        type="button"
+        className="font-medium text-foreground underline-offset-4 hover:underline"
+        onClick={onRetry}
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
 export function RecordsIndexPage() {
   const recordsQuery = useRecordsQuery();
+  const hasRecords = (recordsQuery.data?.length ?? 0) > 0;
 
   return (
     <PageLayout
       title="Records"
-      subtitle="Adulting is not about spending, but tracking and controlling what you spend"
+      subtitle="Income and expenses against wallets or budgets on this device."
     >
       {match(recordsQuery)
         .with({ isPending: true }, () => <RecordListLoader />)
-        .with({ isError: true }, () => <p>An error occured</p>)
-        .otherwise(recordsQuery => (
+        .with({ isError: true }, () => (
+          <RecordsQueryError onRetry={() => void recordsQuery.refetch()} />
+        ))
+        .otherwise(query => (
           <>
-            {recordsQuery.data && recordsQuery.data.length > 0 ? (
-              <Button asChild className="no-underline">
+            {hasRecords ? (
+              <Button asChild className="no-underline" size="sm">
                 <Link to="/records/create">
                   <PlusIcon />
                   New record
@@ -28,7 +46,7 @@ export function RecordsIndexPage() {
               </Button>
             ) : null}
 
-            <RecordList data={recordsQuery.data} />
+            <RecordList data={query.data} />
           </>
         ))}
     </PageLayout>

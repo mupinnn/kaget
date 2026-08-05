@@ -3,36 +3,36 @@ import { ReceiptTextIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { RecordWithRelations } from "../data/records.schemas";
+import type { RecordListItem as RecordListItemType } from "../data/records.schemas";
 import { RecordListItem } from "./record-list-item";
 
-export const RecordListLoader = () => {
+export function RecordListLoader() {
   return (
     <div className="divide-y">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="py-2">
-          <Skeleton className="h-14 w-full" />
+      {["a", "b", "c", "d", "e"].map(id => (
+        <div key={id} className="py-2.5">
+          <Skeleton className="h-10 w-full" />
         </div>
       ))}
     </div>
   );
-};
+}
 
 export interface RecordListProps {
-  data: RecordWithRelations[];
+  data: RecordListItemType[];
   emptyMessageTitle?: string;
   emptyMessageDescription?: string;
   actionLinkProps?: LinkOptions;
   withActions?: boolean;
 }
 
-export const RecordList = ({
+export function RecordList({
   data,
-  emptyMessageTitle = "No records created",
-  emptyMessageDescription = "Don't forget to record every money you spend or get. It's precious.",
+  emptyMessageTitle = "No records yet",
+  emptyMessageDescription = "Record spending or income against a wallet or budget on this device.",
   actionLinkProps,
   withActions = true,
-}: RecordListProps) => {
+}: RecordListProps) {
   if (data?.length > 0) {
     return (
       <div className="divide-y">
@@ -45,12 +45,13 @@ export const RecordList = ({
 
   return (
     <EmptyState
+      className="p-4"
       title={emptyMessageTitle}
       description={emptyMessageDescription}
       icon={ReceiptTextIcon}
       actions={
         withActions ? (
-          <Button asChild className="no-underline">
+          <Button asChild className="no-underline" size="sm">
             <Link to="/records/create" {...actionLinkProps}>
               Record cashflow
             </Link>
@@ -59,4 +60,4 @@ export const RecordList = ({
       }
     />
   );
-};
+}

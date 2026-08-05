@@ -49,7 +49,7 @@ export class RecordsFormPage extends BasePage {
     note: string;
   }) {
     await selectComboboxOption(this.page, "Wallet", new RegExp(options.walletName));
-    await selectComboboxOption(this.page, "Type", options.type);
+    await selectComboboxOption(this.page, "Type", options.type === "INCOME" ? "Income" : "Expense");
     await fillCurrencyField(this.page, "Amount", options.amount);
     await this.noteInput.fill(options.note);
   }
