@@ -3,31 +3,37 @@ import { cn } from "@/libs/utils.lib";
 
 export interface HomeSectionProps extends React.ComponentProps<"section"> {
   title: string;
-  to?: string;
+  description?: string;
+  to?: "/" | "/wallets" | "/records" | "/budgets" | "/transfers" | "/debts-loans" | "/settings";
   linkText?: string;
 }
 
-export const HomeSection = ({
-  ref,
+export function HomeSection({
   className,
   children,
   title,
+  description,
   to,
   linkText,
   ...props
-}: HomeSectionProps & {
-  ref: React.RefObject<HTMLElement>;
-}) => (
-  <section ref={ref} className={cn("flex flex-col gap-2", className)} {...props}>
-    <div className="flex items-center justify-between">
-      <h3 className="font-semibold">{title}</h3>
-      {to && linkText ? (
-        <Link to={to} className="text-sm">
-          {linkText}
-        </Link>
-      ) : null}
-    </div>
-    {children}
-  </section>
-);
-HomeSection.displayName = "HomeSection";
+}: HomeSectionProps) {
+  return (
+    <section className={cn("flex flex-col gap-3", className)} {...props}>
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0 space-y-0.5">
+          <h2 className="font-semibold text-base tracking-tight">{title}</h2>
+          {description ? <p className="text-muted-foreground text-sm">{description}</p> : null}
+        </div>
+        {to && linkText ? (
+          <Link
+            to={to}
+            className="shrink-0 text-muted-foreground text-sm no-underline hover:text-foreground"
+          >
+            {linkText}
+          </Link>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  );
+}
