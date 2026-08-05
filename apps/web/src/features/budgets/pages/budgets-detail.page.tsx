@@ -6,6 +6,7 @@ import { HidableBalance } from "@/components/hidable-balance";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecordList, RecordListLoader } from "@/features/records/components/record-list";
 import { useRecordsQuery } from "@/features/records/data/records.queries";
@@ -19,6 +20,45 @@ import { getRemainingBalancePercentage } from "../data/budgets.schemas";
 
 const route = getRouteApi("/_app/(budgets)/budgets/$budgetId");
 
+function BudgetDetailLoader() {
+  return (
+    <div className="space-y-3">
+      <Skeleton className="size-8 rounded-md" />
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-24" />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-7 w-32" />
+      </div>
+      <Skeleton className="h-2 w-full max-w-sm" />
+      <Skeleton className="h-4 w-56" />
+      <Skeleton className="h-8 w-64" />
+      <Skeleton className="h-9 w-full max-w-sm" />
+      <Skeleton className="h-24 w-full" />
+    </div>
+  );
+}
+
+function BudgetQueryError({
+  message = "Couldn't load this section.",
+  onRetry,
+}: {
+  message?: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
+      {message}{" "}
+      <button
+        type="button"
+        className="font-medium text-foreground underline-offset-4 hover:underline"
+        onClick={onRetry}
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
 export function BudgetsDetailPage() {
   const { budgetId } = route.useParams();
   const budgetDetailQuery = useBudgetDetailQuery(budgetId);
@@ -26,31 +66,37 @@ export function BudgetsDetailPage() {
   const transfersQuery = useTransfersQuery({ source_id: budgetId, source_type: "BUDGET" });
   const activateBudgetMutation = useActivateBudgetMutation();
 
-  if (budgetDetailQuery.isPending) return <p>Loading . . .</p>;
-  if (budgetDetailQuery.isError) return <p>An error occured: {budgetDetailQuery.error.message}</p>;
+  if (budgetDetailQuery.isPending) return <BudgetDetailLoader />;
+  if (budgetDetailQuery.isError) {
+    return (
+      <BudgetQueryError
+        message="Couldn't load this budget."
+        onRetry={() => void budgetDetailQuery.refetch()}
+      />
+    );
+  }
 
   const budgetDetail = budgetDetailQuery.data;
+  const badge = budgetDetail.archivedAt
+    ? `Archived · ${budgetDetail.wallet.name}`
+    : budgetDetail.wallet.name;
 
   return (
     <PageLayout
       title={budgetDetail.name}
+      badge={badge}
       subtitle={
-        <p className="text-lg text-muted-foreground">
+        <p className="font-semibold text-foreground text-xl tabular-nums tracking-tight">
           <HidableBalance value={budgetDetail.balance} />
         </p>
       }
-      badge={`BUDGET - ${budgetDetail.wallet.name}`}
     >
-      <div className="flex flex-col gap-2 sm:w-96">
-        <Progress value={getRemainingBalancePercentage(budgetDetail)} />
-        <div className="inline-flex items-center gap-1 text-xs">
-          <span className="inline-flex items-center gap-2">
-            <div className="h-3 w-3 bg-primary/20" />
-            <HidableBalance value={budgetDetail.usedAmount} />
-          </span>
-          <span>out of</span>
+      <div className="flex max-w-sm flex-col gap-1.5">
+        <Progress value={getRemainingBalancePercentage(budgetDetail)} className="h-1.5" />
+        <p className="text-muted-foreground text-xs tabular-nums">
+          <HidableBalance value={budgetDetail.usedAmount} /> used of{" "}
           <HidableBalance value={budgetDetail.totalBalance} />
-        </div>
+        </p>
       </div>
 
       {!budgetDetail.archivedAt ? (
@@ -87,32 +133,38 @@ export function BudgetsDetailPage() {
         </div>
       ) : (
         <ConfirmationDialog
-          title={<>Are you sure want to use &quot;{budgetDetail.name}&quot; budget again?</>}
-          description={`You will be able to use this budget again as before. Make sure your ${budgetDetail.wallet.name} balance is sufficient`}
+          title={<>Activate &quot;{budgetDetail.name}&quot; again?</>}
+          description={`You can spend from this envelope again. Make sure ${budgetDetail.wallet.name} has enough balance.`}
           trigger={
             <Button size="sm">
               <RefreshCwIcon />
               Activate
             </Button>
           }
-          actionLabel={"Activate"}
+          actionLabel="Activate"
           onClickAction={() => activateBudgetMutation.mutate(budgetId)}
         />
       )}
 
       <Tabs defaultValue="records">
-        <TabsList className="grid w-full grid-cols-2 sm:w-96">
+        <TabsList className="grid h-9 w-full grid-cols-2 sm:w-80">
           <TabsTrigger value="records">Records</TabsTrigger>
           <TabsTrigger value="transfers">Transfers</TabsTrigger>
         </TabsList>
-        <TabsContent value="records">
+        <TabsContent value="records" className="mt-3">
           {match(recordsQuery)
             .with({ isPending: true }, () => <RecordListLoader />)
-            .with({ isError: true }, () => <p>An error occured</p>)
-            .otherwise(recordsQuery => (
+            .with({ isError: true }, () => (
+              <BudgetQueryError
+                message="Couldn't load records."
+                onRetry={() => void recordsQuery.refetch()}
+              />
+            ))
+            .otherwise(query => (
               <RecordList
-                data={recordsQuery.data}
-                emptyMessageDescription="You have not record any transactions for this budget"
+                data={query.data}
+                emptyMessageTitle="No records yet"
+                emptyMessageDescription="Spend from this envelope when you use the budget."
                 withActions={false}
                 actionLinkProps={{
                   to: "/records/create",
@@ -124,14 +176,20 @@ export function BudgetsDetailPage() {
               />
             ))}
         </TabsContent>
-        <TabsContent value="transfers">
+        <TabsContent value="transfers" className="mt-3">
           {match(transfersQuery)
             .with({ isPending: true }, () => <TransferListLoader />)
-            .with({ isError: true }, () => <p>An error occured</p>)
-            .otherwise(transfersQuery => (
+            .with({ isError: true }, () => (
+              <BudgetQueryError
+                message="Couldn't load transfers."
+                onRetry={() => void transfersQuery.refetch()}
+              />
+            ))
+            .otherwise(query => (
               <TransferList
-                data={transfersQuery.data}
-                emptyMessageDescription="You have no transfers for this budget"
+                data={query.data}
+                emptyMessageTitle="No transfers yet"
+                emptyMessageDescription="Fund or move money for this envelope from Transfers."
                 withActions={false}
               />
             ))}

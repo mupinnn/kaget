@@ -7,31 +7,30 @@ import { type BudgetWithWallet, getRemainingBalancePercentage } from "../data/bu
 
 export type BudgetListItemProps = BudgetWithWallet;
 
-export const BudgetListItem = (props: BudgetListItemProps) => {
+export function BudgetListItem(props: BudgetListItemProps) {
   return (
     <Link to="/budgets/$budgetId" params={{ budgetId: props.id }} className="no-underline">
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="inline-flex items-center gap-1">
-            {props.archivedAt && (
-              <Badge variant="destructive" className="mr-1">
+      <Card className="h-full gap-0 py-3 transition-colors hover:bg-muted/40">
+        <CardHeader className="gap-1.5 px-3 pb-1.5">
+          <div className="flex flex-wrap items-center gap-1">
+            {props.archivedAt ? (
+              <Badge variant="destructive" className="rounded-md font-normal">
                 Archived
               </Badge>
-            )}
-            <Badge variant="secondary" className="mr-1">
+            ) : null}
+            <Badge variant="secondary" className="rounded-md font-normal">
               {props.wallet.name}
             </Badge>
           </div>
-          <CardTitle>{props.name}</CardTitle>
+          <CardTitle className="truncate font-medium text-sm leading-tight">{props.name}</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-nowrap">
-          <Progress value={getRemainingBalancePercentage(props)} />
-          <div className="inline-flex items-center gap-2 text-xs">
-            <div className="h-3 w-3 bg-primary" />
+        <CardContent className="flex flex-col gap-2 px-3 pt-0">
+          <Progress value={getRemainingBalancePercentage(props)} className="h-1.5" />
+          <p className="font-semibold text-xl tabular-nums tracking-tight">
             <HidableBalance value={props.balance} />
-          </div>
+          </p>
         </CardContent>
       </Card>
     </Link>
   );
-};
+}
