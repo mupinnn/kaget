@@ -211,10 +211,10 @@ function AllocationSummaryBody({
         return (
           <div className="space-y-2" key={walletId}>
             <h3 className="font-semibold text-sm">{matchedWallet?.name}</h3>
-            {budgets.map(budget => (
+            {budgets.map((budget, budgetIndex) => (
               <div
                 className="flex items-center justify-between gap-2"
-                key={`${walletId}-${budget.name}`}
+                key={`${walletId}-${budgetIndex}`}
               >
                 <p className="text-sm">{budget.name}</p>
                 <p className="font-medium text-sm tabular-nums">{formatCurrency(budget.balance)}</p>
