@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_app/")({
 
 function IndexPage() {
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-6">
       <DriveConnectBanner />
       <HomeWalletsSection />
       <HomeBudgetsSection />

@@ -13,10 +13,11 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
   useSidebar,
 } from "./ui/sidebar";
 
@@ -68,17 +69,33 @@ export function AppSidebar() {
   const { setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="h-12 justify-center border-sidebar-border border-b px-2">
+        <div className="flex items-center gap-2 overflow-hidden px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <span
+            aria-hidden
+            className="hidden size-7 shrink-0 items-center justify-center rounded-md bg-primary font-semibold text-primary-foreground text-xs group-data-[collapsible=icon]:flex"
+          >
+            K
+          </span>
+          <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
+            <span className="truncate font-semibold text-sm tracking-tight">KaGet</span>
+            <span className="truncate text-sidebar-foreground/60 text-xs">v{__APP_VERSION__}</span>
+          </div>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            KaGet<sup>{__APP_VERSION__}</sup>
-          </SidebarGroupLabel>
+        <SidebarGroup className="py-2">
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map(menuItem => (
                 <SidebarMenuItem key={menuItem.title}>
-                  <SidebarMenuButton asChild onClick={() => setOpenMobile(false)}>
+                  <SidebarMenuButton
+                    asChild
+                    size="sm"
+                    tooltip={menuItem.title}
+                    onClick={() => setOpenMobile(false)}
+                  >
                     <Link
                       to={menuItem.url}
                       className="no-underline"
@@ -94,6 +111,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }
