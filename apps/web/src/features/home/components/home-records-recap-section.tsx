@@ -3,21 +3,33 @@ import { RecordList, RecordListLoader } from "@/features/records/components/reco
 import { useRecordsQuery } from "@/features/records/data/records.queries";
 import { getISODate } from "@/utils/date.util";
 import { HomeSection } from "./home-section";
+import { HomeSectionError } from "./home-section-status";
 
-export const HomeRecordsRecapSection = () => {
+export function HomeRecordsRecapSection() {
   const recordsQuery = useRecordsQuery({
     start: getISODate(new Date()),
     end: getISODate(new Date()),
   });
 
   return (
-    <HomeSection title="Today's recap" to="/records" linkText="See all records">
+    <HomeSection
+      title="Today's recap"
+      description="Cash flow recorded today"
+      to="/records"
+      linkText="See all"
+    >
       {match(recordsQuery)
         .with({ isPending: true }, () => <RecordListLoader />)
-        .with({ isError: true }, () => <p>An error occured</p>)
-        .otherwise(recordsQuery => (
-          <RecordList data={recordsQuery.data} />
+        .with({ isError: true }, () => (
+          <HomeSectionError onRetry={() => void recordsQuery.refetch()} />
+        ))
+        .otherwise(query => (
+          <RecordList
+            data={query.data}
+            emptyMessageTitle="Nothing today yet"
+            emptyMessageDescription="Record spending or income as it happens on this device."
+          />
         ))}
     </HomeSection>
   );
-};
+}
