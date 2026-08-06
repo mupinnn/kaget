@@ -135,25 +135,27 @@ export function GoogleDriveSyncSection() {
 
   if (session.isPending) {
     return (
-      <div id={SETTINGS_DRIVE_SECTION_ID} className="scroll-mt-4 space-y-2">
-        <h2 className="font-semibold text-lg">Google Drive</h2>
-        <p className="text-muted-foreground text-sm">Loading…</p>
-      </div>
+      <section id={SETTINGS_DRIVE_SECTION_ID} className="scroll-mt-4 space-y-2">
+        <div className="space-y-0.5">
+          <h2 className="font-semibold text-base tracking-tight">Google Drive</h2>
+          <p className="text-muted-foreground text-sm">Loading account…</p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div id={SETTINGS_DRIVE_SECTION_ID} className="scroll-mt-4 space-y-3">
-      <div className="space-y-2">
-        <h2 className="font-semibold text-lg">Google Drive</h2>
+    <section id={SETTINGS_DRIVE_SECTION_ID} className="scroll-mt-4 space-y-3">
+      <div className="space-y-0.5">
+        <h2 className="font-semibold text-base tracking-tight">Google Drive</h2>
         <p className="text-muted-foreground text-sm">
-          Optional backup on your Drive. Local use needs no login — currency, export, and import
-          always work offline.
+          Optional backup on your Drive. Local use needs no login — currency and backup always work
+          offline.
         </p>
       </div>
 
       {!user ? (
-        <Button type="button" variant="outline" disabled={isBusy} onClick={handleConnect}>
+        <Button type="button" variant="outline" size="sm" disabled={isBusy} onClick={handleConnect}>
           <CloudIcon />
           {connectMutation.isPending ? "Connecting…" : "Connect Google Drive"}
         </Button>
@@ -175,7 +177,13 @@ export function GoogleDriveSyncSection() {
           </p>
 
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" disabled={isBusy} onClick={handleSyncNow}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isBusy}
+              onClick={handleSyncNow}
+            >
               <RefreshCwIcon />
               {syncMutation.isPending ? "Syncing…" : "Sync now"}
             </Button>
@@ -185,7 +193,7 @@ export function GoogleDriveSyncSection() {
               description="KaGet will stop syncing and sign you out. Your local ledger stays on this device. The file on Drive is not deleted."
               actionLabel="Disconnect"
               trigger={
-                <Button type="button" variant="outline" disabled={isBusy}>
+                <Button type="button" variant="outline" size="sm" disabled={isBusy}>
                   <CloudOffIcon />
                   Disconnect
                 </Button>
@@ -238,6 +246,6 @@ export function GoogleDriveSyncSection() {
           ) : null}
         </div>
       )}
-    </div>
+    </section>
   );
 }
