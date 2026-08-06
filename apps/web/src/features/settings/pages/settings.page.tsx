@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/utils/date.util";
 import {
   GoogleDriveSyncSection,
@@ -14,9 +14,42 @@ import {
 import { exportData, importData } from "../data/ledger-ie.services";
 import { useSettingsQuery } from "../data/settings.queries";
 
-export function SettingsIndexPage() {
-  const queryClient = useQueryClient();
+function CurrencySection() {
   const settingsQuery = useSettingsQuery();
+
+  return (
+    <section className="space-y-2">
+      <div className="space-y-0.5">
+        <h2 className="font-semibold text-base tracking-tight">Currency</h2>
+        <p className="text-muted-foreground text-sm">
+          Display preference for amounts on this device.
+        </p>
+      </div>
+
+      {settingsQuery.isPending ? (
+        <Skeleton className="h-5 w-16" />
+      ) : settingsQuery.isError ? (
+        <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
+          Couldn&apos;t load currency.{" "}
+          <button
+            type="button"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+            onClick={() => void settingsQuery.refetch()}
+          >
+            Try again
+          </button>
+        </div>
+      ) : (
+        <p className="font-medium tabular-nums tracking-tight">
+          {settingsQuery.data?.currencyCode}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function BackupSection() {
+  const queryClient = useQueryClient();
   const importFileRef = useRef<HTMLInputElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -74,67 +107,55 @@ export function SettingsIndexPage() {
   };
 
   return (
-    <PageLayout title="Settings">
-      <div className="space-y-6">
-        <GoogleDriveSyncSection />
+    <section id={SETTINGS_EXPORT_SECTION_ID} className="scroll-mt-4 space-y-3">
+      <div className="space-y-0.5">
+        <h2 className="font-semibold text-base tracking-tight">Backup</h2>
+        <p className="text-muted-foreground text-sm">
+          Export or restore a ledger document on this device — independent of Drive.
+        </p>
+      </div>
 
-        <Separator />
+      <div className="space-y-2">
+        <p className="font-medium text-sm">Export</p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          disabled={isExporting || isImporting}
+        >
+          <DownloadIcon />
+          {isExporting ? "Exporting…" : "Export"}
+        </Button>
+        {exportResult ? (
+          <a
+            href={exportResult.url}
+            download={`kaget-export_${exportResult.exportedAt}.json`}
+            className="block text-sm underline-offset-4 hover:underline"
+          >
+            Download exported file ({formatDate(exportResult.exportedAt, { timeStyle: "short" })})
+          </a>
+        ) : null}
+      </div>
 
-        <div className="space-y-2">
-          <h2 className="font-semibold text-lg">Currency</h2>
-          {settingsQuery.isPending ? (
-            <p>Loading . . .</p>
-          ) : settingsQuery.isError ? (
-            <p>An error occured: {settingsQuery.error.message}</p>
-          ) : (
-            <>
-              <p className="text-muted-foreground text-sm">
-                Your currency preference is stored on this device.
-              </p>
-              <p className="font-medium">{settingsQuery.data?.currencyCode}</p>
-            </>
-          )}
-        </div>
-
-        <Separator />
-
-        <div id={SETTINGS_EXPORT_SECTION_ID} className="flex flex-col items-start gap-1">
-          <h2 className="font-semibold text-lg">Export data</h2>
-          <p className="text-muted-foreground text-sm">Export and backup your local ledger</p>
-          <Button variant="outline" onClick={handleExport} disabled={isExporting || isImporting}>
-            <DownloadIcon />
-            {isExporting ? "Exporting…" : "Export"}
-          </Button>
-
-          {exportResult && (
-            <a href={exportResult.url} download={`kaget-export_${exportResult.exportedAt}.json`}>
-              Click here to download the exported file (
-              {formatDate(exportResult.exportedAt, { timeStyle: "short" })})
-            </a>
-          )}
-        </div>
-
-        <Separator />
-
-        <div className="flex flex-col items-start gap-1">
-          <h2 className="font-semibold text-lg">Import data</h2>
-          <p className="text-muted-foreground text-sm">Import a ledger-document backup</p>
-          <input
-            type="file"
-            accept="application/json,.json"
-            ref={importFileRef}
-            hidden
-            onChange={e => setImportSelectedFile(e.target?.files?.[0])}
-          />
-          <Button variant="outline" disabled={isImporting} onClick={handleSelectFile}>
+      <div className="space-y-2">
+        <p className="font-medium text-sm">Import</p>
+        <input
+          type="file"
+          accept="application/json,.json"
+          ref={importFileRef}
+          hidden
+          onChange={e => setImportSelectedFile(e.target?.files?.[0])}
+        />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" disabled={isImporting} onClick={handleSelectFile}>
             <FileTextIcon />
-            Select file {importSelectedFile && `: ${importSelectedFile.name}`}
+            {importSelectedFile ? importSelectedFile.name : "Select file"}
           </Button>
           <ConfirmationDialog
-            title="Restore Backup"
-            description="Please note that importing a backup will overwrite your existing data. The system will replace all current data with the contents of the imported file. Ensure you import the latest backup file. This action cannot be undone."
+            title="Restore backup?"
+            description="Importing replaces all local ledger data with this file. Export a backup first if you are unsure. This cannot be undone."
             trigger={
-              <Button variant="outline" disabled={isImporting || !importSelectedFile}>
+              <Button variant="outline" size="sm" disabled={isImporting || !importSelectedFile}>
                 <UploadIcon />
                 {isImporting ? "Importing…" : "Import"}
               </Button>
@@ -142,6 +163,21 @@ export function SettingsIndexPage() {
             onClickAction={handleImport}
           />
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function SettingsIndexPage() {
+  return (
+    <PageLayout
+      title="Settings"
+      subtitle="Preferences and optional Drive backup — your ledger stays on this device."
+    >
+      <div className="max-w-lg space-y-6">
+        <GoogleDriveSyncSection />
+        <CurrencySection />
+        <BackupSection />
       </div>
     </PageLayout>
   );
