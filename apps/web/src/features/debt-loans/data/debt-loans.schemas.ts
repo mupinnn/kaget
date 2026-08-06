@@ -58,6 +58,19 @@ export type DebtLoansRequestQuery = z.infer<typeof listDebtLoansQuerySchema>;
 export type CreateDebtLoan = z.infer<typeof createDebtLoanSchema>;
 export type UpdateDebtLoan = z.infer<typeof updateDebtLoanSchema>;
 
-export function getDebtLoanStatus(debtLoan: { resolvedAt: string | Date | null }) {
+export type DebtLoanStatus = "PENDING" | "RESOLVED";
+export type DebtLoanType = DebtLoan["type"];
+
+export const DEBT_LOAN_TYPE_LABEL: Record<DebtLoanType, string> = {
+  DEBT: "Debt",
+  LOAN: "Loan",
+};
+
+export const DEBT_LOAN_STATUS_LABEL: Record<DebtLoanStatus, string> = {
+  PENDING: "Pending",
+  RESOLVED: "Resolved",
+};
+
+export function getDebtLoanStatus(debtLoan: { resolvedAt: string | Date | null }): DebtLoanStatus {
   return debtLoan.resolvedAt ? "RESOLVED" : "PENDING";
 }
