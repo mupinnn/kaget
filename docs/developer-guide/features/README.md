@@ -6,6 +6,15 @@ These docs describe the **local domain model** (Dexie / `*.services.ts`): shapes
 
 SQL-looking field tables in older pages are **logical** models for the client (and the Drive/export JSON), not API tables.
 
+## Adding a Dexie-backed feature
+
+1. Zod schemas in `features/{feature}/data/{feature}.schemas.ts`
+2. Dexie logic in `features/{feature}/data/{feature}.services.ts` only
+3. `queryOptions` + hooks in `*.queries.ts` / `*.mutations.ts`
+4. UI in `features/{feature}/components/` and `pages/`
+5. Thin route file under `apps/web/src/routes/…/*.route.tsx` → `bun run gen:routes` if types break
+6. Document here under `features/{feature}/` when non-trivial
+
 ## Contents
 
 - [Onboarding](./onboarding/) — First-time setup and currency selection

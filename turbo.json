@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/turbo/schema.json",
-  "globalDependencies": [".env"],
+  "globalDependencies": [".env", "apps/api/.env", "apps/web/.env"],
   "globalPassThroughEnv": [
     "DATABASE_URL",
     "BETTER_AUTH_SECRET",

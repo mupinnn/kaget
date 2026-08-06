@@ -18,10 +18,10 @@ services:
         ]
 
   migrate:
-    env_file: .env
+    env_file: apps/api/.env
 
   api:
-    env_file: .env
+    env_file: apps/api/.env
     environment:
       BETTER_AUTH_URL: http://localhost:${API_PORT:-3000}
       CORS_ORIGINS: http://localhost:5173

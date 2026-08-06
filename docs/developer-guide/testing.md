@@ -60,8 +60,8 @@ apps/web/e2e/
 E2E tests exercise the full stack (Postgres + API + web):
 
 1. Start Postgres: `docker compose up -d db`
-2. Migrate: `bun run --env-file=.env --filter @kaget/api db:migrate`
-3. Start API: `bun run --env-file=.env --filter @kaget/api dev`
+2. Migrate: `bun run --filter @kaget/api db:migrate` (requires `apps/api/.env`)
+3. Start API: `bun run --filter @kaget/api dev`
 
 Playwright starts the Vite dev server automatically via `webServer` in [`playwright.config.ts`](../../apps/web/playwright.config.ts).
 
