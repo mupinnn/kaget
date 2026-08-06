@@ -24,13 +24,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useWalletsQuery } from "@/features/wallets/data/wallets.queries";
 import { cn } from "@/libs/utils.lib";
 import { formatCurrency } from "@/utils/common.util";
 import { formatDate } from "@/utils/date.util";
 import { useCreateDebtLoanMutation } from "../data/debt-loans.mutations";
-import { type CreateDebtLoan, createDebtLoanSchema } from "../data/debt-loans.schemas";
+import {
+  type CreateDebtLoan,
+  createDebtLoanSchema,
+  DEBT_LOAN_TYPE_LABEL,
+} from "../data/debt-loans.schemas";
+
+const PAGE_SUBTITLE = "Record a debt or loan against a wallet on this device.";
 
 export function DebtLoansFormPage() {
   const navigate = useNavigate();
@@ -45,6 +52,7 @@ export function DebtLoansFormPage() {
     },
   });
 
+  const hasNoWallets = (walletsQuery.data?.length ?? 0) === 0;
   const watchOccurredAt = form.watch("occurred_at");
   const occurredAtTimeValue = `${new Date(watchOccurredAt).getHours()}:${new Date(watchOccurredAt).getMinutes()}`;
 
@@ -84,10 +92,40 @@ export function DebtLoansFormPage() {
     );
   };
 
+  if (walletsQuery.isPending) {
+    return (
+      <PageLayout title="Create debt or loan" subtitle={PAGE_SUBTITLE}>
+        <div className="max-w-lg space-y-3">
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (walletsQuery.isError) {
+    return (
+      <PageLayout title="Create debt or loan" subtitle={PAGE_SUBTITLE}>
+        <div className="rounded-lg border border-dashed px-3 py-4 text-muted-foreground text-sm">
+          Couldn&apos;t load wallets.{" "}
+          <button
+            type="button"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+            onClick={() => void walletsQuery.refetch()}
+          >
+            Try again
+          </button>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
-    <PageLayout title="Create debt or loan">
+    <PageLayout title="Create debt or loan" subtitle={PAGE_SUBTITLE}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-lg space-y-3">
           <FormField
             control={form.control}
             name="type"
@@ -101,8 +139,8 @@ export function DebtLoansFormPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="DEBT">DEBT (you owe)</SelectItem>
-                    <SelectItem value="LOAN">LOAN (you lent)</SelectItem>
+                    <SelectItem value="DEBT">{DEBT_LOAN_TYPE_LABEL.DEBT} (you owe)</SelectItem>
+                    <SelectItem value="LOAN">{DEBT_LOAN_TYPE_LABEL.LOAN} (you lent)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -116,16 +154,18 @@ export function DebtLoansFormPage() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Wallet</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value} disabled={hasNoWallets}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose wallet" />
+                      <SelectValue
+                        placeholder={hasNoWallets ? "Create a wallet first" : "Choose wallet"}
+                      />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {walletsQuery.data?.map(wallet => (
                       <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.name} - {formatCurrency(Number.parseFloat(wallet.balance))}
+                        {wallet.name} - {formatCurrency(wallet.balance)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -142,7 +182,7 @@ export function DebtLoansFormPage() {
               <FormItem>
                 <FormLabel>Other party</FormLabel>
                 <FormControl>
-                  <Input placeholder="Who owes or is owed?" {...field} />
+                  <Input autoComplete="off" placeholder="Who owes or is owed?" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -158,10 +198,11 @@ export function DebtLoansFormPage() {
                 <FormControl>
                   <CurrencyInput
                     allowNegativeValue={false}
+                    autoComplete="off"
                     customInput={Input}
                     inputMode="numeric"
                     onValueChange={value => field.onChange(value)}
-                    placeholder="e.g, 1.000.000"
+                    placeholder="e.g. 1.000.000"
                     value={field.value}
                   />
                 </FormControl>
@@ -221,18 +262,28 @@ export function DebtLoansFormPage() {
               <FormItem>
                 <FormLabel>Note</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Optional note" {...field} />
+                  <Textarea autoComplete="off" placeholder="Optional note" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="flex items-center justify-end gap-2">
-            <Button asChild className="no-underline" variant="outline">
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button
+              asChild
+              className="no-underline"
+              disabled={createDebtLoanMutation.isPending}
+              size="sm"
+              variant="outline"
+            >
               <Link to="/debts-loans">Back</Link>
             </Button>
-            <Button disabled={createDebtLoanMutation.isPending} type="submit">
+            <Button
+              disabled={hasNoWallets || createDebtLoanMutation.isPending}
+              size="sm"
+              type="submit"
+            >
               {createDebtLoanMutation.isPending ? "Saving…" : "Save"}
             </Button>
           </div>
