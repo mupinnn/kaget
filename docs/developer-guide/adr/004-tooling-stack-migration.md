@@ -2,13 +2,15 @@
 
 ## Status
 
-Accepted (updated 2026-06-02)
+Accepted (updated 2026-08-06)
 
 ## Context
 
 The monorepo previously used pnpm, Husky, lint-staged, Prettier, and per-app ESLint flat configs. The API layer was expanded with PostgreSQL, Drizzle, and better-auth, requiring a Bun-native runtime and a simpler, faster developer toolchain.
 
 A follow-up pass refined the stack: frontend major upgrades, centralized Biome rules, Bun workspace catalogs, API compile output, and Nix-based dev shells.
+
+Env layout was later split so each app owns its secrets (ceremony + ownership), with root `.env` limited to Compose Postgres credentials.
 
 ## Decision
 
@@ -30,13 +32,14 @@ A follow-up pass refined the stack: frontend major upgrades, centralized Biome r
 | **Turborepo** | `check-types`, `db:*` tasks; TUI enabled; `build` depends on `^build` |
 | **Frontend** | React 19, Vite 8, Tailwind CSS v4 (`@tailwindcss/vite`), TanStack Router 1.17x, Zod 4, sonner, unified `radix-ui` package |
 | **Routes** | File routes under `apps/web/src/routes/**/*.route.tsx` (no `~` filename prefix); paths like `/_app/(wallets)/wallets/` |
-| **API env** | `API_PORT` (not `PORT`); validation via `Bun.env` + Zod 4 `z.prettifyError` |
+| **API env** | `API_PORT` (not `PORT`); validation via `Bun.env` + Zod 4 `z.prettifyError`; secrets in `apps/api/.env` |
 | **API build** | `tsc` + `bun build --compile` → `dist/kaget-api`; `start` runs the binary |
-| **API env for CLI** | `auth:*` and `db:*` require manual `--env-file`: `bun --env-file=../../.env run …` from `apps/api`, or `bun run --env-file=.env --filter @kaget/api …` from repo root (not embedded in package scripts) |
+| **API env for CLI** | `auth:*` / `db:*` scripts embed `bun --env-file=.env` so `bun run db:migrate` works from `apps/api` or via `bun run --filter @kaget/api …` |
 | **Auth schema** | `bun run auth:generate` (better-auth CLI) writes `src/db/schema/auth.ts` |
 | **DB dev** | `db:push` for local schema sync alongside `db:generate` / `db:migrate` |
 | **Dev environment** | `devenv.nix` removed; optional **`flake.nix`** dev shell (`bun`, `nodejs_24`) + `direnv` (`use flake`) |
-| **Docker Compose** | `env_file: .env`; Postgres credentials via `POSTGRES_*`; API port via `API_PORT`; build context `apps/api` |
+| **Env files** | Root `.env`: `POSTGRES_*` only; `apps/api/.env`: API secrets; `apps/web/.env`: `VITE_*`; shared URLs duplicated manually |
+| **Docker Compose** | Local override: `db` → root `.env`; `api` / `migrate` → `apps/api/.env`; Postgres via `POSTGRES_*`; API port via `API_PORT` (Compose interpolation defaults to `3000`) |
 
 ## Consequences
 
@@ -50,7 +53,7 @@ A follow-up pass refined the stack: frontend major upgrades, centralized Biome r
 
 ### Tradeoffs
 
-- **`auth:*` / `db:*` depend on root `.env`** — pass `--env-file` relative to cwd (`../../.env` in `apps/api`; `bun run --env-file=.env --filter @kaget/api` at repo root); documented in [`apps/api/README.md`](../../apps/api/README.md).
+- **Shared URLs are duplicated** across `apps/api/.env` and `apps/web/.env` (`BETTER_AUTH_URL` ↔ `VITE_API_URL`, `CORS_ORIGINS` ↔ `VITE_APP_URL`); `DATABASE_URL` must stay aligned with root `POSTGRES_*` — document defaults in each `.env.example`, do not generate.
 - Web lost ESLint-only rules (`@tanstack/eslint-plugin-query`, `react-refresh`); rely on Biome + TypeScript + tests.
 - Tailwind class order uses Biome `useSortedClasses` (not Prettier Tailwind plugin).
 - Contributors use Bun instead of pnpm; CI pins Bun via `oven-sh/setup-bun` (align with `packageManager` in root `package.json`).

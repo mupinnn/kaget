@@ -8,9 +8,9 @@ Postgres holds **auth/session tables** and the **Drive ledger `fileId` pointer**
 
 - [Bun](https://bun.sh/) **1.3.3+** (see root `packageManager` in [`package.json`](../../package.json))
 - PostgreSQL 16 (local or via root [`docker-compose.yml`](../../docker-compose.yml))
-- Root [`.env`](../../.env.example) (copy from `.env.example`)
+- [`apps/api/.env`](.env.example) (copy from `.env.example`); root [`.env`](../../.env.example) for Compose `POSTGRES_*` only
 
-The API reads configuration from `Bun.env` ([`src/config/env.ts`](src/config/env.ts)). There is no `.env` inside `apps/api/` — you must pass the repo-root file with `--env-file` when running `auth:*` and `db:*` (see below).
+The API reads configuration from `Bun.env` ([`src/config/env.ts`](src/config/env.ts)). `auth:*` / `db:*` scripts load `.env` via `--env-file=.env`.
 
 ## Quick start
 
@@ -18,11 +18,11 @@ From the **repository root**:
 
 ```bash
 cp .env.example .env
+cp apps/api/.env.example apps/api/.env
 bun install
 docker compose up -d db
-cd apps/api
-bun --env-file=../../.env run db:migrate
-bun run dev
+bun run --filter @kaget/api db:migrate
+cd apps/api && bun run dev
 ```
 
 Default URL: `http://localhost:3000` (or the port set in `API_PORT`).
@@ -31,34 +31,23 @@ From the **repository root** without `cd`:
 
 ```bash
 bunx turbo dev --filter @kaget/api
-bun run --env-file=.env --filter @kaget/api db:migrate
+bun run --filter @kaget/api db:migrate
 ```
 
 ## Running `auth:*` and `db:*`
 
-Scripts in [`package.json`](package.json) do **not** load `.env` for you. [`drizzle.config.ts`](drizzle.config.ts) calls `loadEnv()`, which needs `DATABASE_URL`, `BETTER_AUTH_*`, and related vars in `Bun.env`.
-
-Pass `--env-file` using a path **relative to your current working directory**:
-
-| Current directory | Example (`auth:generate`) |
-|-------------------|---------------------------|
-| `apps/api` | `bun --env-file=../../.env run auth:generate` |
-| Repository root | `bun run --env-file=.env --filter @kaget/api auth:generate` |
-
-Use the same pattern for `db:push`, `db:generate`, `db:migrate`, and `db:studio`:
+Package scripts embed `bun --env-file=.env` so `DATABASE_URL` and related vars load from **`apps/api/.env`**.
 
 ```bash
 # cwd: apps/api
-bun --env-file=../../.env run db:migrate
-bun --env-file=../../.env run auth:generate
-bun --env-file=../../.env run db:generate
+bun run db:migrate
+bun run auth:generate
+bun run db:generate
 
 # cwd: repository root
-bun run --env-file=.env --filter @kaget/api db:migrate
-bun run --env-file=.env --filter @kaget/api auth:generate
+bun run --filter @kaget/api db:migrate
+bun run --filter @kaget/api auth:generate
 ```
-
-Plain `bun run db:migrate` from `apps/api` without `--env-file` only works if those variables are already exported in your shell.
 
 ## Scripts
 
@@ -68,7 +57,7 @@ Plain `bun run db:migrate` from `apps/api` without `--env-file` only works if th
 | `build` | `tsc` + compile standalone binary → `dist/kaget-api` |
 | `start` | Run `dist/kaget-api` (after `build`) |
 | `check-types` | `tsc --noEmit` |
-| `auth:generate` | Regenerate `src/db/schema/auth.ts` (better-auth CLI; use with `--env-file`, see above) |
+| `auth:generate` | Regenerate `src/db/schema/auth.ts` (loads `apps/api/.env`) |
 | `db:push` | Push schema to DB (local dev; no migration file) |
 | `db:generate` | Generate SQL migration from schema changes |
 | `db:migrate` | Apply pending migrations |
@@ -85,24 +74,24 @@ bun run start
 
 ## Environment variables
 
-Set these in the **root** `.env` (see [`.env.example`](../../.env.example)).
+Set these in **`apps/api/.env`** (see [`.env.example`](.env.example)).
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `API_PORT` | No (default `3000`) | HTTP listen port (`Bun.serve`) |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_URL` | Yes | PostgreSQL connection string (align with root `POSTGRES_*`) |
 | `BETTER_AUTH_SECRET` | Yes | Secret key (min 32 characters) |
-| `BETTER_AUTH_URL` | Yes | Public API base URL (e.g. `http://localhost:3000`) |
+| `BETTER_AUTH_URL` | Yes | Public API base URL (e.g. `http://localhost:3000`; align with web `VITE_API_URL`) |
 | `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID (Drive `drive.file` scopes requested at sign-in) |
 | `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
-| `CORS_ORIGINS` | No | Comma-separated browser origins (default `http://localhost:5173`) |
+| `CORS_ORIGINS` | No | Comma-separated browser origins (default `http://localhost:5173`; align with web `VITE_APP_URL`) |
 
-Related root-only variables used by Docker Compose and the web app:
+Related files elsewhere:
 
-| Variable | Used for |
-|----------|----------|
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `db` service in Compose |
-| `VITE_API_URL` | Web Hono client (`@kaget/web`) |
+| Location | Variables |
+|----------|-----------|
+| Root `.env` | `POSTGRES_*` for Compose `db` |
+| `apps/web/.env` | `VITE_API_URL`, `VITE_APP_URL` |
 
 ## Project layout
 
@@ -141,22 +130,22 @@ Routes are mounted in [`src/app.ts`](src/app.ts) on explicit paths (e.g. `.route
 **Schema** is auth tables (from better-auth) plus `drive_ledger_file`. Always import tables in [`src/db/schema/index.ts`](src/db/schema/index.ts) so Drizzle Kit picks them up.
 
 ```bash
-bun --env-file=../../.env run auth:generate
-bun --env-file=../../.env run db:generate
-bun --env-file=../../.env run db:migrate
+bun run auth:generate
+bun run db:generate
+bun run db:migrate
 ```
 
 **Local iteration** (no migration file):
 
 ```bash
-bun --env-file=../../.env run db:push
+bun run db:push
 ```
 
 **Committed changes**:
 
 ```bash
-bun --env-file=../../.env run db:generate
-bun --env-file=../../.env run db:migrate
+bun run db:generate
+bun run db:migrate
 ```
 
 ### Migration squash / local DB wipe
@@ -195,15 +184,15 @@ After changing routes in `app.ts`, run `bun run check-types` in this package (or
 
 ## Docker
 
-From the **repository root** (Compose loads root `.env` via `env_file`):
+From the **repository root** (local override: `db` → root `.env`; `api` / `migrate` → `apps/api/.env`):
 
 ```bash
 docker compose up -d db      # PostgreSQL only
 docker compose up --build    # API + PostgreSQL
 ```
 
-- **`db`** — Postgres 16, port `127.0.0.1:5432`, credentials from `POSTGRES_*`
-- **`api`** — port `127.0.0.1:${API_PORT}:${API_PORT}`, environment from `env_file: .env` (no `../../.env` path in the container)
+- **`db`** — Postgres 16, port `127.0.0.1:5432`, credentials from root `POSTGRES_*`
+- **`api`** — port `127.0.0.1:${API_PORT:-3000}:3000`, environment from `apps/api/.env`
 - **Entrypoint** — runs `bun run db:migrate`, then `bun run start` (variables already set by Compose)
 
 The [`Dockerfile`](Dockerfile) is a multi-stage Bun build: install workspace deps, `bun run build` (compiled `dist/kaget-api`), then run with migrations.

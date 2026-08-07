@@ -72,26 +72,26 @@ bun install
 
 ```bash
 cp .env.example .env
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
 ```
 
-Edit `.env` with your secrets. The example file uses `API_PORT` for the API listen port and builds `VITE_API_URL` / `BETTER_AUTH_URL` from it (see [Environment variables](#environment-variables)).
+- **Root** `.env` — `POSTGRES_*` for Compose `db` only
+- **`apps/api/.env`** — API secrets (`DATABASE_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, …)
+- **`apps/web/.env`** — `VITE_API_URL`, `VITE_APP_URL`
+
+Shared URLs/origins are duplicated across apps on purpose — keep them aligned manually (see [Environment variables](#environment-variables)).
 
 ### Start PostgreSQL and apply migrations
 
 ```bash
 docker compose up -d db
-cd apps/api && bun --env-file=../../.env run db:migrate && cd ../..
+bun run --filter @kaget/api db:migrate
 ```
 
-`auth:*` and `db:*` need the repository-root `.env` via `--env-file` (path depends on your cwd). From the repo root:
+`auth:*` / `db:*` load `apps/api/.env` via scripts. See [apps/api/README.md](apps/api/README.md#running-auth-and-db).
 
-```bash
-bun run --env-file=.env --filter @kaget/api db:migrate
-```
-
-See [apps/api/README.md — Running `auth:*` and `db:*`](apps/api/README.md#running-auth-and-db) for the full table and examples.
-
-For a quick local schema sync during development you can use `bun --env-file=../../.env run db:push` from `apps/api` instead of migrations.
+For a quick local schema sync during development: `cd apps/api && bun run db:push`.
 
 ## Running the Project
 
@@ -193,18 +193,17 @@ bun run build            # tsc + compiled binary → dist/kaget-api
 bun run start            # Run compiled binary (after build)
 bun run check-types      # tsc --noEmit
 
-# auth:* and db:* — pass root .env (cwd: apps/api)
-bun --env-file=../../.env run auth:generate
-bun --env-file=../../.env run db:migrate
+bun run auth:generate
+bun run db:migrate
 ```
 
 From the **repository root**:
 
 ```bash
-bun run --env-file=.env --filter @kaget/api db:migrate
+bun run --filter @kaget/api db:migrate
 ```
 
-`auth:*` and `db:*` require `--env-file` pointing at the root `.env`. See [apps/api/README.md](apps/api/README.md) for all scripts, auth routes, and Docker.
+See [apps/api/README.md](apps/api/README.md) for all scripts, auth routes, and Docker.
 
 ## Type-Safe API Client
 
@@ -225,45 +224,32 @@ When you add or change API routes in [`apps/api/src/app.ts`](apps/api/src/app.ts
 
 ## Database Migrations
 
-Auth tables are managed with Drizzle Kit from `apps/api`. Ensure [`.env`](.env.example) exists at the **repository root** (`DATABASE_URL`, `BETTER_AUTH_*`, etc.).
+Auth tables are managed with Drizzle Kit from `apps/api`. Ensure [`apps/api/.env`](apps/api/.env.example) exists (`DATABASE_URL`, `BETTER_AUTH_*`, etc.).
 
 ```bash
 cd apps/api
-bun --env-file=../../.env run auth:generate
-bun --env-file=../../.env run db:generate
-bun --env-file=../../.env run db:migrate
+bun run auth:generate
+bun run db:generate
+bun run db:migrate
 ```
 
-Or from the repository root:
+Or from the repository root: `bun run --filter @kaget/api db:migrate`.
 
-```bash
-bun run --env-file=.env --filter @kaget/api db:migrate
-```
-
-Details and copy-paste examples for every `db:*` script: [apps/api/README.md](apps/api/README.md#running-auth-and-db).
+Details: [apps/api/README.md](apps/api/README.md#running-auth-and-db).
 
 Docker runs `db:migrate` as a one-shot `migrate` service before `api` starts (see [`docker-compose.yml`](docker-compose.yml)).
 
 ## Environment Variables
 
-Copy [.env.example](.env.example) to `.env` at the repository root.
+| File | Variables |
+|------|-----------|
+| [`.env.example`](.env.example) (root) | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
+| [`apps/api/.env.example`](apps/api/.env.example) | `API_PORT`, `DATABASE_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `CORS_ORIGINS` |
+| [`apps/web/.env.example`](apps/web/.env.example) | `VITE_API_URL`, `VITE_APP_URL` |
 
-| Variable | Description |
-|----------|-------------|
-| `API_PORT` | API listen port (default `3000`) |
-| `VITE_API_URL` | API base URL for the web client (e.g. `http://localhost:3000`) |
-| `VITE_APP_URL` | Web app origin (e.g. `http://localhost:5173`) |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `BETTER_AUTH_SECRET` | Auth secret (min 32 characters) |
-| `BETTER_AUTH_URL` | Public API base URL for better-auth |
-| `GOOGLE_CLIENT_ID` | Google OAuth client id (required) |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (required) |
-| `CORS_ORIGINS` | Comma-separated allowed browser origins |
-| `POSTGRES_USER` | Docker Compose Postgres user |
-| `POSTGRES_PASSWORD` | Docker Compose Postgres password |
-| `POSTGRES_DB` | Docker Compose Postgres database name |
+Keep duplicates aligned: `DATABASE_URL` ↔ `POSTGRES_*`; `BETTER_AUTH_URL` ↔ `VITE_API_URL`; `CORS_ORIGINS` ↔ `VITE_APP_URL`.
 
-Docker Compose loads `.env` via `docker-compose.override.yml` for local `db` / `migrate` / `api`. The API reads `Bun.env` through [`apps/api/src/config/env.ts`](apps/api/src/config/env.ts) (Zod-validated). Production secrets are injected by parachute — see [Release and deploy](docs/developer-guide/release-and-deploy.md).
+Local Compose (`docker-compose.override.yml`): `db` uses root `.env`; `api` / `migrate` use `apps/api/.env`. The API validates `Bun.env` in [`apps/api/src/config/env.ts`](apps/api/src/config/env.ts). Production secrets are injected by parachute — see [Release and deploy](docs/developer-guide/release-and-deploy.md).
 
 ## Documentation
 
