@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { CheckIcon, ChevronsUpDownIcon, WalletIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useState } from "react";
 import CurrencyInput from "react-currency-input-field";
 import { useForm } from "react-hook-form";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -130,9 +131,7 @@ export function OnboardingIndexPage() {
         <section className="fade-in slide-in-from-bottom-2 animate-in space-y-8 duration-500">
           <header className="space-y-4">
             <p className="inline-flex items-center gap-2 font-semibold text-sm tracking-wide">
-              <span className="inline-flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <WalletIcon className="size-4" aria-hidden />
-              </span>
+              <Logo className="size-10" aria-hidden />
               <span className="text-foreground">KaGet</span>
             </p>
             <h1
